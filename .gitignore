@@ -1,0 +1,12 @@
+#all of the .class and .ctxt files
+*.class
+*.ctxt
+foxes-and-rabbits-handout.iml
+package.bluej
+Banana.java
+# I don't want any of idea to be commited
+/.idea/*
+# the entirety of the out folder.
+/out/*
+# I have seen this before if it gets created it will be ignored.
+*.DS_Store
