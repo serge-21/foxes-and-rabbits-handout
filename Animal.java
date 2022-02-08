@@ -2,7 +2,7 @@ import java.util.List;
 
 /**
  * A class representing shared characteristics of animals.
- * 
+ * fox is cool
  * @author David J. Barnes and Michael Kölling
  * @version 2016.02.29 (2)
  */
