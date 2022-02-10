@@ -1,7 +1,7 @@
 /**
  * Defines the conditions of the environment, like the visibility, downfall
  *
- * @author fox
+ * @author fox-lol
  * @version 1.0
  */
 
