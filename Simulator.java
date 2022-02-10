@@ -103,7 +103,7 @@ public class Simulator
         for(Iterator<Animal> it = animals.iterator(); it.hasNext(); ) {
             Animal animal = it.next();
             animal.act(newAnimals);
-            if(! animal.isAlive()) {
+            if(! animal.getIsAlive()) {
                 it.remove();
             }
         }
@@ -138,12 +138,12 @@ public class Simulator
             for(int col = 0; col < field.getWidth(); col++) {
                 if(rand.nextDouble() <= FOX_CREATION_PROBABILITY) {
                     Location location = new Location(row, col);
-                    Fox fox = new Fox(true, field, location);
+                    Fox fox = new Fox(true, true, field, location);
                     animals.add(fox);
                 }
                 else if(rand.nextDouble() <= RABBIT_CREATION_PROBABILITY) {
                     Location location = new Location(row, col);
-                    Rabbit rabbit = new Rabbit(true, field, location);
+                    Rabbit rabbit = new Rabbit(true, true, field, location);
                     animals.add(rabbit);
                 }
                 // else leave the location empty.

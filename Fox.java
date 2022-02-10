@@ -29,7 +29,6 @@ public class Fox extends Animal
     
     // Individual characteristics (instance fields).
     // The fox's age.
-    private int age;
     // The fox's food level, which is increased by eating rabbits.
     private int foodLevel;
 
@@ -39,17 +38,18 @@ public class Fox extends Animal
      * 
      * @param randomAge If true, the fox will have random age and hunger level.
      * @param field The field currently occupied.
-     * @param location The location within the field.
+     * @param initLocation The location within the field.
      */
-    public Fox(boolean randomAge, Field field, Location location)
+    public Fox(boolean randomAge, boolean isDrawable, Field field, Location initLocation)
     {
-        super(field, location);
+
+        super(isDrawable, field, initLocation);
         if(randomAge) {
-            age = rand.nextInt(MAX_AGE);
+            setAge(rand.nextInt(MAX_AGE));
             foodLevel = rand.nextInt(RABBIT_FOOD_VALUE);
         }
         else {
-            age = 0;
+            setAge(0);
             foodLevel = RABBIT_FOOD_VALUE;
         }
     }
@@ -65,7 +65,7 @@ public class Fox extends Animal
     {
         incrementAge();
         incrementHunger();
-        if(isAlive()) {
+        if(getIsAlive()) {
             giveBirth(newFoxes);            
             // Move towards a source of food if found.
             Location newLocation = findFood();
@@ -89,8 +89,8 @@ public class Fox extends Animal
      */
     private void incrementAge()
     {
-        age++;
-        if(age > MAX_AGE) {
+        setAge(getAge() + 1);
+        if(getAge() > MAX_AGE) {
             setDead();
         }
     }
@@ -111,7 +111,7 @@ public class Fox extends Animal
      * Only the first live rabbit is eaten.
      * @return Where food was found, or null if it wasn't.
      */
-    private Location findFood()
+    protected Location findFood()
     {
         Field field = getField();
         List<Location> adjacent = field.adjacentLocations(getLocation());
@@ -121,7 +121,7 @@ public class Fox extends Animal
             Object animal = field.getObjectAt(where);
             if(animal instanceof Rabbit) {
                 Rabbit rabbit = (Rabbit) animal;
-                if(rabbit.isAlive()) { 
+                if(rabbit.getIsAlive()) {
                     rabbit.setDead();
                     foodLevel = RABBIT_FOOD_VALUE;
                     return where;
@@ -145,11 +145,16 @@ public class Fox extends Animal
         int births = breed();
         for(int b = 0; b < births && free.size() > 0; b++) {
             Location loc = free.remove(0);
-            Fox young = new Fox(false, field, loc);
+            Fox young = new Fox(false, true, field, loc);
             newFoxes.add(young);
         }
     }
-        
+
+    @Override
+    protected Location findMate() {
+        return null;
+    }
+
     /**
      * Generate a number representing the number of births,
      * if it can breed.
@@ -169,6 +174,6 @@ public class Fox extends Animal
      */
     private boolean canBreed()
     {
-        return age >= BREEDING_AGE;
+        return getAge() >= BREEDING_AGE;
     }
 }

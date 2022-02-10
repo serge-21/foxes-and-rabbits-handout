@@ -54,8 +54,8 @@ public class SimulatorView extends JFrame
         Container contents = getContentPane();
         
         JPanel infoPane = new JPanel(new BorderLayout());
-            infoPane.add(stepLabel, BorderLayout.WEST);
-            infoPane.add(infoLabel, BorderLayout.CENTER);
+        infoPane.add(stepLabel, BorderLayout.WEST);
+        infoPane.add(infoLabel, BorderLayout.CENTER);
         contents.add(infoPane, BorderLayout.NORTH);
         contents.add(fieldView, BorderLayout.CENTER);
         contents.add(population, BorderLayout.SOUTH);
