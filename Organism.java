@@ -6,8 +6,8 @@ public abstract class Organism extends Entity {
     private Location location;
     private int moveSpeed;
 
-    public Organism(boolean isDrawable, Field field, Location initLocation){
-        super(isDrawable, field);
+    public Organism(Field field, Location initLocation){
+        super(field);
         this.isAlive = true;
         setLocation(initLocation);
     }
