@@ -19,9 +19,9 @@ public class Simulator
     // The default depth of the grid.
     private static final int DEFAULT_DEPTH = 80;
     // The probability that a fox will be created in any given grid position.
-    private static final double FOX_CREATION_PROBABILITY = 0.02;
+    private static final double FOX_CREATION_PROBABILITY = 0.03;
     // The probability that a rabbit will be created in any given grid position.
-    private static final double RABBIT_CREATION_PROBABILITY = 0.08;    
+    private static final double RABBIT_CREATION_PROBABILITY = 0.07;
 
     // List of animals in the field.
     private List<Organism> organisms;
@@ -68,7 +68,7 @@ public class Simulator
         view = new SimulatorView(depth, width);
         view.setColor(Rabbit.class, Color.ORANGE);
         view.setColor(Fox.class, Color.BLUE);
-        
+
         // Setup a valid starting point.
         reset();
     }
@@ -145,12 +145,12 @@ public class Simulator
             for(int col = 0; col < field.getWidth(); col++) {
                 if(rand.nextDouble() <= FOX_CREATION_PROBABILITY) {
                     Location location = new Location(row, col);
-                    Fox fox = new Fox(true, true, field, location);
+                    Fox fox = new Fox(true, field, location);
                     organisms.add(fox);
                 }
                 else if(rand.nextDouble() <= RABBIT_CREATION_PROBABILITY) {
                     Location location = new Location(row, col);
-                    Rabbit rabbit = new Rabbit(true, true, field, location);
+                    Rabbit rabbit = new Rabbit(true, field, location);
                     organisms.add(rabbit);
                 }
                 // else leave the location empty.
@@ -174,9 +174,9 @@ public class Simulator
 
     public static void main(String[] args) {
         Simulator simulator = new Simulator();
-        for(int i = 0; i< 100; i++){
+        for(int i = 0; i< 1000; i++){
             simulator.simulateOneStep();
-            simulator.delay(100);
+            simulator.delay(10);
         }
     }
 }
