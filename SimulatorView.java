@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -52,7 +54,7 @@ public class SimulatorView extends JFrame
         rabbitsCheckBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                toggleVisibility();
+                changeVisibility(Rabbit.class);
             }
         });
 
@@ -89,12 +91,21 @@ public class SimulatorView extends JFrame
         colors.put(animalClass, color);
     }
 
-    public void toggleVisibility() {
+    public void changeVisibility(Class animal){
+        try{
+            toggleVisibility(animal);
+        }catch (Exception ignore){
+            System.out.println("this should never happen something is VERY wrong with method toggleVisibility or parameter passed");
+        }
+    }
+    public void toggleVisibility(Class animal) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method m = animal.getMethod("getColor", null);
+        Method toggleDrawable = animal.getMethod("toggleDrawable", null);
         if(rabbitsCheckBox.isSelected()){
-            Rabbit.toggleDrawable();
-            setColor(Rabbit.class, Rabbit.getColor());
+            toggleDrawable.invoke(null);
+            setColor(animal, (Color) m.invoke(null));
         }else{
-            setColor(Rabbit.class, Rabbit.getColor());
+            setColor(animal, (Color) m.invoke(null));
         }
     }
 
