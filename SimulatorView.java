@@ -54,7 +54,7 @@ public class SimulatorView extends JFrame
         rabbitsCheckBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                changeVisibility(Rabbit.class);
+                toggleVisibility(Rabbit.class);
             }
         });
 
@@ -91,21 +91,18 @@ public class SimulatorView extends JFrame
         colors.put(animalClass, color);
     }
 
-    public void changeVisibility(Class animal){
+    public void toggleVisibility(Class animal){
         try{
-            toggleVisibility(animal);
+            Method m = animal.getMethod("getColor", null);
+            Method toggleDrawable = animal.getMethod("toggleDrawable", null);
+            if(rabbitsCheckBox.isSelected()){
+                toggleDrawable.invoke(null);
+                setColor(animal, (Color) m.invoke(null));
+            }else{
+                setColor(animal, (Color) m.invoke(null));
+            }
         }catch (Exception ignore){
             System.out.println("this should never happen something is VERY wrong with method toggleVisibility or parameter passed");
-        }
-    }
-    public void toggleVisibility(Class animal) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method m = animal.getMethod("getColor", null);
-        Method toggleDrawable = animal.getMethod("toggleDrawable", null);
-        if(rabbitsCheckBox.isSelected()){
-            toggleDrawable.invoke(null);
-            setColor(animal, (Color) m.invoke(null));
-        }else{
-            setColor(animal, (Color) m.invoke(null));
         }
     }
 
@@ -120,8 +117,7 @@ public class SimulatorView extends JFrame
     /**
      * @return The color to be used for a given class of animal.
      */
-    private Color getColor(Class animalClass)
-    {
+    private Color getColor(Class animalClass){
         Color col = colors.get(animalClass);
         if(col == null) {
             // no color defined for this class
@@ -130,8 +126,6 @@ public class SimulatorView extends JFrame
         else {
             return col;
         }
-
-//        return entity.getColor();
     }
 
     /**
@@ -139,8 +133,7 @@ public class SimulatorView extends JFrame
      * @param step Which iteration step it is.
      * @param field The field whose status is to be displayed.
      */
-    public void showStatus(int step, Field field)
-    {
+    public void showStatus(int step, Field field){
         if(!isVisible()) {
             setVisible(true);
         }
