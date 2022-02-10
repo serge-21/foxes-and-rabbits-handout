@@ -28,8 +28,6 @@ public abstract class Animal extends Organism{
      * whatever it wants/needs to do.
      * @param newAnimals A list to receive newly born animals.
      */
-    abstract public void act(List<Animal> newAnimals);
-
     abstract protected Location findFood();
 
     abstract protected Location findMate();

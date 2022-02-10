@@ -1,6 +1,7 @@
 import java.awt.*;
+import java.util.List;
 
-public class Organism extends Entity {
+public abstract class Organism extends Entity {
     private boolean isAlive;
     private Location location;
     private int moveSpeed;
@@ -10,6 +11,8 @@ public class Organism extends Entity {
         this.isAlive = true;
         setLocation(initLocation);
     }
+
+    abstract public void act(List<Organism> newAnimals);
 
     /**
      * Indicate that the animal is no longer alive.

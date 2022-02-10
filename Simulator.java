@@ -24,7 +24,7 @@ public class Simulator
     private static final double RABBIT_CREATION_PROBABILITY = 0.08;    
 
     // List of animals in the field.
-    private List<Animal> animals;
+    private List<Organism> organisms;
     // The current state of the field.
     private Field field;
     // The current step of the simulation.
@@ -61,7 +61,7 @@ public class Simulator
             width = DEFAULT_WIDTH;
         }
         
-        animals = new ArrayList<>();
+        organisms = new ArrayList<>();
         field = new Field(depth, width);
 
         // Create a view of the state of each location in the field.
@@ -105,18 +105,18 @@ public class Simulator
         step++;
 
         // Provide space for newborn animals.
-        List<Animal> newAnimals = new ArrayList<>();        
+        List<Organism> newOrganisms = new ArrayList<>();
         // Let all rabbits act.
-        for(Iterator<Animal> it = animals.iterator(); it.hasNext(); ) {
-            Animal animal = it.next();
-            animal.act(newAnimals);
-            if(! animal.getIsAlive()) {
+        for(Iterator<Organism> it = organisms.iterator(); it.hasNext(); ) {
+            Organism entity = it.next();
+            entity.act(newOrganisms);
+            if(! entity.getIsAlive()) {
                 it.remove();
             }
         }
                
         // Add the newly born foxes and rabbits to the main lists.
-        animals.addAll(newAnimals);
+        organisms.addAll(newOrganisms);
 
         view.showStatus(step, field);
     }
@@ -127,7 +127,7 @@ public class Simulator
     public void reset()
     {
         step = 0;
-        animals.clear();
+        organisms.clear();
         populate();
         
         // Show the starting state in the view.
@@ -146,12 +146,12 @@ public class Simulator
                 if(rand.nextDouble() <= FOX_CREATION_PROBABILITY) {
                     Location location = new Location(row, col);
                     Fox fox = new Fox(true, true, field, location);
-                    animals.add(fox);
+                    organisms.add(fox);
                 }
                 else if(rand.nextDouble() <= RABBIT_CREATION_PROBABILITY) {
                     Location location = new Location(row, col);
                     Rabbit rabbit = new Rabbit(true, true, field, location);
-                    animals.add(rabbit);
+                    organisms.add(rabbit);
                 }
                 // else leave the location empty.
             }

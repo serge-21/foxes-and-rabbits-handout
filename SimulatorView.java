@@ -25,6 +25,7 @@ public class SimulatorView extends JFrame
     private final String STEP_PREFIX = "Step: ";
     private final String POPULATION_PREFIX = "Population: ";
     private JLabel stepLabel, population, infoLabel;
+    private JCheckBox rabbitsCheckBox;
     private FieldView fieldView;
     
     // A map for storing colors for participants in the simulation
@@ -46,7 +47,16 @@ public class SimulatorView extends JFrame
         stepLabel = new JLabel(STEP_PREFIX, JLabel.CENTER);
         infoLabel = new JLabel("  ", JLabel.CENTER);
         population = new JLabel(POPULATION_PREFIX, JLabel.CENTER);
-        
+        rabbitsCheckBox = new JCheckBox("remove all rabbits from view?");
+        // this code will be better in a bit give me some time
+        rabbitsCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                toggleVisibility();
+            }
+        });
+
+
         setLocation(100, 50);
         
         fieldView = new FieldView(height, width);
@@ -56,7 +66,12 @@ public class SimulatorView extends JFrame
         JPanel infoPane = new JPanel(new BorderLayout());
         infoPane.add(stepLabel, BorderLayout.WEST);
         infoPane.add(infoLabel, BorderLayout.CENTER);
+
+        JPanel checkBoxes = new JPanel(new BorderLayout());
+        checkBoxes.add(rabbitsCheckBox, BorderLayout.CENTER);
+
         contents.add(infoPane, BorderLayout.NORTH);
+        contents.add(checkBoxes, BorderLayout.EAST);
         contents.add(fieldView, BorderLayout.CENTER);
         contents.add(population, BorderLayout.SOUTH);
         pack();
@@ -72,6 +87,15 @@ public class SimulatorView extends JFrame
     public void setColor(Class animalClass, Color color)
     {
         colors.put(animalClass, color);
+    }
+
+    public void toggleVisibility() {
+        if(rabbitsCheckBox.isSelected()){
+            Rabbit.toggleDrawable();
+            setColor(Rabbit.class, Rabbit.getColor());
+        }else{
+            setColor(Rabbit.class, Rabbit.getColor());
+        }
     }
 
     /**
@@ -95,6 +119,8 @@ public class SimulatorView extends JFrame
         else {
             return col;
         }
+
+//        return entity.getColor();
     }
 
     /**

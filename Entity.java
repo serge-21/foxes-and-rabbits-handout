@@ -7,9 +7,9 @@ import java.awt.*;
  * @version 10-02-2022
  */
 public class Entity {
-    private boolean isDrawable;
+    private static boolean isDrawable;
     private int age;
-    private Color color;
+    private static Color color;
     private Field field;
     /**
      * Constructor for objects of class Entity
@@ -17,15 +17,30 @@ public class Entity {
     public Entity(boolean isDrawable, Field field) {
         // initialise instance variables
         this.age = 0;
-        this.isDrawable = isDrawable;
+        Entity.isDrawable = isDrawable;
         this.field = field;
+    }
+
+    public static boolean getIsDrwable(){
+        return isDrawable;
+    }
+
+    public void setColor(Color color){
+        Entity.color = color;
+    }
+
+    public static Color getColor() {
+        if(isDrawable){
+            return color;
+        }
+        return Color.white;
     }
 
     public int getAge() {
         return age;
     }
 
-    public void toggleDrawable(){
+    public static void toggleDrawable(){
         isDrawable = !isDrawable;
     }
 

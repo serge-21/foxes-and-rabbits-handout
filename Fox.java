@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Random;
@@ -40,10 +41,9 @@ public class Fox extends Animal
      * @param field The field currently occupied.
      * @param initLocation The location within the field.
      */
-    public Fox(boolean randomAge, boolean isDrawable, Field field, Location initLocation)
-    {
-
+    public Fox(boolean randomAge, boolean isDrawable, Field field, Location initLocation) {
         super(isDrawable, field, initLocation);
+        setColor(Color.BLUE);
         if(randomAge) {
             setAge(rand.nextInt(MAX_AGE));
             foodLevel = rand.nextInt(RABBIT_FOOD_VALUE);
@@ -61,7 +61,7 @@ public class Fox extends Animal
      * @param field The field currently occupied.
      * @param newFoxes A list to return newly born foxes.
      */
-    public void act(List<Animal> newFoxes)
+    public void act(List<Organism> newFoxes)
     {
         incrementAge();
         incrementHunger();
@@ -136,7 +136,7 @@ public class Fox extends Animal
      * New births will be made into free adjacent locations.
      * @param newFoxes A list to return newly born foxes.
      */
-    private void giveBirth(List<Animal> newFoxes)
+    private void giveBirth(List<Organism> newFoxes)
     {
         // New foxes are born into adjacent locations.
         // Get a list of adjacent free locations.
