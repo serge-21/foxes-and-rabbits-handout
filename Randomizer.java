@@ -8,7 +8,7 @@ import java.util.Random;
  * @author David J. Barnes and Michael Kölling
  * @version 2016.02.29
  */
-public class Randomizer
+public class  Randomizer
 {
     // The default seed for control of randomization.
     private static final int SEED = 1111;
@@ -22,6 +22,22 @@ public class Randomizer
      */
     public Randomizer()
     {
+    }
+
+    /**
+     * Rolls a random decimal number from 0 to 100 and if the number is lower than the parameter, it returns true.
+     * @param odds the percentage change of an event happening (from 0 to 100)
+     * @return True if the roll is successful.
+     */
+    public static boolean roll(double odds)
+    {
+        if (odds <= 100 && odds >= 0) {
+            return odds < rand.nextDouble() * 100;
+        }
+        else{
+            // out of range error
+            return false;
+        }
     }
 
     /**

@@ -31,7 +31,14 @@ public class Simulator
     private int step;
     // A graphical view of the simulation.
     private SimulatorView view;
-    
+
+    // Weather conditions
+    private final Environment clearSky = new Environment(0,0);
+    private final Environment lightRain = new Environment(10,50);
+    private final Environment heavyRain = new Environment(40,100);
+    private final Environment lightFog = new Environment(75,0);
+    private final Environment heavyFog = new Environment(100,0);
+
     /**
      * Construct a simulation field with default size.
      */
