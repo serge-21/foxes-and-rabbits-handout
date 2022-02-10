@@ -14,10 +14,10 @@ public class Entity {
     /**
      * Constructor for objects of class Entity
      */
-    public Entity(boolean isDrawable, Field field) {
+    public Entity(Field field) {
         // initialise instance variables
         this.age = 0;
-        Entity.isDrawable = isDrawable;
+        Entity.isDrawable = true;
         this.field = field;
     }
 
