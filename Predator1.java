@@ -1,39 +1,32 @@
 import java.awt.*;
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * A simple model of a predator1.
  * predator1es age, move, eat prey1s, and die.
- * 
- * @author David J. Barnes and Michael Kölling
+ *
+ * @author Syraj Alkhalil and Cosmo
  * @version 2016.02.29 (2)
  */
-public class preditor1 extends Animal
+public class Predator1 extends Animal
 {
-    // Characteristics shared by all predator1es (class variables).
-
-    // The age at which a predator1 can start to breed.
-    private static final int BREEDING_AGE = 15;
-    // The age to which a predator1 can live.
-    private static final int MAX_AGE = 130;
-    // The likelihood of a predator1 breeding.
-    private static final double BREEDING_PROBABILITY = 0.37;
-    // The maximum number of births.
-    private static final int MAX_LITTER_SIZE = 2;
-    // The food value of a single prey1. In effect, this is the
-    // number of steps a predator1 can go before it has to eat again.
-    private static final int PREY1_FOOD_VALUE = 20;
+    // Characteristics shared by all predator1s (class variables).
+    private static final int BREEDING_AGE = 15;                 // The age at which a predator1 can start to breed.
+    private static final int MAX_AGE = 130;                     // The age to which a predator1 can live.
+    private static final double BREEDING_PROBABILITY = 0.37;    // The likelihood of a predator1 breeding.
+    private static final int MAX_LITTER_SIZE = 2;               // The maximum number of births.
+    private static final int PREY1_FOOD_VALUE = 20;             // The food value of a single prey1. In effect, this is the
+                                                                // number of steps a predator1 can go before it has to eat again.
 
     /**
-     * Create a predator1. A predator1 can be created as a new born (age zero
+     * Create a predator1. A predator1 can be created as a newborn (age zero
      * and not hungry) or with a random age and food level.
      *
      * @param randomAge If true, the predator1 will have random age and hunger level.
      * @param field The field currently occupied.
      * @param initLocation The location within the field.
      */
-    public preditor1(boolean randomAge, Field field, Location initLocation) {
+    public Predator1(boolean randomAge, Field field, Location initLocation) {
         super(randomAge, field, initLocation, false, PREY1_FOOD_VALUE, MAX_AGE);
         setColor(Color.RED);
     }
@@ -42,16 +35,16 @@ public class preditor1 extends Animal
      * This is what the predator1 does most of the time: it hunts for
      * prey1s. In the process, it might breed, die of hunger,
      * or die of old age.
-     * @param field The field currently occupied.
-     * @param newPreditor1 A list to return newly born predator1es.
+     * @param newPredator1 A list to return newly born predator1es.
+     * @param isDay is it currently day or night ?
      */
-    public void act(List<Organism> newPreditor1, boolean isDay)
+    public void act(List<Organism> newPredator1, boolean isDay)
     {
-        if(determinDay(isDay)){
+        if(determineDay(isDay)){
             incrementAge();
             incrementHunger();
             if(getIsAlive()) {
-                giveBirth(newPreditor1);
+                giveBirth(newPredator1);
                 // Move towards a source of food if found.
                 Location newLocation = findFood();
                 if(newLocation == null) {
@@ -61,8 +54,7 @@ public class preditor1 extends Animal
                 // See if it was possible to move.
                 if(newLocation != null) {
                     setLocation(newLocation);
-                }
-                else {
+                } else {
                     // Overcrowding.
                     setDead();
                 }
@@ -93,13 +85,10 @@ public class preditor1 extends Animal
     {
         Field field = getField();
         List<Location> adjacent = field.adjacentLocations(getLocation());
-        Iterator<Location> it = adjacent.iterator();
-        while(it.hasNext()) {
-            Location where = it.next();
+        for (Location where : adjacent) {
             Object animal = field.getObjectAt(where);
-            if(animal instanceof prey1) {
-                prey1 prey1 = (prey1) animal;
-                if(prey1.getIsAlive()) {
+            if (animal instanceof Prey1 prey1) {
+                if (prey1.getIsAlive()) {
                     prey1.setDead();
                     setFoodLevel(PREY1_FOOD_VALUE);
                     return where;
@@ -126,7 +115,7 @@ public class preditor1 extends Animal
             int births = breed();
             for(int b = 0; b < births && free.size() > 0; b++) {
                 Location loc = free.remove(0);
-                preditor1 young = new preditor1(false, field, loc);
+                Predator1 young = new Predator1(false, field, loc);
                 newPredator1.add(young);
             }
         }
@@ -136,13 +125,10 @@ public class preditor1 extends Animal
     protected boolean findMate() {
         Field field = getField();
         List<Location> adjacent = field.adjacentLocations(getLocation());
-        Iterator<Location> it = adjacent.iterator();
-        while(it.hasNext()) {
-            Location where = it.next();
+        for (Location where : adjacent) {
             Object animal = field.getObjectAt(where);
-            if(animal instanceof preditor1 && (((preditor1) animal).getIsMale() != this.getIsMale()) ) {
-                preditor1 potentialPartner = (preditor1) animal;
-                if(potentialPartner.getAge() >= BREEDING_AGE) {
+            if (animal instanceof Predator1 potentialPartner && (((Predator1) animal).getIsMale() != this.getIsMale())) {
+                if (potentialPartner.getAge() >= BREEDING_AGE) {
                     return true;
                 }
             }
@@ -153,7 +139,7 @@ public class preditor1 extends Animal
     /**
      * Generate a number representing the number of births,
      * if it can breed.
-     * @return The number of births (may be zero).
+     * @return The number of births (maybe zero).
      */
     private int breed()
     {
