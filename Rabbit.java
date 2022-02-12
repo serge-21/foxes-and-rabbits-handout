@@ -113,7 +113,8 @@ public class Rabbit extends Animal
         List<Location> adjacent = field.adjacentLocations(getLocation());
         for (Location where : adjacent) {
             Object animal = field.getObjectAt(where);
-            if (animal instanceof Rabbit potentialPartner && (((Rabbit) animal).getIsMale() != this.getIsMale())) {
+            if (animal instanceof Rabbit && (((Rabbit) animal).getIsMale() != this.getIsMale())) {
+                Rabbit potentialPartner = (Rabbit) animal;
                 if (potentialPartner.getAge() >= BREEDING_AGE) {
                     return true;
                 }

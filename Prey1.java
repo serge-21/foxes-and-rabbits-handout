@@ -118,7 +118,8 @@ public class Prey1 extends Animal
         List<Location> adjacent = field.adjacentLocations(getLocation());
         for (Location where : adjacent) {
             Object animal = field.getObjectAt(where);
-            if (animal instanceof Prey1 potentialPartner && (((Prey1) animal).getIsMale() != this.getIsMale())) {
+            if (animal instanceof Prey1 && (((Prey1) animal).getIsMale() != this.getIsMale())) {
+                Prey1 potentialPartner = (Prey1) animal;
                 if (potentialPartner.getAge() >= BREEDING_AGE) {
                     return true;
                 }

@@ -9,7 +9,7 @@ public abstract class Animal extends Organism{
 
     // all the field shared by all animals
     private static final Random rand = Randomizer.getRandom();          // shared by all animals
-    private final boolean isMale = rand.nextDouble(1) < 0.5;     // random chance that each animal might be a male or female
+    private final boolean isMale = rand.nextDouble() < 0.5;     // random chance that each animal might be a male or female
     private final boolean isNocturnal;                                  // passed in
     private int foodLevel;                                              // passed in
     private boolean isInfected;                                         // to be passed in

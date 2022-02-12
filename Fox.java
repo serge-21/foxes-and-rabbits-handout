@@ -82,7 +82,8 @@ public class Fox extends Animal
         List<Location> adjacent = field.adjacentLocations(getLocation());
         for (Location where : adjacent) {
             Object animal = field.getObjectAt(where);
-            if (animal instanceof Rabbit rabbit) {
+            if (animal instanceof Rabbit) {
+                Rabbit rabbit = (Rabbit) animal;
                 if (rabbit.getIsAlive()) {
                     rabbit.setDead();
                     setFoodLevel(RABBIT_FOOD_VALUE);
@@ -128,7 +129,8 @@ public class Fox extends Animal
         List<Location> adjacent = field.adjacentLocations(getLocation());
         for (Location where : adjacent) {
             Object animal = field.getObjectAt(where);
-            if (animal instanceof Fox potentialPartner && (((Fox) animal).getIsMale() != this.getIsMale())) {
+            if (animal instanceof Fox && (((Fox) animal).getIsMale() != this.getIsMale())) {
+                Fox potentialPartner = (Fox) animal;
                 if (potentialPartner.getAge() >= BREEDING_AGE) {
                     return true;
                 }
