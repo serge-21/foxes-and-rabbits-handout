@@ -26,7 +26,9 @@ public class SimulatorView extends JFrame
 
     private final String STEP_PREFIX = "Step: ";
     private final String POPULATION_PREFIX = "Population: ";
-    private JLabel stepLabel, population, infoLabel;
+    private final String DAY = "Daytime: ";
+    private final String NUM_OF_DAYS = "Number of days";
+    private JLabel stepLabel, population, infoLabel, dayLabel, numOfDaysLabel;
     private JCheckBox rabbitsCheckBox;
     private FieldView fieldView;
     
@@ -49,6 +51,11 @@ public class SimulatorView extends JFrame
         stepLabel = new JLabel(STEP_PREFIX, JLabel.CENTER);
         infoLabel = new JLabel("  ", JLabel.CENTER);
         population = new JLabel(POPULATION_PREFIX, JLabel.CENTER);
+
+        // extra stats.
+        numOfDaysLabel = new JLabel(NUM_OF_DAYS, JLabel.CENTER);
+        dayLabel = new JLabel(DAY, JLabel.CENTER);
+
         rabbitsCheckBox = new JCheckBox("remove all rabbits from view?");
         // this code will be better in a bit give me some time
         rabbitsCheckBox.addItemListener(new ItemListener() {
@@ -68,6 +75,8 @@ public class SimulatorView extends JFrame
         JPanel infoPane = new JPanel(new BorderLayout());
         infoPane.add(stepLabel, BorderLayout.WEST);
         infoPane.add(infoLabel, BorderLayout.CENTER);
+        infoPane.add(dayLabel, BorderLayout.CENTER);
+        infoPane.add(numOfDaysLabel, BorderLayout.EAST);
 
         JPanel checkBoxes = new JPanel(new BorderLayout());
         checkBoxes.add(rabbitsCheckBox, BorderLayout.CENTER);
@@ -133,12 +142,14 @@ public class SimulatorView extends JFrame
      * @param step Which iteration step it is.
      * @param field The field whose status is to be displayed.
      */
-    public void showStatus(int step, Field field){
+    public void showStatus(int step, Field field, String day, int numOfDays){
         if(!isVisible()) {
             setVisible(true);
         }
             
         stepLabel.setText(STEP_PREFIX + step);
+        dayLabel.setText(DAY + day);
+        numOfDaysLabel.setText(NUM_OF_DAYS + numOfDays);
         stats.reset();
         
         fieldView.preparePaint();

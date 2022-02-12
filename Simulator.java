@@ -10,25 +10,37 @@ import java.awt.Color;
  * 
  * @author David J. Barnes and Michael Kölling
  * @version 2016.02.29 (2)
+ *
+ *
+ *
+ * TODO: generlise givebirth and breed.and such this shouldn't be a problem if
+ * TODO: we are setting the breeding probability to something in the constructor.
+ *
  */
 public class Simulator
 {
     // Constants representing configuration information for the simulation.
     // The default width for the grid.
-    private static final int DEFAULT_WIDTH = 120;
+    private static final int DEFAULT_WIDTH = 200;
     // The default depth of the grid.
-    private static final int DEFAULT_DEPTH = 80;
+    private static final int DEFAULT_DEPTH = 120;
     // The probability that a fox will be created in any given grid position.
     private static final double FOX_CREATION_PROBABILITY = 0.03;
     // The probability that a rabbit will be created in any given grid position.
-    private static final double RABBIT_CREATION_PROBABILITY = 0.07;
+    private static final double RABBIT_CREATION_PROBABILITY = 0.04;
+    private static final double PREDITOR1_CREATION_PROBABILITY = 0.03;
+    private static final double PREY1_CREATION_PROBABILITY = 0.04;
+    private static final double PLANT_CREATION_PROBABILITY = 0.01;
 
     // List of animals in the field.
     private List<Organism> organisms;
     // The current state of the field.
     private Field field;
-    // The current step of the simulation.
+    // The current step of the simulation with the time of the day
     private int step;
+    private boolean isDay;
+    private String timeOfDay = "day";
+    private int numOfDays = 0;
     // A graphical view of the simulation.
     private SimulatorView view;
 
@@ -68,7 +80,9 @@ public class Simulator
         view = new SimulatorView(depth, width);
         view.setColor(Rabbit.class, Color.ORANGE);
         view.setColor(Fox.class, Color.BLUE);
-
+        view.setColor(Prey1.class, Color.MAGENTA);
+        view.setColor(Predator1.class, Color.RED);
+        view.setColor(Plants.class, Color.GREEN);
         // Setup a valid starting point.
         reset();
     }
@@ -103,22 +117,31 @@ public class Simulator
     public void simulateOneStep()
     {
         step++;
-
-        // Provide space for newborn animals.
+        // first calculate if it is day or night
+        if(step % 50 == 0){
+            isDay = !isDay;
+            numOfDays += 1;
+            if(isDay){
+                timeOfDay = "night";
+            }else{
+                timeOfDay = "day";
+            }
+        }
         List<Organism> newOrganisms = new ArrayList<>();
+        // Provide space for newborn animals.
         // Let all rabbits act.
-        for(Iterator<Organism> it = organisms.iterator(); it.hasNext(); ) {
+        for (Iterator<Organism> it = organisms.iterator(); it.hasNext(); ) {
             Organism entity = it.next();
-            entity.act(newOrganisms);
-            if(! entity.getIsAlive()) {
+            entity.act(newOrganisms, isDay);
+            if (!entity.getIsAlive()) {
                 it.remove();
             }
         }
-               
-        // Add the newly born foxes and rabbits to the main lists.
+
+        // Add the newly created organisms to the list.
         organisms.addAll(newOrganisms);
 
-        view.showStatus(step, field);
+        view.showStatus(step, field, timeOfDay, numOfDays);
     }
         
     /**
@@ -131,7 +154,7 @@ public class Simulator
         populate();
         
         // Show the starting state in the view.
-        view.showStatus(step, field);
+        view.showStatus(step, field, timeOfDay, numOfDays);
     }
     
     /**
@@ -154,6 +177,21 @@ public class Simulator
                     organisms.add(rabbit);
                 }
                 // else leave the location empty.
+                else if(rand.nextDouble() <= PREDITOR1_CREATION_PROBABILITY) {
+                    Location location = new Location(row, col);
+                    Predator1 rabbit = new Predator1(true, field, location);
+                    organisms.add(rabbit);
+                }
+                else if(rand.nextDouble() <= PREY1_CREATION_PROBABILITY) {
+                    Location location = new Location(row, col);
+                    Prey1 rabbit = new Prey1(true, field, location);
+                    organisms.add(rabbit);
+                }
+                else if(rand.nextDouble() <= PLANT_CREATION_PROBABILITY) {
+                    Location location = new Location(row, col);
+                    Plants plant = new Plants(field, location);
+                    organisms.add(plant);
+                }
             }
         }
     }
@@ -176,7 +214,7 @@ public class Simulator
         Simulator simulator = new Simulator();
         for(int i = 0; i< 1000; i++){
             simulator.simulateOneStep();
-            simulator.delay(10);
+            simulator.delay(100);
         }
     }
 }
