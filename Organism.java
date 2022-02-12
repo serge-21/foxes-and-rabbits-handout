@@ -1,18 +1,28 @@
-import java.awt.*;
 import java.util.List;
+import java.util.Random;
 
 public abstract class Organism extends Entity {
-    private boolean isAlive;
-    private Location location;
-    private int moveSpeed;
+    private int moveSpeed;                                      // current movement speed
+    private boolean isAlive;                                    // is the organism currently alive
+    private Location location;                                  // the current location of the organism
+    private static final Random rand = Randomizer.getRandom();  // the randomness all organisms share
 
+    /**
+     * Create an Organism. An organism can be created with a field and
+     * a location.
+     * @param field The field currently occupied.
+     * @param initLocation The location within the field.
+     */
     public Organism(Field field, Location initLocation){
         super(field);
         this.isAlive = true;
         setLocation(initLocation);
     }
-
-    abstract public void act(List<Organism> newAnimals);
+    /**
+     * @param newOrganisms A list to return newly born animals.
+     * @param isDay is it currently day or night ?
+     */
+    abstract public void act(List<Organism> newOrganisms, boolean isDay);
 
     /**
      * Indicate that the animal is no longer alive.
@@ -34,6 +44,13 @@ public abstract class Organism extends Entity {
 
     public void setAlive(boolean alive) {
         this.isAlive = alive;
+    }
+
+    /**
+     * return the rand field which contains a Random object
+     */
+    public static Random getRand() {
+        return rand;
     }
 
     /**

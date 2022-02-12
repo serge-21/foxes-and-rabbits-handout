@@ -7,6 +7,4 @@ public class Disease {
         this.deadliness = deadliness;
     }
 
-
-
 }
