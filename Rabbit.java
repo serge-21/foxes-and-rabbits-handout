@@ -26,8 +26,17 @@ public class Rabbit extends Animal
      * @param initLocation The location within the field.
      */
     public Rabbit(boolean randomAge, Field field, Location initLocation) {
-        super(randomAge, field, initLocation, true, PLANT_FOOD_VALUE, MAX_AGE);
+        super(randomAge, field, initLocation, false, PLANT_FOOD_VALUE, MAX_AGE);
         setColor(Color.ORANGE);
+        setPrey();
+    }
+
+    public Rabbit(){
+        setColor(Color.orange);
+    }
+
+    private void setPrey(){
+        addPrey(Plants.class);
     }
     
     /**
@@ -36,26 +45,16 @@ public class Rabbit extends Animal
      * @param newRabbits A list to return newly born rabbits.
      * @param isDay is it currently day or night ?
      */
-    public void act(List<Organism> newRabbits, boolean isDay)
+    public void act(List<Organism> newRabbits, boolean isDay, Weather currentWeather)
     {
         if(determineDay(isDay)){
-            incrementAge();
-            incrementHunger();
+            updateStatsOfAnimal();
+            incrementAge();     // age is unique and can't be updated with other stats.
             if(getIsAlive()) {
-                giveBirth(newRabbits);
-                // Move towards a source of food if found.
-                Location newLocation = findFood();
-                if(newLocation == null) {
-                    // No food found - try to move to a free location.
-                    newLocation = getField().freeAdjacentLocation(getLocation());
+                if(getBreedCounter() <= 0){
+                    giveBirth(newRabbits);
                 }
-                // See if it was possible to move.
-                if(newLocation != null) {
-                    setLocation(newLocation);
-                } else {
-                    // Overcrowding.
-                    setDead();
-                }
+                moveLocationOfAnimal(currentWeather);
             }
         }
     }
@@ -82,7 +81,8 @@ public class Rabbit extends Animal
         // New rabbits are born into adjacent locations.
         // Get a list of adjacent free locations.
         Field field = getField();
-        if(findMate()){
+        setPregnant(false);
+        if(findMate(this.getClass())){
             List<Location> free = field.getFreeAdjacentLocations(getLocation());
             int births = breed();
             for(int b = 0; b < births && free.size() > 0; b++) {
@@ -94,33 +94,8 @@ public class Rabbit extends Animal
     }
 
     @Override
-    protected Location findFood() {
-        Field field = getField();
-        List<Location> adjacent = field.adjacentLocations(getLocation());
-        for (Location where : adjacent) {
-            Object animal = field.getObjectAt(where);
-            if (animal instanceof Plants) {
-                setFoodLevel(PLANT_FOOD_VALUE);
-                return where;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    protected boolean findMate() {
-        Field field = getField();
-        List<Location> adjacent = field.adjacentLocations(getLocation());
-        for (Location where : adjacent) {
-            Object animal = field.getObjectAt(where);
-            if (animal instanceof Rabbit && (((Rabbit) animal).getIsMale() != this.getIsMale())) {
-                Rabbit potentialPartner = (Rabbit) animal;
-                if (potentialPartner.getAge() >= BREEDING_AGE) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    protected int getBreedingAge() {
+        return BREEDING_AGE;
     }
 
     /**
@@ -133,6 +108,7 @@ public class Rabbit extends Animal
         int births = 0;
         if(canBreed() && getRand().nextDouble() <= BREEDING_PROBABILITY) {
             births = getRand().nextInt(MAX_LITTER_SIZE) + 1;
+            setBreedCounter(10);
         }
         return births;
     }

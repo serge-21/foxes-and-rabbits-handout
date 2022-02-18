@@ -26,8 +26,13 @@ public class Fox extends Animal
      * @param initLocation The location within the field.
      */
     public Fox(boolean randomAge, Field field, Location initLocation) {
-        super(randomAge, field, initLocation, false, RABBIT_FOOD_VALUE, MAX_AGE);
+        super(randomAge, field, initLocation, true, RABBIT_FOOD_VALUE, MAX_AGE);
         setColor(Color.BLUE);
+        setPrey();
+    }
+
+    private void setPrey(){
+        addPrey(Rabbit.class);
     }
     
     /**
@@ -37,26 +42,16 @@ public class Fox extends Animal
      * @param newFoxes A list to return newly born foxes.
      * @param isDay is it currently day or night ?
      */
-    public void act(List<Organism> newFoxes, boolean isDay)
+    public void act(List<Organism> newFoxes, boolean isDay, Weather currentWeather)
     {
         if(determineDay(isDay)){
-            incrementAge();
-            incrementHunger();
+            updateStatsOfAnimal();
+            incrementAge();     // age is unique and can't be updated with other stats.
             if(getIsAlive()) {
-                giveBirth(newFoxes);
-                // Move towards a source of food if found.
-                Location newLocation = findFood();
-                if(newLocation == null) {
-                    // No food found - try to move to a free location.
-                    newLocation = getField().freeAdjacentLocation(getLocation());
+                if(getBreedCounter() <= 0){
+                    giveBirth(newFoxes);
                 }
-                // See if it was possible to move.
-                if(newLocation != null) {
-                    setLocation(newLocation);
-                } else {
-                    // Overcrowding.
-                    setDead();
-                }
+                moveLocationOfAnimal(currentWeather);
             }
         }
     }
@@ -72,26 +67,9 @@ public class Fox extends Animal
         }
     }
 
-    /**
-     * Look for rabbits adjacent to the current location.
-     * Only the first live rabbit is eaten.
-     * @return Where food was found, or null if it wasn't.
-     */
-    protected Location findFood() {
-        Field field = getField();
-        List<Location> adjacent = field.adjacentLocations(getLocation());
-        for (Location where : adjacent) {
-            Object animal = field.getObjectAt(where);
-            if (animal instanceof Rabbit) {
-                Rabbit rabbit = (Rabbit) animal;
-                if (rabbit.getIsAlive()) {
-                    rabbit.setDead();
-                    setFoodLevel(RABBIT_FOOD_VALUE);
-                    return where;
-                }
-            }
-        }
-        return null;
+    @Override
+    protected int getBreedingAge() {
+        return BREEDING_AGE;
     }
     
     /**
@@ -105,7 +83,7 @@ public class Fox extends Animal
         Field field = getField();
 
         // need to find a mate first, otherwise it makes no sense to breed alone.
-        if(findMate()){
+        if(findMate(this.getClass())){
             List<Location> free = field.getFreeAdjacentLocations(getLocation());
             int births = breed();
             for(int b = 0; b < births && free.size() > 0; b++) {
@@ -114,29 +92,6 @@ public class Fox extends Animal
                 newFoxes.add(young);
             }
         }
-    }
-
-    /**
-     * This method is responsible for finding a mate.
-     * The method will go check for each organism in the field
-     * and IF they find a mate then the method will return true.
-     *
-     * @return a boolean value of whether we found a mate of Fox class.
-     */
-    @Override
-    protected boolean findMate() {
-        Field field = getField();
-        List<Location> adjacent = field.adjacentLocations(getLocation());
-        for (Location where : adjacent) {
-            Object animal = field.getObjectAt(where);
-            if (animal instanceof Fox && (((Fox) animal).getIsMale() != this.getIsMale())) {
-                Fox potentialPartner = (Fox) animal;
-                if (potentialPartner.getAge() >= BREEDING_AGE) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**

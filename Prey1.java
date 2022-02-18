@@ -26,8 +26,12 @@ public class Prey1 extends Animal
      * @param initLocation The location within the field.
      */
     public Prey1(boolean randomAge, Field field, Location initLocation) {
-        super(randomAge, field, initLocation, true, PLANT_FOOD_VALUE, MAX_AGE);
+        super(randomAge, field, initLocation, false, PLANT_FOOD_VALUE, MAX_AGE);
         setColor(Color.MAGENTA);
+        setPrey();
+    }
+    private void setPrey(){
+        addPrey(Plants.class);
     }
     
     /**
@@ -36,26 +40,16 @@ public class Prey1 extends Animal
      * @param newPrey1 A list to return newly born prey1s.
      * @param isDay is it currently day or night ?
      */
-    public void act(List<Organism> newPrey1, boolean isDay)
+    public void act(List<Organism> newPrey1, boolean isDay, Weather currentWeather)
     {
         if(determineDay(isDay)){
-            incrementAge();
-            incrementHunger();
+            updateStatsOfAnimal();
+            incrementAge();     // age is unique and can't be updated with other stats.
             if(getIsAlive()) {
-                giveBirth(newPrey1);
-                // Move towards a source of food if found.
-                Location newLocation = findFood();
-                if(newLocation == null) {
-                    // No food found - try to move to a free location.
-                    newLocation = getField().freeAdjacentLocation(getLocation());
+                if(getBreedCounter() <= 0){
+                    giveBirth(newPrey1);
                 }
-                // See if it was possible to move.
-                if(newLocation != null) {
-                    setLocation(newLocation);
-                } else {
-                    // Overcrowding.
-                    setDead();
-                }
+                moveLocationOfAnimal(currentWeather);
             }
         }
     }
@@ -82,7 +76,7 @@ public class Prey1 extends Animal
         // New prey1s are born into adjacent locations.
         // Get a list of adjacent free locations.
         Field field = getField();
-        if(findMate()){
+        if(findMate(this.getClass())){
             List<Location> free = field.getFreeAdjacentLocations(getLocation());
             int births = breed();
             for(int b = 0; b < births && free.size() > 0; b++) {
@@ -93,39 +87,9 @@ public class Prey1 extends Animal
         }
     }
 
-
-    /**
-     * find the location of the food.
-     * @return the location of the prey note this could be a plant
-     */
     @Override
-    protected Location findFood() {
-        Field field = getField();
-        List<Location> adjacent = field.adjacentLocations(getLocation());
-        for (Location where : adjacent) {
-            Object animal = field.getObjectAt(where);
-            if (animal instanceof Plants) {
-                setFoodLevel(PLANT_FOOD_VALUE);
-                return where;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    protected boolean findMate() {
-        Field field = getField();
-        List<Location> adjacent = field.adjacentLocations(getLocation());
-        for (Location where : adjacent) {
-            Object animal = field.getObjectAt(where);
-            if (animal instanceof Prey1 && (((Prey1) animal).getIsMale() != this.getIsMale())) {
-                Prey1 potentialPartner = (Prey1) animal;
-                if (potentialPartner.getAge() >= BREEDING_AGE) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    protected int getBreedingAge() {
+        return BREEDING_AGE;
     }
 
     /**

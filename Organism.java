@@ -1,11 +1,10 @@
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public abstract class Organism extends Entity {
     private int moveSpeed;                                      // current movement speed
-    private boolean isAlive;                                    // is the organism currently alive
-    private Location location;                                  // the current location of the organism
-    private static final Random rand = Randomizer.getRandom();  // the randomness all organisms share
+    private boolean isInfected;                                         // to be passed in
+    private ArrayList<Disease> diseases;
 
     /**
      * Create an Organism. An organism can be created with a field and
@@ -14,75 +13,51 @@ public abstract class Organism extends Entity {
      * @param initLocation The location within the field.
      */
     public Organism(Field field, Location initLocation){
-        super(field);
-        this.isAlive = true;
-        setLocation(initLocation);
+        super(field, initLocation);
+        diseases = new ArrayList<>();
+        this.isInfected = false;
+    }
+    public Organism(){
+
     }
     /**
      * @param newOrganisms A list to return newly born animals.
      * @param isDay is it currently day or night ?
      */
-    abstract public void act(List<Organism> newOrganisms, boolean isDay);
+    abstract public void act(List<Organism> newOrganisms, boolean isDay, Weather currentWeather);
 
-    /**
-     * Indicate that the animal is no longer alive.
-     * It is removed from the field.
-     */
-    protected void setDead()
-    {
-        isAlive = false;
-        if(location != null) {
-            getField().clear(location);
-            location = null;
-            setField(null);
-        }
+    // either two different act methods or just deal with the code being repeated.
+
+    public void addDisease(Disease disease){
+        this.diseases.add(disease);
+    }
+
+    public boolean getIsInfected() {
+        return isInfected;
+    }
+    public void setInfected(boolean infection){
+        this.isInfected = infection;
     }
 
     public void setMoveSpeed(int moveSpeed){
         this.moveSpeed = moveSpeed;
     }
-
-    public void setAlive(boolean alive) {
-        this.isAlive = alive;
-    }
-
-    /**
-     * return the rand field which contains a Random object
-     */
-    public static Random getRand() {
-        return rand;
-    }
-
-    /**
-     * Place the animal at the new location in the given field.
-     * @param newLocation The animal's new location.
-     */
-    protected void setLocation(Location newLocation)
-    {
-        if(location != null) {
-            getField().clear(location);
-        }
-        location = newLocation;
-        getField().place(this, newLocation);
-    }
-
     public int getMoveSpeed(){
         return moveSpeed;
     }
 
-    /**
-     * Return the animal's location.
-     * @return The animal's location.
-     */
-    public Location getLocation() {
-        return location;
+
+    // this could be probably a bit more efficient but i will leave it for now.
+    protected void dieDueToInfection(){
+        for(Disease disease : this.diseases){
+            if(isInfected && getRand().nextDouble() < disease.getDeadliness()){
+                setDead();
+            }
+        }
     }
 
-    /**
-     * Check whether the animal is alive or not.
-     * @return true if the animal is still alive.
-     */
-    public boolean getIsAlive(){
-        return isAlive;
-    }
+    // TODO this entire class has no point now.
+    // TODO move class Organism into entity.
+    // TODO ORRRRRRRR keep it for easier distinction ???
+    // TODO DECIDE IN A WEEK FROM NOW.
 }

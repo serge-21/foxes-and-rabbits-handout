@@ -4,6 +4,11 @@ import java.util.List;
 public class Plants extends Organism{
     // characteristics all plants share
     private static final double BREEDING_PROBABILITY = 0.001;       // how likely a plant will breed in a step
+    public static final int foodValue = 14;                         // for now make it public
+    private static final int MAX_LEVEL = 5;
+    private int currentLevel;
+    private int waterLevel;
+    private int sunLightLevel;
 
     /**
      * Create a plant. A plant can be created as with a field and
@@ -14,6 +19,9 @@ public class Plants extends Organism{
     public Plants(Field field,  Location initLocation){
         super(field, initLocation);
         setColor(Color.GREEN);
+        this.currentLevel = 1;
+        this.waterLevel = 1;
+        this.sunLightLevel = 1;
     }
 
     /**
@@ -23,20 +31,58 @@ public class Plants extends Organism{
      * @param isDay is it currently day or night ?
      */
     @Override
-    public void act(List<Organism> newPlants, boolean isDay) {
-//        Location newLocation = getField().freeAdjacentLocation(getLocation());
-//
-//        if(newLocation != null){
-//            setLocation(newLocation);
-//        }
+    public void act(List<Organism> newPlants, boolean isDay, Weather currentWeather) {
+        if(isDay){
+            grow(currentWeather);
+            if(this.currentLevel > 2){
+                giveBirth(newPlants);
+            }
+        }
+    }
 
-        // plant creates itself
-//        Location location = getLocation();
-//        if(!isDay){
+    private void grow(Weather currentWeather){
+        photosynthesis(currentWeather);
+        transpiration(currentWeather);
+        // allow growth
+        if(this.sunLightLevel > 10 && this.waterLevel > 12){
+            // then increment the level
+            if(this.currentLevel < MAX_LEVEL){
+                this.currentLevel += 1;
+                // we should also reduce the resources of plants IFF they grow
+                this.waterLevel = 3;
+                this.sunLightLevel = 2;
+            }
+        }
+//        System.out.println(this.sunLightLevel);
+//        System.out.println(this.waterLevel);
+//        System.out.println(this.currentLevel);
+        // otherwise, do nothing
+    }
 
-//            giveBirth(newPlants);
-//        }
-//        setLocation(getLocation());
+    private void transpiration(Weather currentWeather){
+        // neater way of writing if else blocks ew
+        this.waterLevel = (currentWeather.getActualDownfall() < 10) ? this.waterLevel - 1 : this.waterLevel + 1;
+        if(this.waterLevel <= 0){
+            setDead();
+        }
+    }
+
+    private void photosynthesis(Weather currentWeather){
+        // neater way of writing if else blocks ew
+        this.sunLightLevel = (currentWeather.getActualVisibility() < 10) ? this.sunLightLevel - 1 : this.sunLightLevel + 1;
+        if(this.sunLightLevel <= 0){
+            setDead();
+        }
+    }
+
+    @Override
+    protected void setDead() {
+        if(this.currentLevel <= 0){
+            super.setDead();
+        }else{
+            currentLevel -= 1;
+            setLocation(getLocation());
+        }
     }
 
     /**
