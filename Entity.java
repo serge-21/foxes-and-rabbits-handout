@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.util.Random;
 
 /**
  * Write a description of class Entity here.
@@ -7,29 +8,39 @@ import java.awt.*;
  * @version 10-02-2022
  */
 public class Entity {
-    private static boolean isDrawable;
+    private boolean isDrawable = true;
+    private Color color;
     private int age;
-    private static Color color;
     private Field field;
+
+    // these were copied from the organism
+    private boolean isAlive;                                    // is the organism currently alive
+    private Location location;
+    private static final Random rand = Randomizer.getRandom();  // the randomness all organisms share
     /**
      * Constructor for objects of class Entity
      */
-    public Entity(Field field) {
+    public Entity(Field field, Location initLocation) {
         // initialise instance variables
         this.age = 0;
-        Entity.isDrawable = true;
+        this.isAlive = true;
         this.field = field;
+        setLocation(initLocation);
     }
 
-    public static boolean getIsDrwable(){
+    public Entity(){
+        // this will help in setting colours hopefully?
+    }
+
+    public boolean getIsDrwable(){
         return isDrawable;
     }
 
     public void setColor(Color color){
-        Entity.color = color;
+        this.color = color;
     }
 
-    public static Color getColor() {
+    public Color getColor() {
         if(isDrawable){
             return color;
         }
@@ -40,7 +51,7 @@ public class Entity {
         return age;
     }
 
-    public static void toggleDrawable(){
+    public void toggleDrawable(){
         isDrawable = !isDrawable;
     }
 
@@ -58,5 +69,55 @@ public class Entity {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    /**
+     * Return the animal's location.
+     * @return The animal's location.
+     */
+    public Location getLocation() {
+        return location;
+    }
+
+    /**
+     * Place the animal at the new location in the given field.
+     * @param newLocation The animal's new location.
+     */
+    protected void setLocation(Location newLocation)
+    {
+        if(location != null) {
+            getField().clear(location);
+        }
+        location = newLocation;
+        getField().place(this, newLocation);
+    }
+
+    protected boolean getIsAlive(){
+        return isAlive;
+    }
+
+    protected void setAlive(boolean isAlive){
+        this.isAlive = isAlive;
+    }
+
+    /**
+     * return the rand field which contains a Random object
+     */
+    public static Random getRand() {
+        return rand;
+    }
+
+    /**
+     * Indicate that the animal is no longer alive.
+     * It is removed from the field.
+     */
+    protected void setDead()
+    {
+        isAlive = false;
+        if(location != null) {
+            getField().clear(getLocation());
+            location  = null;
+            setField(null);
+        }
     }
 }
