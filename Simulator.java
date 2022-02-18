@@ -1,7 +1,4 @@
-import java.util.Random;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.awt.Color;
 
 /**
@@ -10,12 +7,6 @@ import java.awt.Color;
  * 
  * @author David J. Barnes and Michael Kölling
  * @version 2016.02.29 (2)
- *
- *
- *
- * TODO: generlise givebirth and breed.and such this shouldn't be a problem if
- * TODO: we are setting the breeding probability to something in the constructor.
- *
  */
 public class Simulator
 {
@@ -25,7 +16,7 @@ public class Simulator
     // The default depth of the grid.
     private static final int DEFAULT_DEPTH = 120;
     // The probability that a fox will be created in any given grid position.
-    private static final double FOX_CREATION_PROBABILITY = 0.03;
+    private static final double FOX_CREATION_PROBABILITY = 0.01;
     // The probability that a rabbit will be created in any given grid position.
     private static final double RABBIT_CREATION_PROBABILITY = 0.04;
     private static final double PREDITOR1_CREATION_PROBABILITY = 0.03;
@@ -33,23 +24,20 @@ public class Simulator
     private static final double PLANT_CREATION_PROBABILITY = 0.01;
 
     // List of animals in the field.
-    private List<Organism> organisms;
+    private final List<Organism> organisms;
     // The current state of the field.
-    private Field field;
+    private final Field field;
     // The current step of the simulation with the time of the day
     private int step;
-    private boolean isDay;
+    private boolean isDay = true;
     private String timeOfDay = "day";
     private int numOfDays = 0;
-    // A graphical view of the simulation.
-    private SimulatorView view;
+    private int time;
 
-    // Weather conditions
-    private final Environment clearSky = new Environment(0,0);
-    private final Environment lightRain = new Environment(10,50);
-    private final Environment heavyRain = new Environment(40,100);
-    private final Environment lightFog = new Environment(75,0);
-    private final Environment heavyFog = new Environment(100,0);
+    // the current weather
+    private Weather weather;
+    // A graphical view of the simulation.
+    private final SimulatorView view;
 
     /**
      * Construct a simulation field with default size.
@@ -75,7 +63,7 @@ public class Simulator
         
         organisms = new ArrayList<>();
         field = new Field(depth, width);
-
+        weather = new Weather();
         // Create a view of the state of each location in the field.
         view = new SimulatorView(depth, width);
         view.setColor(Rabbit.class, Color.ORANGE);
@@ -85,8 +73,16 @@ public class Simulator
         view.setColor(Plants.class, Color.GREEN);
         // Setup a valid starting point.
         reset();
+        pickWeather();
     }
-    
+
+    private void pickWeather(){
+        this.weather.pickSeason();
+        this.weather.generateVisibilityAndDownfall();
+//                possibleWeathers[new Random().nextInt(possibleWeathers.length)];
+//        delay((int) this.weather.visibility);
+    }
+
     /**
      * Run the simulation from its current state for a reasonably long period,
      * (4000 steps).
@@ -108,7 +104,35 @@ public class Simulator
             // delay(60);   // uncomment this to run more slowly
         }
     }
-    
+
+    private void checkForDayChange(){
+        // from 16 to 5 is night.
+        time = step % 24;
+        if(time < 4 || time > 16){
+            // then it's night
+            timeOfDay = "night";
+            isDay = false;
+        }else {
+            timeOfDay = "day";
+            isDay = true;
+        }
+
+        if(time == 0) {
+            // do all changes
+            numOfDays += 1;
+            pickWeather();
+            System.out.println(this.weather.toString());
+        }
+    }
+
+    public String updateTime(){
+        if(time < 10){
+            return  "0" + time + ":00";
+        }else{
+            return time + ":00";
+        }
+    }
+
     /**
      * Run the simulation from its current state for a single step.
      * Iterate over the whole field updating the state of each
@@ -118,21 +142,14 @@ public class Simulator
     {
         step++;
         // first calculate if it is day or night
-        if(step % 50 == 0){
-            isDay = !isDay;
-            numOfDays += 1;
-            if(isDay){
-                timeOfDay = "night";
-            }else{
-                timeOfDay = "day";
-            }
-        }
-        List<Organism> newOrganisms = new ArrayList<>();
+        checkForDayChange();
+
         // Provide space for newborn animals.
-        // Let all rabbits act.
+        List<Organism> newOrganisms = new ArrayList<>();
+        // Let all animals act.
         for (Iterator<Organism> it = organisms.iterator(); it.hasNext(); ) {
             Organism entity = it.next();
-            entity.act(newOrganisms, isDay);
+            entity.act(newOrganisms, isDay, this.weather);
             if (!entity.getIsAlive()) {
                 it.remove();
             }
@@ -140,8 +157,11 @@ public class Simulator
 
         // Add the newly created organisms to the list.
         organisms.addAll(newOrganisms);
+        showStatus();
+    }
 
-        view.showStatus(step, field, timeOfDay, numOfDays);
+    private void showStatus(){
+        view.showStatus(step, field, timeOfDay, numOfDays, updateTime());
     }
         
     /**
@@ -152,9 +172,8 @@ public class Simulator
         step = 0;
         organisms.clear();
         populate();
-        
         // Show the starting state in the view.
-        view.showStatus(step, field, timeOfDay, numOfDays);
+        showStatus();
     }
     
     /**
@@ -187,7 +206,7 @@ public class Simulator
                     Prey1 rabbit = new Prey1(true, field, location);
                     organisms.add(rabbit);
                 }
-                else if(rand.nextDouble() <= PLANT_CREATION_PROBABILITY) {
+                 else if(rand.nextDouble() <= PLANT_CREATION_PROBABILITY) {
                     Location location = new Location(row, col);
                     Plants plant = new Plants(field, location);
                     organisms.add(plant);
@@ -214,7 +233,8 @@ public class Simulator
         Simulator simulator = new Simulator();
         for(int i = 0; i< 1000; i++){
             simulator.simulateOneStep();
-            simulator.delay(100);
+
+            simulator.delay(1000);
         }
     }
 }
