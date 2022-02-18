@@ -1,4 +1,3 @@
-import java.awt.Color;
 import java.util.HashMap;
 
 /**
@@ -125,4 +124,9 @@ public class FieldStats
         }
         countsValid = true;
     }
+
+    public HashMap<Class, Counter> getPopulation() {
+        return this.counters;
+    }
+
 }

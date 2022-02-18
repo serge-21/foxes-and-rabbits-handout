@@ -130,6 +130,22 @@ public class Field
         }
         return free;
     }
+
+    /**
+     * Get a shuffled list of the free adjacent locations.
+     * @param location Get locations adjacent to this.
+     * @return A list of free adjacent locations.
+     */
+    public List<Location> getNotNullAdjacentLocations(Location location) {
+        List<Location> occupied = new LinkedList<>();
+        List<Location> adjacent = adjacentLocations(location);
+        for(Location next : adjacent) {
+            if(getObjectAt(next) != null) {
+                occupied.add(next);
+            }
+        }
+        return occupied;
+    }
     
     /**
      * Try to find a free location that is adjacent to the
