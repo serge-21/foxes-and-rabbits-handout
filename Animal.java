@@ -1,3 +1,6 @@
+import java.sql.Array; // may use this at some point idk what got it here smh
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -9,10 +12,13 @@ public abstract class Animal extends Organism{
 
     // all the field shared by all animals
     private static final Random rand = Randomizer.getRandom();          // shared by all animals
-    private final boolean isMale = rand.nextDouble() < 0.5;     // random chance that each animal might be a male or female
+    private final boolean isMale = rand.nextDouble() < 0.5;             // random chance that each animal might be a male or female
     private final boolean isNocturnal;                                  // passed in
+    private boolean isPregnant;                                         // is pregnant is for both the recovery period AND pregnancy
+    private int breedCounter;
     private int foodLevel;                                              // passed in
-    private boolean isInfected;                                         // to be passed in
+    private ArrayList<Class> prey;
+    private int waterLevel = 500;
 
     /**
      * Create a new animal at location in field.
@@ -27,7 +33,8 @@ public abstract class Animal extends Organism{
     public Animal(boolean randomAge, Field field,  Location initLocation, boolean nocturnal, int foodVal, int age) {
         super(field, initLocation);
         this.isNocturnal = nocturnal;
-        this.isInfected = false;
+        this.prey = new ArrayList<>();
+        this.breedCounter = 10;
 
         if(randomAge){
             setAge(getRand().nextInt(age));
@@ -38,6 +45,26 @@ public abstract class Animal extends Organism{
         }
     }
 
+    public Animal(){
+        this.isNocturnal = false;
+    }
+
+    protected int getBreedCounter(){
+        return this.breedCounter;
+    }
+
+    protected void setBreedCounter(int pregnancy){
+        this.breedCounter = pregnancy;
+    }
+
+    protected void addPrey(Class prey){
+        this.prey.add(prey);
+    }
+
+    protected ArrayList<Class> getPrey(){
+        return this.prey;
+    }
+    
     /**
      * a getter method to get the isMale field.
      * @return a boolean value of weather the current Animal is male
@@ -53,6 +80,16 @@ public abstract class Animal extends Organism{
      */
     public int getFoodLevel(){
         return foodLevel;
+    }
+
+    /**
+     * Make the animal more thirsty. This could result in the animal's death.
+     */
+    protected void incrementThirst() {
+        waterLevel -= 1;
+        if(waterLevel <= 0) {
+            setDead();
+        }
     }
 
     /**
@@ -73,13 +110,16 @@ public abstract class Animal extends Organism{
         }
     }
 
+    protected void setPregnant(boolean pregnant){
+        this.isPregnant = pregnant;
+    }
+
     /**
      * set the food level of the animal
      */
     public void setFoodLevel(int foodLevel) {
         this.foodLevel = foodLevel;
     }
-
 
 
     /**
@@ -89,16 +129,93 @@ public abstract class Animal extends Organism{
         return ((isDay && !getNocturnal()) || (!isDay && getNocturnal()));
     }
 
+    abstract protected int getBreedingAge();
+
+    private void setWaterLevel(double waterLevel){
+        this.waterLevel += waterLevel;
+    }
+
     /**
      * find the location of the food.
      * @return the location of the prey note this could be a plant
      */
-    abstract protected Location findFood();
+    protected Location findFood(ArrayList<Class> animalsToEat, Weather currentWeather) {
+        // first we allow the animal to drink
+        setWaterLevel(currentWeather.getActualDownfall());
+
+        // then we try to find food.
+        Field field = getField();
+        List<Location> adjacent = field.adjacentLocations(getLocation());
+        for (Location where : adjacent) {
+            Object organism = field.getObjectAt(where);
+            for(Class animal : animalsToEat){
+                if(animal.isInstance(organism)){
+                    if(organism instanceof Plants){
+                        ((Plants) organism).setDead();
+                        setFoodLevel(Plants.foodValue);
+                    }else {
+                        Animal dinner = (Animal) organism;
+                        dinner.setDead();
+                        setFoodLevel(dinner.getFoodLevel());
+                    }
+                    return where;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean getIsPregnant(){
+        return isPregnant;
+    }
+
+    protected void moveLocationOfAnimal(Weather currentWeather){
+        // Move towards a source of food if found.
+        Location newLocation = findFood(getPrey(), currentWeather);
+        if(newLocation == null) {
+            // No food found - try to move to a free location.
+            newLocation = getField().freeAdjacentLocation(getLocation());
+        }
+        // See if it was possible to move.
+        if(newLocation != null) {
+            setLocation(newLocation);
+        } else {
+            // Overcrowding.
+            setDead();
+        }
+    }
+
+    protected void updateStatsOfAnimal(){
+        incrementThirst();
+        incrementHunger();
+        setBreedCounter(breedCounter-1);
+    }
 
     /**
      * finds if it is possible to breed at a given location.
      * @return a boolean value of weather there is a mate to breed with
      */
-    abstract protected boolean findMate();
-
+    protected boolean findMate(Class matingPartner){
+        Field field = getField();
+        List<Location> adjacent = field.adjacentLocations(getLocation());
+        for (Location where : adjacent) {
+            Object animal = field.getObjectAt(where);
+            if(matingPartner.isInstance(animal)){
+                Animal potentialMate = (Animal) animal;
+                if(potentialMate.getAge() >= potentialMate.getBreedingAge() && potentialMate.getIsMale() != this.getIsMale()){
+                    if(!potentialMate.getIsMale() && !potentialMate.getIsPregnant()){
+                        potentialMate.setPregnant(true);
+                        potentialMate.setBreedCounter(10);
+                        return true;
+                    }else if (!this.getIsPregnant()){
+                        this.setPregnant(true);
+                        this.setBreedCounter(10);
+                        return true;
+                    }
+                }
+//                return potentialMate.getIsMale() != this.getIsMale() && potentialMate.getAge() >= potentialMate.getBreedingAge();
+            }
+        }
+        return false;
+    }
 }
