@@ -1,10 +1,10 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.awt.Dimension;
 
 /**
  * A graphical view of the simulation grid.
@@ -27,11 +27,16 @@ public class SimulatorView extends JFrame
     private final String STEP_PREFIX = "Step: ";
     private final String POPULATION_PREFIX = "Population: ";
     private final String DAY = "Daytime: ";
-    private final String NUM_OF_DAYS = "Number of days";
-    private JLabel stepLabel, population, infoLabel, dayLabel, numOfDaysLabel;
+    private final String NUM_OF_DAYS = "Number of days: ";
+    private final String TIME_OF_DAY = "";
+    private JLabel stepLabel, population, infoLabel, dayLabel, numOfDaysLabel, time;
     private JCheckBox rabbitsCheckBox;
+    private JButton music;
     private FieldView fieldView;
-    
+    private Histogram histogram;
+    private Music mu = new Music();
+    private boolean isPlaying = false;
+    private PieChart pieChart;
     // A map for storing colors for participants in the simulation
     private Map<Class, Color> colors;
     // A statistics object computing and storing simulation information
@@ -49,45 +54,108 @@ public class SimulatorView extends JFrame
 
         setTitle("Fox and Rabbit Simulation");
         stepLabel = new JLabel(STEP_PREFIX, JLabel.CENTER);
-        infoLabel = new JLabel("  ", JLabel.CENTER);
+        infoLabel = new JLabel("      ", JLabel.CENTER);
         population = new JLabel(POPULATION_PREFIX, JLabel.CENTER);
+        fieldView = new FieldView(height, width);
+        time = new JLabel(TIME_OF_DAY, JLabel.CENTER);
 
         // extra stats.
         numOfDaysLabel = new JLabel(NUM_OF_DAYS, JLabel.CENTER);
         dayLabel = new JLabel(DAY, JLabel.CENTER);
 
         rabbitsCheckBox = new JCheckBox("remove all rabbits from view?");
-        // this code will be better in a bit give me some time
-        rabbitsCheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                toggleVisibility(Rabbit.class);
-            }
-        });
+        music = new JButton("play music bb");
 
-
-        setLocation(100, 50);
-        
-        fieldView = new FieldView(height, width);
-
-        Container contents = getContentPane();
-        
-        JPanel infoPane = new JPanel(new BorderLayout());
-        infoPane.add(stepLabel, BorderLayout.WEST);
-        infoPane.add(infoLabel, BorderLayout.CENTER);
-        infoPane.add(dayLabel, BorderLayout.CENTER);
-        infoPane.add(numOfDaysLabel, BorderLayout.EAST);
+        JPanel infoPane = new JPanel();
+        infoPane.setLayout(new FlowLayout());
+        infoPane.add(stepLabel);
+        infoPane.add(dayLabel);
+        infoPane.add(numOfDaysLabel);
+        infoPane.add(time);
+        infoPane.add(music);
 
         JPanel checkBoxes = new JPanel(new BorderLayout());
         checkBoxes.add(rabbitsCheckBox, BorderLayout.CENTER);
 
+        Container contents = getContentPane();
         contents.add(infoPane, BorderLayout.NORTH);
         contents.add(checkBoxes, BorderLayout.EAST);
         contents.add(fieldView, BorderLayout.CENTER);
         contents.add(population, BorderLayout.SOUTH);
+
+        makePieChart(height, width);
+        makeHistogram(height, width);
+        makeDiagramsVisibile();
+        giveButtonsFunctions();
+        setLocation(100, 50);
         pack();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
+    }
+
+    private void makeDiagramsVisibile(){
+        JFrame diagrams = new JFrame("Histogram and PieChart");
+        diagrams.setSize(1150, 550);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.add(this.histogram);
+        panel.add(this.pieChart);
+        diagrams.add(panel);
+        diagrams.setVisible(true);
+    }
+
+    private void giveButtonsFunctions(){
+        rabbitsCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                toggleVisibility(new Rabbit());
+            }
+        });
+
+        music.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                music();
+            }
+        });
+
+    }
+
+    private void music(){
+        if(!isPlaying){
+            mu.setFile(this.getClass().getResourceAsStream("newBeats.wav"));
+            mu.play();
+            isPlaying = true;
+            music.setText("Music on");
+        }else{
+            mu.stop();
+            isPlaying = false;
+            music.setText("Music off");
+        }
+    }
+
+    private void makePieChart(int height, int width) {
+        this.pieChart = new PieChart();
+        this.pieChart.setSize(height * 4, width * 2);
+        this.pieChart.stats(this.getPopulationDetails());
+        this.pieChart.repaint();
+    }
+
+    private void makeHistogram(int height, int width) {
+        this.histogram = new Histogram();
+        this.histogram.setSize(height * 2, width * 2);
+        this.histogram.stats(this.getPopulationDetails());
+        this.histogram.repaint();
+    }
+
+    public HashMap<Color, Counter> getPopulationDetails() {
+        HashMap<Class, Counter> classStats = this.stats.getPopulation();
+        HashMap<Color, Counter> colorStats = new HashMap();
+
+        for(Class c : classStats.keySet()) {
+            colorStats.put(this.getColor(c), classStats.get(c));
+        }
+        return colorStats;
     }
     
     /**
@@ -100,18 +168,12 @@ public class SimulatorView extends JFrame
         colors.put(animalClass, color);
     }
 
-    public void toggleVisibility(Class animal){
-        try{
-            Method m = animal.getMethod("getColor", null);
-            Method toggleDrawable = animal.getMethod("toggleDrawable", null);
-            if(rabbitsCheckBox.isSelected()){
-                toggleDrawable.invoke(null);
-                setColor(animal, (Color) m.invoke(null));
-            }else{
-                setColor(animal, (Color) m.invoke(null));
-            }
-        }catch (Exception ignore){
-            System.out.println("this should never happen something is VERY wrong with method toggleVisibility or parameter passed");
+    public void toggleVisibility(Entity animal){
+        if(rabbitsCheckBox.isSelected()){
+            animal.toggleDrawable();
+            setColor(animal.getClass(), EMPTY_COLOR);
+        }else{
+            setColor(animal.getClass(), animal.getColor());
         }
     }
 
@@ -126,8 +188,9 @@ public class SimulatorView extends JFrame
     /**
      * @return The color to be used for a given class of animal.
      */
-    private Color getColor(Class animalClass){
-        Color col = colors.get(animalClass);
+    private Color getColor(Class animal){
+//        return animal.getColor();
+        Color col = colors.get(animal);
         if(col == null) {
             // no color defined for this class
             return UNKNOWN_COLOR;
@@ -142,7 +205,7 @@ public class SimulatorView extends JFrame
      * @param step Which iteration step it is.
      * @param field The field whose status is to be displayed.
      */
-    public void showStatus(int step, Field field, String day, int numOfDays){
+    public void showStatus(int step, Field field, String day, int numOfDays, String currentTime){
         if(!isVisible()) {
             setVisible(true);
         }
@@ -150,6 +213,7 @@ public class SimulatorView extends JFrame
         stepLabel.setText(STEP_PREFIX + step);
         dayLabel.setText(DAY + day);
         numOfDaysLabel.setText(NUM_OF_DAYS + numOfDays);
+        time.setText(TIME_OF_DAY + currentTime);
         stats.reset();
         
         fieldView.preparePaint();
@@ -167,6 +231,10 @@ public class SimulatorView extends JFrame
             }
         }
         stats.countFinished();
+        this.histogram.stats(this.getPopulationDetails());
+        this.histogram.repaint();
+        this.pieChart.stats(this.getPopulationDetails());
+        this.pieChart.repaint();
 
         population.setText(POPULATION_PREFIX + stats.getPopulationDetails(field));
         fieldView.repaint();
