@@ -15,13 +15,23 @@ public class Simulator
     private static final int DEFAULT_WIDTH = 200;
     // The default depth of the grid.
     private static final int DEFAULT_DEPTH = 120;
+
+    // DEFAULT VALUES
     // The probability that a fox will be created in any given grid position.
     private static final double FOX_CREATION_PROBABILITY = 0.01;
     // The probability that a rabbit will be created in any given grid position.
     private static final double RABBIT_CREATION_PROBABILITY = 0.04;
-    private static final double PREDITOR1_CREATION_PROBABILITY = 0.03;
+    private static final double PREDATOR1_CREATION_PROBABILITY = 0.03;
     private static final double PREY1_CREATION_PROBABILITY = 0.04;
     private static final double PLANT_CREATION_PROBABILITY = 0.01;
+
+    private static double prey1Prob, prey2Prob, predator1Prob, predator2Prob, plant1Prob;
+    private static boolean prey1Enabled, prey2Enabled, predator1Enabled, predator2Enabled, plant1Enabled;
+
+    private static final ArrayList<Integer> speeds = new ArrayList<Integer>(Arrays.asList(100, 200, 400, 800));
+    private static int currentSpeed;
+    private static final ArrayList<String> speedSymbols = new ArrayList<String>(Arrays.asList("1", "2", "4", "8"));
+    private static String currentSpeedSymbol;
 
     // List of animals in the field.
     private final List<Organism> organisms;
@@ -38,6 +48,9 @@ public class Simulator
     private Weather weather;
     // A graphical view of the simulation.
     private final SimulatorView view;
+
+    // if the simulator is currently running
+    private static boolean isRunning;
 
     /**
      * Construct a simulation field with default size.
@@ -60,7 +73,22 @@ public class Simulator
             depth = DEFAULT_DEPTH;
             width = DEFAULT_WIDTH;
         }
-        
+
+        prey1Prob= PREY1_CREATION_PROBABILITY;
+        prey2Prob = RABBIT_CREATION_PROBABILITY;
+        predator1Prob = PREDATOR1_CREATION_PROBABILITY;
+        predator2Prob = FOX_CREATION_PROBABILITY;
+        plant1Prob = PLANT_CREATION_PROBABILITY;
+
+        prey1Enabled = true;
+        prey2Enabled = true;
+        predator1Enabled = true;
+        predator2Enabled = true;
+        plant1Enabled = true;
+
+        currentSpeed = speeds.get(0);
+        currentSpeedSymbol = speedSymbols.get(0);
+
         organisms = new ArrayList<>();
         field = new Field(depth, width);
         weather = new Weather();
@@ -75,6 +103,25 @@ public class Simulator
         reset();
         pickWeather();
     }
+
+    public static void setPrey1Prob(double prob){prey1Prob = prob;}
+    public static void setPrey2Prob(double prob){prey2Prob = prob;}
+    public static void setPredator1Prob(double prob){predator1Prob = prob;}
+    public static void setPredator2Prob(double prob){predator2Prob = prob;}
+    public static void setPlant1Prob(double prob){plant1Prob = prob;}
+
+    public static double getPrey1Prob(){return prey1Prob;}
+    public static double getPrey2Prob(){return prey2Prob;}
+    public static double getPredator1Prob(){return predator1Prob;}
+    public static double getPredator2Prob(){return predator2Prob;}
+    public static double getPlant1Prob(){return plant1Prob;}
+
+    public static void togglePrey1Enabled(){prey1Enabled = !prey1Enabled;}
+    public static void togglePrey2Enabled(){prey2Enabled = !prey2Enabled;}
+    public static void togglePredator1Enabled(){predator1Enabled = !predator1Enabled;}
+    public static void togglePredator2Enabled(){predator2Enabled = !predator2Enabled;}
+    public static void togglePlant1Enabled(){plant1Enabled = !plant1Enabled;}
+
 
     private void pickWeather(){
         this.weather.pickSeason();
@@ -185,28 +232,28 @@ public class Simulator
         field.clear();
         for(int row = 0; row < field.getDepth(); row++) {
             for(int col = 0; col < field.getWidth(); col++) {
-                if(rand.nextDouble() <= FOX_CREATION_PROBABILITY) {
+                if(rand.nextDouble() <= predator2Prob && predator2Enabled) {
                     Location location = new Location(row, col);
                     Fox fox = new Fox(true, field, location);
                     organisms.add(fox);
                 }
-                else if(rand.nextDouble() <= RABBIT_CREATION_PROBABILITY) {
+                else if(rand.nextDouble() <= prey2Prob && prey2Enabled) {
                     Location location = new Location(row, col);
                     Rabbit rabbit = new Rabbit(true, field, location);
                     organisms.add(rabbit);
                 }
                 // else leave the location empty.
-                else if(rand.nextDouble() <= PREDITOR1_CREATION_PROBABILITY) {
+                else if(rand.nextDouble() <= predator1Prob && predator1Enabled) {
                     Location location = new Location(row, col);
                     Predator1 rabbit = new Predator1(true, field, location);
                     organisms.add(rabbit);
                 }
-                else if(rand.nextDouble() <= PREY1_CREATION_PROBABILITY) {
+                else if(rand.nextDouble() <= prey1Prob && prey1Enabled) {
                     Location location = new Location(row, col);
                     Prey1 rabbit = new Prey1(true, field, location);
                     organisms.add(rabbit);
                 }
-                 else if(rand.nextDouble() <= PLANT_CREATION_PROBABILITY) {
+                 else if(rand.nextDouble() <= plant1Prob && plant1Enabled) {
                     Location location = new Location(row, col);
                     Plants plant = new Plants(field, location);
                     organisms.add(plant);
@@ -229,12 +276,47 @@ public class Simulator
         }
     }
 
+    public static void toggleRunning(){
+        isRunning = !isRunning;
+    }
+
+    public static String getSpeedSymbol(){return currentSpeedSymbol;}
+
+    public static void incSpeed(){
+        int index = speeds.indexOf(currentSpeed) + 1;
+        if (!(index < speeds.size())){
+            index = 0;
+        }
+        currentSpeed = speeds.get(index);
+        currentSpeedSymbol = speedSymbols.get(index);
+    }
+
+    public static void decSpeed(){
+        int index = speeds.indexOf(currentSpeed) - 1;
+        if (!(index < 0)){
+            index = speeds.get(speeds.size() - 1);
+        }
+        currentSpeed = speeds.get(index);
+        currentSpeedSymbol = speedSymbols.get(index);
+    }
+
     public static void main(String[] args) {
+//        try {
+//            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel"); //Windows Look and feel
+//        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+//            e.printStackTrace();
+//        }
+
         Simulator simulator = new Simulator();
+        isRunning = true;
         for(int i = 0; i< 1000; i++){
             simulator.simulateOneStep();
+            simulator.delay(currentSpeed);
 
-            simulator.delay(1000);
+            // In case the simulation is paused.
+            while (!isRunning){
+                simulator.delay(200);
+            }
         }
     }
 }
