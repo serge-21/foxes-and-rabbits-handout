@@ -46,14 +46,6 @@ public class SimulatorView extends JFrame
     private final Dimension BUTTON_SIZE = new Dimension(40,40);
     private final Font BUTTON_FONT =new Font("Arial", Font.BOLD, 10);
 
-
-
-
-
-
-
-
-
     private JCheckBox rabbitsCheckBox;
     private JButton music;
     private FieldView fieldView;
@@ -65,14 +57,16 @@ public class SimulatorView extends JFrame
     private Map<Class, Color> colors;
     // A statistics object computing and storing simulation information
     private FieldStats stats;
+    private Simulator simulator;
 
     /**
      * Create a view of the given width and height.
      * @param height The simulation's height.
      * @param width  The simulation's width.
      */
-    public SimulatorView(int height, int width)
+    public SimulatorView(int height, int width, Simulator simulator)
     {
+        this.simulator = simulator;
         stats = new FieldStats();
         colors = new LinkedHashMap<>();
 
@@ -101,7 +95,7 @@ public class SimulatorView extends JFrame
         stepLabel = new JLabel("Step: -");
         timeLabel = new JLabel("Time: --:--");
         dayLabel = new JLabel("Day: -");
-        addAll(statsPanel, infoLabel, stepLabel, timeLabel, dayLabel);
+        addAll(statsPanel, infoLabel, stepLabel, timeLabel, dayLabel, music);
         mainPanel.add(statsPanel, BorderLayout.NORTH);
 
         // SOUTH Entity Population Panel
@@ -120,7 +114,7 @@ public class SimulatorView extends JFrame
             // NORTH PlayPause Panel
             playpausePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
             playpauseButton = new JButton("P");
-            speedButton = new JButton(Simulator.getSpeedSymbol());
+            speedButton = new JButton(simulator.getSpeedSymbol());
             stepButton  = new JButton("S");
             resetButton = new JButton("R");
             setSizeForAll(BUTTON_SIZE, playpauseButton, speedButton, stepButton, resetButton);
@@ -159,26 +153,28 @@ public class SimulatorView extends JFrame
         playpauseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Simulator.toggleRunning();
+                simulator.toggleRunning();
             }
         });
         speedButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Simulator.incSpeed();
-                speedButton.setText(Simulator.getSpeedSymbol());
+                simulator.incSpeed();
+                speedButton.setText(simulator.getSpeedSymbol());
             }
         });
         stepButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                // need to run SimulateOneStep() in Simulator.... how do we do that lol.
+                simulator.simulateOneStep();
             }
         });
         resetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // need to run reset() in Simulator .... :sob:
+                simulator.reset();
             }
         });
 

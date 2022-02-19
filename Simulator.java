@@ -93,7 +93,7 @@ public class Simulator
         field = new Field(depth, width);
         weather = new Weather();
         // Create a view of the state of each location in the field.
-        view = new SimulatorView(depth, width);
+        view = new SimulatorView(depth, width, this);
         view.setColor(Rabbit.class, Color.ORANGE);
         view.setColor(Fox.class, Color.BLUE);
         view.setColor(Prey1.class, Color.MAGENTA);
@@ -126,8 +126,6 @@ public class Simulator
     private void pickWeather(){
         this.weather.pickSeason();
         this.weather.generateVisibilityAndDownfall();
-//                possibleWeathers[new Random().nextInt(possibleWeathers.length)];
-//        delay((int) this.weather.visibility);
     }
 
     /**
@@ -276,13 +274,13 @@ public class Simulator
         }
     }
 
-    public static void toggleRunning(){
+    public void toggleRunning(){
         isRunning = !isRunning;
     }
 
-    public static String getSpeedSymbol(){return currentSpeedSymbol;}
+    public String getSpeedSymbol(){return currentSpeedSymbol;}
 
-    public static void incSpeed(){
+    public void incSpeed(){
         int index = speeds.indexOf(currentSpeed) + 1;
         if (!(index < speeds.size())){
             index = 0;
