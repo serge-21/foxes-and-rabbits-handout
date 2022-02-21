@@ -4,6 +4,7 @@
 foxes-and-rabbits-handout.iml
 package.bluej
 Banana.java
+*.mp3
 # I don't want any of idea to be commited
 /.idea/*
 # the entirety of the out folder.

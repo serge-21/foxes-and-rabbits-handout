@@ -1,8 +1,5 @@
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -20,23 +17,17 @@ import java.awt.Dimension;
  */
 public class SimulatorView extends JFrame
 {
-    // Colors used for empty locations.
-    private static final Color EMPTY_COLOR = Color.white;
-
-    // Color used for objects that have no defined color.
-    private static final Color UNKNOWN_COLOR = Color.gray;
+    private static final Color EMPTY_COLOR = Color.white;               // Colors used for empty locations.
+    private static final Color UNKNOWN_COLOR = Color.gray;              // Color used for objects that have no defined color.
 
     private final String STEP_PREFIX = "Step: ";
     private final String POPULATION_PREFIX = "Population: ";
     private final String DAY = "Daytime: ";
     private final String NUM_OF_DAYS = "Number of days: ";
-    private final String TIME_OF_DAY = "";
-    //private JLabel stepLabel, population, infoLabel, dayLabel, numOfDaysLabel, time;
+    private final String TIME_OF_DAY = "Time: ";
+    private final JLabel stepLabel, population, dayLabel, numOfDaysLabel, time;
 
     private JPanel statsPanel, entityPanel, optionPanel, playpausePanel, populationTabPanel;
-
-    private JLabel infoLabel, stepLabel, timeLabel, dayLabel, populationLabel;
-    private JLabel prey1Label, prey2Label, predator1Label, predator2Label, plant1Label;
 
     private JButton playpauseButton, speedButton, stepButton, resetButton;
     private JTabbedPane optionsTabbedPane;
@@ -46,7 +37,6 @@ public class SimulatorView extends JFrame
     private final Dimension BUTTON_SIZE = new Dimension(40,40);
     private final Font BUTTON_FONT =new Font("Arial", Font.BOLD, 10);
 
-    private JCheckBox rabbitsCheckBox;
     private JButton music;
     private FieldView fieldView;
     private Histogram histogram;
@@ -57,7 +47,7 @@ public class SimulatorView extends JFrame
     private Map<Class, Color> colors;
     // A statistics object computing and storing simulation information
     private FieldStats stats;
-    private Simulator simulator;
+    private final Simulator simulator;
 
     /**
      * Create a view of the given width and height.
@@ -69,21 +59,7 @@ public class SimulatorView extends JFrame
         this.simulator = simulator;
         stats = new FieldStats();
         colors = new LinkedHashMap<>();
-
-        setTitle("Fox and Rabbit Simulation");
-        //stepLabel = new JLabel(STEP_PREFIX, JLabel.CENTER);
-        //infoLabel = new JLabel("      ", JLabel.CENTER);
-        populationLabel = new JLabel(POPULATION_PREFIX, JLabel.CENTER);
         fieldView = new FieldView(height, width);
-        //time = new JLabel(TIME_OF_DAY, JLabel.CENTER);
-
-        // extra stats.
-        //numOfDaysLabel = new JLabel(NUM_OF_DAYS, JLabel.CENTER);
-        //dayLabel = new JLabel(DAY, JLabel.CENTER);
-
-        rabbitsCheckBox = new JCheckBox("remove all rabbits from view?");
-        music = new JButton("play music bb");
-
         Container mainPanel = getContentPane();
 
         // CENTRE Simulation Panel
@@ -91,191 +67,30 @@ public class SimulatorView extends JFrame
 
         // NORTH Stats Panel
         statsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
-        infoLabel = new JLabel("info??: -");
-        stepLabel = new JLabel("Step: -");
-        timeLabel = new JLabel("Time: --:--");
-        dayLabel = new JLabel("Day: -");
-        addAll(statsPanel, infoLabel, stepLabel, timeLabel, dayLabel, music);
+        stepLabel = new JLabel(STEP_PREFIX, JLabel.CENTER);
+        time = new JLabel(TIME_OF_DAY, JLabel.CENTER);
+        numOfDaysLabel = new JLabel(NUM_OF_DAYS, JLabel.CENTER);
+        dayLabel = new JLabel(DAY, JLabel.CENTER);
+        music = new JButton("play music bb");
+
+        addAll(statsPanel, stepLabel, time, dayLabel, numOfDaysLabel, music);           // not a built-in method
         mainPanel.add(statsPanel, BorderLayout.NORTH);
 
         // SOUTH Entity Population Panel
         entityPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
-        prey1Label = new JLabel("Prey1: -");
-        prey2Label = new JLabel("Prey2: -");
-        predator1Label = new JLabel("Predator1: -");
-        predator2Label = new JLabel("Predator2: -");
-        plant1Label = new JLabel("Plant1: -");
-        addAll(entityPanel, prey1Label, prey2Label, predator1Label, predator2Label, plant1Label);
+        population = new JLabel(POPULATION_PREFIX, JLabel.CENTER);
+        addAll(entityPanel, population);
         mainPanel.add(entityPanel, BorderLayout.SOUTH);
 
         // EAST Options Panel
         optionPanel = new JPanel(new BorderLayout());
-
-            // NORTH PlayPause Panel
-            playpausePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
-            playpauseButton = new JButton("P");
-            speedButton = new JButton(simulator.getSpeedSymbol());
-            stepButton  = new JButton("S");
-            resetButton = new JButton("R");
-            setSizeForAll(BUTTON_SIZE, playpauseButton, speedButton, stepButton, resetButton);
-            setFontForAll(BUTTON_FONT, playpauseButton, speedButton, stepButton, resetButton);
-            addAll(playpausePanel, playpauseButton, speedButton, stepButton, resetButton);
-            //playpauseButton.setBorder(BorderFactory.createTitledBorder("Controls"));
-            optionPanel.add(playpausePanel, BorderLayout.NORTH);
-
-            //CENTRE Tabbed Options
-            optionsTabbedPane = new JTabbedPane();
-
-                //Tab 1: Population
-                populationTabPanel = new JPanel();
-                populationTabPanel.setLayout(new BoxLayout(populationTabPanel, BoxLayout.Y_AXIS));
-                prey1CheckBox = new JCheckBox("Prey1: " + Simulator.getPrey1Prob(), true);
-                prey1Slider = new JSlider(0, 20, (int)(Simulator.getPrey1Prob() * 100));
-                prey2CheckBox = new JCheckBox("Prey2: " + Simulator.getPrey2Prob(), true);
-                prey2Slider = new JSlider(0, 20, (int)(Simulator.getPrey2Prob() * 100));
-                predator1CheckBox = new JCheckBox("Predator1: " + Simulator.getPredator1Prob(), true);
-                predator1Slider = new JSlider(0, 20, (int)(Simulator.getPredator1Prob() * 100));
-                predator2CheckBox = new JCheckBox("Predator2: " + Simulator.getPredator2Prob(), true);
-                predator2Slider = new JSlider(0, 20, (int)(Simulator.getPredator2Prob() * 100));
-                plant1CheckBox = new JCheckBox("Plant1: " + Simulator.getPlant1Prob(), true);
-                plant1Slider = new JSlider(0, 20, (int)(Simulator.getPlant1Prob() * 100));
-                initialiseSliders(prey1Slider, prey2Slider, predator1Slider, predator2Slider, plant1Slider);
-                addAll(populationTabPanel, prey1CheckBox, prey1Slider, prey2CheckBox, prey2Slider, predator1CheckBox, predator1Slider, predator2CheckBox, predator2Slider, plant1CheckBox, plant1Slider);
-                prey1CheckBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-                optionsTabbedPane.addTab("Population", populationTabPanel);
-
+        setControls();                                                                  // NORTH PlayPause Panel
+        setSliders();                                                                   //CENTRE Tabbed Options
         optionPanel.add(optionsTabbedPane, BorderLayout.CENTER);
-
         mainPanel.add(optionPanel, BorderLayout.EAST);
 
-        // Listeners
-        // Buttons
-        playpauseButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                simulator.toggleRunning();
-            }
-        });
-        speedButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                simulator.incSpeed();
-                speedButton.setText(simulator.getSpeedSymbol());
-            }
-        });
-        stepButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-               // need to run SimulateOneStep() in Simulator.... how do we do that lol.
-                simulator.simulateOneStep();
-            }
-        });
-        resetButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // need to run reset() in Simulator .... :sob:
-                simulator.reset();
-            }
-        });
-
-        // CheckBoxes
-        prey1CheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                prey1Slider.setEnabled(prey1CheckBox.isSelected());
-                Simulator.togglePrey1Enabled();
-            }
-        });
-        prey2CheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                prey2Slider.setEnabled(prey2CheckBox.isSelected());
-                Simulator.togglePrey2Enabled();
-            }
-        });
-        predator1CheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                predator1Slider.setEnabled(predator1CheckBox.isSelected());
-                Simulator.togglePredator1Enabled();
-            }
-        });
-        predator2CheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                predator2Slider.setEnabled(predator2CheckBox.isSelected());
-                Simulator.togglePredator2Enabled();
-            }
-        });
-        plant1CheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                plant1Slider.setEnabled(plant1CheckBox.isSelected());
-                Simulator.togglePlant1Enabled();
-            }
-        });
-
-        // Sliders
-        prey1Slider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                prey1CheckBox.setText("Prey1: " + ((double) prey1Slider.getValue() / 100));
-                Simulator.setPrey1Prob(prey1Slider.getValue());
-            }
-        });
-        prey2Slider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                prey2CheckBox.setText("Prey2: " + ((double) prey2Slider.getValue() / 100));
-                Simulator.setPrey2Prob(prey2Slider.getValue());
-            }
-        });
-        predator1Slider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                predator1CheckBox.setText("Predator1: " + ((double) predator1Slider.getValue() / 100));
-                Simulator.setPredator1Prob(predator1Slider.getValue());
-            }
-        });
-        predator2Slider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                predator2CheckBox.setText("Predator2: " + ((double) predator2Slider.getValue() / 100));
-                Simulator.setPredator2Prob(predator2Slider.getValue());
-            }
-        });
-        plant1Slider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                plant1CheckBox.setText("Plant1: " + ((double) plant1Slider.getValue() / 100));
-                Simulator.setPlant1Prob(plant1Slider.getValue());
-            }
-        });
-
-
-
-
-
-
-
-
-//        JPanel infoPane = new JPanel();
-//        infoPane.setLayout(new FlowLayout());
-//        infoPane.add(stepLabel);
-//        infoPane.add(dayLabel);
-//        infoPane.add(numOfDaysLabel);
-//        infoPane.add(time);
-//        infoPane.add(music);
-//
-//        JPanel checkBoxes = new JPanel(new BorderLayout());
-//        checkBoxes.add(rabbitsCheckBox, BorderLayout.CENTER);
-//
-//        Container contents = getContentPane();
-//        contents.add(infoPane, BorderLayout.NORTH);
-//        contents.add(checkBoxes, BorderLayout.EAST);
-//        contents.add(fieldView, BorderLayout.CENTER);
-//        contents.add(population, BorderLayout.SOUTH);
-
+        // extra methods for diagrams and buttons
+        setTitle("Fox and Rabbit Simulation");
         makePieChart(height, width);
         makeHistogram(height, width);
         makeDiagramsVisible();
@@ -284,6 +99,42 @@ public class SimulatorView extends JFrame
         pack();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
+    }
+
+    private void setControls(){
+        // NORTH PlayPause Panel
+        playpausePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        playpauseButton = new JButton("P");
+        speedButton = new JButton(simulator.getSpeedSymbol());
+        stepButton  = new JButton("S");
+        resetButton = new JButton("R");
+        setSizeForAll(BUTTON_SIZE, playpauseButton, speedButton, stepButton, resetButton);
+        setFontForAll(BUTTON_FONT, playpauseButton, speedButton, stepButton, resetButton);
+        addAll(playpausePanel, playpauseButton, speedButton, stepButton, resetButton);
+        optionPanel.add(playpausePanel, BorderLayout.NORTH);
+    }
+
+    private void setSliders(){
+        //CENTRE Tabbed Options
+        optionsTabbedPane = new JTabbedPane();
+
+        //Tab 1: Population
+        populationTabPanel = new JPanel();
+        populationTabPanel.setLayout(new BoxLayout(populationTabPanel, BoxLayout.Y_AXIS));
+        prey1CheckBox = new JCheckBox("Prey1: " + simulator.getPrey1Prob(), true);
+        prey1Slider = new JSlider(0, 20, (int)(simulator.getPrey1Prob() * 100));
+        prey2CheckBox = new JCheckBox("Prey2: " + simulator.getPrey2Prob(), true);
+        prey2Slider = new JSlider(0, 20, (int)(simulator.getPrey2Prob() * 100));
+        predator1CheckBox = new JCheckBox("Predator1: " + simulator.getPredator1Prob(), true);
+        predator1Slider = new JSlider(0, 20, (int)(simulator.getPredator1Prob() * 100));
+        predator2CheckBox = new JCheckBox("Predator2: " + simulator.getPredator2Prob(), true);
+        predator2Slider = new JSlider(0, 20, (int)(simulator.getPredator2Prob() * 100));
+        plant1CheckBox = new JCheckBox("Plant1: " + simulator.getPlant1Prob(), true);
+        plant1Slider = new JSlider(0, 20, (int)(simulator.getPlant1Prob() * 100));
+        initialiseSliders(prey1Slider, prey2Slider, predator1Slider, predator2Slider, plant1Slider);
+        addAll(populationTabPanel, prey1CheckBox, prey1Slider, prey2CheckBox, prey2Slider, predator1CheckBox, predator1Slider, predator2CheckBox, predator2Slider, plant1CheckBox, plant1Slider);
+        prey1CheckBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        optionsTabbedPane.addTab("Population", populationTabPanel);
     }
 
     private void addAll(JComponent target, JComponent... objects){
@@ -311,8 +162,6 @@ public class SimulatorView extends JFrame
         }
     }
 
-
-
     private void makeDiagramsVisible(){
         JFrame diagrams = new JFrame("Histogram and PieChart");
         diagrams.setSize(1150, 550);
@@ -325,20 +174,65 @@ public class SimulatorView extends JFrame
     }
 
     private void giveButtonsFunctions(){
-        rabbitsCheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                toggleVisibility(new Rabbit());
-            }
+        music.addActionListener(e -> music());
+        // Buttons
+        playpauseButton.addActionListener(e -> simulator.toggleRunning());
+        speedButton.addActionListener(e -> {
+            simulator.incSpeed();
+            speedButton.setText(simulator.getSpeedSymbol());
+        });
+        stepButton.addActionListener(e -> {
+            // need to run SimulateOneStep() in Simulator.... how do we do that lol.
+            simulator.simulateOneStep();
+        });
+        resetButton.addActionListener(e -> {
+            // need to run reset() in Simulator .... :sob:
+            simulator.reset();
         });
 
-        music.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                music();
-            }
+        // CheckBoxes
+        prey1CheckBox.addItemListener(e -> {
+            prey1Slider.setEnabled(prey1CheckBox.isSelected());
+            simulator.togglePrey1Enabled();
+        });
+        prey2CheckBox.addItemListener(e -> {
+            prey2Slider.setEnabled(prey2CheckBox.isSelected());
+            simulator.togglePrey2Enabled();
+        });
+        predator1CheckBox.addItemListener(e -> {
+            predator1Slider.setEnabled(predator1CheckBox.isSelected());
+            simulator.togglePredator1Enabled();
+        });
+        predator2CheckBox.addItemListener(e -> {
+            predator2Slider.setEnabled(predator2CheckBox.isSelected());
+            simulator.togglePredator2Enabled();
+        });
+        plant1CheckBox.addItemListener(e -> {
+            plant1Slider.setEnabled(plant1CheckBox.isSelected());
+            simulator.togglePlant1Enabled();
         });
 
+        // Sliders
+        prey1Slider.addChangeListener(e -> {
+            prey1CheckBox.setText("Prey1: " + ((double) prey1Slider.getValue() / 100));
+            simulator.setPrey1Prob(prey1Slider.getValue());
+        });
+        prey2Slider.addChangeListener(e -> {
+            prey2CheckBox.setText("Prey2: " + ((double) prey2Slider.getValue() / 100));
+            simulator.setPrey2Prob(prey2Slider.getValue());
+        });
+        predator1Slider.addChangeListener(e -> {
+            predator1CheckBox.setText("Predator1: " + ((double) predator1Slider.getValue() / 100));
+            simulator.setPredator1Prob(predator1Slider.getValue());
+        });
+        predator2Slider.addChangeListener(e -> {
+            predator2CheckBox.setText("Predator2: " + ((double) predator2Slider.getValue() / 100));
+            simulator.setPredator2Prob(predator2Slider.getValue());
+        });
+        plant1Slider.addChangeListener(e -> {
+            plant1CheckBox.setText("Plant1: " + ((double) plant1Slider.getValue() / 100));
+            simulator.setPlant1Prob(plant1Slider.getValue());
+        });
     }
 
     private void music(){
@@ -388,28 +282,10 @@ public class SimulatorView extends JFrame
         colors.put(animalClass, color);
     }
 
-    public void toggleVisibility(Entity animal){
-        if(rabbitsCheckBox.isSelected()){
-            animal.toggleDrawable();
-            setColor(animal.getClass(), EMPTY_COLOR);
-        }else{
-            setColor(animal.getClass(), animal.getColor());
-        }
-    }
-
-    /**
-     * Display a short information label at the top of the window.
-     */
-    public void setInfoText(String text)
-    {
-        infoLabel.setText(text);
-    }
-
     /**
      * @return The color to be used for a given class of animal.
      */
     private Color getColor(Class animal){
-//        return animal.getColor();
         Color col = colors.get(animal);
         if(col == null) {
             // no color defined for this class
@@ -429,11 +305,16 @@ public class SimulatorView extends JFrame
         if(!isVisible()) {
             setVisible(true);
         }
-            
+//
+//        stepLabel.setText(STEP_PREFIX + step);
+//        timeLabel.setText(DAY + day);
+//        dayLabel.setText(NUM_OF_DAYS + numOfDays);
+//        time.setText(TIME_OF_DAY + currentTime);
+
         stepLabel.setText(STEP_PREFIX + step);
-        timeLabel.setText(DAY + day);
-        dayLabel.setText(NUM_OF_DAYS + numOfDays);
-        //time.setText(TIME_OF_DAY + currentTime);
+        dayLabel.setText(DAY + day);
+        numOfDaysLabel.setText(NUM_OF_DAYS + numOfDays);
+        time.setText(TIME_OF_DAY + currentTime);
         stats.reset();
         
         fieldView.preparePaint();
@@ -456,7 +337,7 @@ public class SimulatorView extends JFrame
         this.pieChart.stats(this.getPopulationDetails());
         this.pieChart.repaint();
 
-        populationLabel.setText(POPULATION_PREFIX + stats.getPopulationDetails(field));
+        population.setText(POPULATION_PREFIX + stats.getPopulationDetails(field));
         fieldView.repaint();
     }
 

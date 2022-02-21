@@ -1,5 +1,7 @@
 import java.util.Random;
 
+// TODO make the seasons change periodically
+
 public class Weather {
     private Random rand = new Random();
     private Seasons[] possibleSeasons = Seasons.values();
@@ -39,19 +41,3 @@ public class Weather {
     }
 
 }
-//public enum Weather {
-//    CLEAR_SKY(100, 0),
-//    LIGHT_RAIN(1000, 50),
-//    HEAVY_RAIN(4000, 100),
-//    LIGHT_FOG(7500, 0),
-//    HEAVY_FOG(9000, 0);
-//
-//    final double visibility;
-//    final double downfall;
-//
-//    Weather(double visibility, double downfall){
-//        this.visibility = visibility;
-//        this.downfall = downfall;
-//    }
-//}
-

@@ -20,10 +20,10 @@ public class Simulator
     // The probability that a fox will be created in any given grid position.
     private static final double FOX_CREATION_PROBABILITY = 0.01;
     // The probability that a rabbit will be created in any given grid position.
-    private static final double RABBIT_CREATION_PROBABILITY = 0.04;
-    private static final double PREDATOR1_CREATION_PROBABILITY = 0.03;
-    private static final double PREY1_CREATION_PROBABILITY = 0.04;
-    private static final double PLANT_CREATION_PROBABILITY = 0.01;
+    private static double RABBIT_CREATION_PROBABILITY = 0.04;
+    private static double PREDATOR1_CREATION_PROBABILITY = 0.03;
+    private static double PREY1_CREATION_PROBABILITY = 0.04;
+    private static double PLANT_CREATION_PROBABILITY = 0.01;
 
     private static double prey1Prob, prey2Prob, predator1Prob, predator2Prob, plant1Prob;
     private static boolean prey1Enabled, prey2Enabled, predator1Enabled, predator2Enabled, plant1Enabled;
@@ -104,23 +104,23 @@ public class Simulator
         pickWeather();
     }
 
-    public static void setPrey1Prob(double prob){prey1Prob = prob;}
-    public static void setPrey2Prob(double prob){prey2Prob = prob;}
-    public static void setPredator1Prob(double prob){predator1Prob = prob;}
-    public static void setPredator2Prob(double prob){predator2Prob = prob;}
-    public static void setPlant1Prob(double prob){plant1Prob = prob;}
+    public void setPrey1Prob(double prob){prey1Prob = prob;}
+    public void setPrey2Prob(double prob){prey2Prob = prob;}
+    public void setPredator1Prob(double prob){predator1Prob = prob;}
+    public void setPredator2Prob(double prob){predator2Prob = prob;}
+    public void setPlant1Prob(double prob){plant1Prob = prob;}
 
-    public static double getPrey1Prob(){return prey1Prob;}
-    public static double getPrey2Prob(){return prey2Prob;}
-    public static double getPredator1Prob(){return predator1Prob;}
-    public static double getPredator2Prob(){return predator2Prob;}
-    public static double getPlant1Prob(){return plant1Prob;}
+    public double getPrey1Prob(){return prey1Prob;}
+    public double getPrey2Prob(){return prey2Prob;}
+    public double getPredator1Prob(){return predator1Prob;}
+    public double getPredator2Prob(){return predator2Prob;}
+    public double getPlant1Prob(){return plant1Prob;}
 
-    public static void togglePrey1Enabled(){prey1Enabled = !prey1Enabled;}
-    public static void togglePrey2Enabled(){prey2Enabled = !prey2Enabled;}
-    public static void togglePredator1Enabled(){predator1Enabled = !predator1Enabled;}
-    public static void togglePredator2Enabled(){predator2Enabled = !predator2Enabled;}
-    public static void togglePlant1Enabled(){plant1Enabled = !plant1Enabled;}
+    public void togglePrey1Enabled(){prey1Enabled = !prey1Enabled;}
+    public void togglePrey2Enabled(){prey2Enabled = !prey2Enabled;}
+    public void togglePredator1Enabled(){predator1Enabled = !predator1Enabled;}
+    public void togglePredator2Enabled(){predator2Enabled = !predator2Enabled;}
+    public void togglePlant1Enabled(){plant1Enabled = !plant1Enabled;}
 
 
     private void pickWeather(){
@@ -215,6 +215,7 @@ public class Simulator
     public void reset()
     {
         step = 0;
+        time = 0;
         organisms.clear();
         populate();
         // Show the starting state in the view.
@@ -299,12 +300,6 @@ public class Simulator
     }
 
     public static void main(String[] args) {
-//        try {
-//            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel"); //Windows Look and feel
-//        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-//            e.printStackTrace();
-//        }
-
         Simulator simulator = new Simulator();
         isRunning = true;
         for(int i = 0; i< 1000; i++){
