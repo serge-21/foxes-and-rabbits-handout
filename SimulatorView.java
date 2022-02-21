@@ -182,11 +182,9 @@ public class SimulatorView extends JFrame
             speedButton.setText(simulator.getSpeedSymbol());
         });
         stepButton.addActionListener(e -> {
-            // need to run SimulateOneStep() in Simulator.... how do we do that lol.
             simulator.simulateOneStep();
         });
         resetButton.addActionListener(e -> {
-            // need to run reset() in Simulator .... :sob:
             simulator.reset();
         });
 
@@ -215,23 +213,23 @@ public class SimulatorView extends JFrame
         // Sliders
         prey1Slider.addChangeListener(e -> {
             prey1CheckBox.setText("Prey1: " + ((double) prey1Slider.getValue() / 100));
-            simulator.setPrey1Prob(prey1Slider.getValue());
+            simulator.setPrey1Prob((double)prey1Slider.getValue()/100);
         });
         prey2Slider.addChangeListener(e -> {
             prey2CheckBox.setText("Prey2: " + ((double) prey2Slider.getValue() / 100));
-            simulator.setPrey2Prob(prey2Slider.getValue());
+            simulator.setPrey2Prob((double)prey2Slider.getValue()/100);
         });
         predator1Slider.addChangeListener(e -> {
             predator1CheckBox.setText("Predator1: " + ((double) predator1Slider.getValue() / 100));
-            simulator.setPredator1Prob(predator1Slider.getValue());
+            simulator.setPredator1Prob((double)predator1Slider.getValue()/100);
         });
         predator2Slider.addChangeListener(e -> {
             predator2CheckBox.setText("Predator2: " + ((double) predator2Slider.getValue() / 100));
-            simulator.setPredator2Prob(predator2Slider.getValue());
+            simulator.setPredator2Prob((double)predator2Slider.getValue()/100);
         });
         plant1Slider.addChangeListener(e -> {
             plant1CheckBox.setText("Plant1: " + ((double) plant1Slider.getValue() / 100));
-            simulator.setPlant1Prob(plant1Slider.getValue());
+            simulator.setPlant1Prob((double)plant1Slider.getValue()/100);
         });
     }
 
@@ -305,11 +303,6 @@ public class SimulatorView extends JFrame
         if(!isVisible()) {
             setVisible(true);
         }
-//
-//        stepLabel.setText(STEP_PREFIX + step);
-//        timeLabel.setText(DAY + day);
-//        dayLabel.setText(NUM_OF_DAYS + numOfDays);
-//        time.setText(TIME_OF_DAY + currentTime);
 
         stepLabel.setText(STEP_PREFIX + step);
         dayLabel.setText(DAY + day);
