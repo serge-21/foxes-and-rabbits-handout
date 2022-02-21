@@ -1,9 +1,7 @@
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Array; // may use this at some point idk what got it here smh
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.lang.reflect.Constructor;
 
 /**
  * A class representing shared characteristics of animals.
@@ -220,26 +218,4 @@ public abstract class Animal extends Organism{
         }
         return false;
     }
-
-//    // totally a test might delete in a bit
-//    private void giveBirth(List<Organism> newFoxes) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-//        // New foxes are born into adjacent locations.
-//        // Get a list of adjacent free locations.
-//        Field field = getField();
-//
-//        // need to find a mate first, otherwise it makes no sense to breed alone.
-//        if(findMate(this.getClass())){
-//            List<Location> free = field.getFreeAdjacentLocations(getLocation());
-//            int births = breed();
-//            Class cls = this.getClass();
-//            for(int b = 0; b < births && free.size() > 0; b++) {
-//                Location loc = free.remove(0);
-//                Constructor constructor = cls.getConstructor();
-//                Animal animal = (Animal) constructor.newInstance(false, field, loc);
-////                Fox young = new Fox(false, field, loc);
-//                newFoxes.add(animal);
-//            }
-//        }
-//    }
-
 }
