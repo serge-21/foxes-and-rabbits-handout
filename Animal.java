@@ -1,4 +1,3 @@
-import java.sql.Array; // may use this at some point idk what got it here smh
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -30,8 +29,8 @@ public abstract class Animal extends Organism{
      * @param foodVal the food value of the animal when born
      * @param age the age of the animal when born
      */
-    public Animal(boolean randomAge, Field field,  Location initLocation, boolean nocturnal, int foodVal, int age) {
-        super(field, initLocation);
+    public Animal(AnimalStats stats, boolean randomAge, Field field,  Location initLocation, boolean nocturnal, int foodVal, int age) {
+        super(stats, field, initLocation);
         this.isNocturnal = nocturnal;
         this.prey = new ArrayList<>();
         this.breedCounter = 10;
@@ -45,9 +44,9 @@ public abstract class Animal extends Organism{
         }
     }
 
-    public Animal(){
-        this.isNocturnal = false;
-    }
+//    public Animal(){
+//        this.isNocturnal = false;
+//    }
 
     protected int getBreedCounter(){
         return this.breedCounter;
@@ -150,9 +149,9 @@ public abstract class Animal extends Organism{
             Object organism = field.getObjectAt(where);
             for(Class animal : animalsToEat){
                 if(animal.isInstance(organism)){
-                    if(organism instanceof Plants){
-                        ((Plants) organism).setDead();
-                        setFoodLevel(Plants.foodValue);
+                    if(organism instanceof Plant1){
+                        ((Plant1) organism).setDead();
+                        setFoodLevel(Plant1.foodValue);
                     }else {
                         Animal dinner = (Animal) organism;
                         dinner.setDead();

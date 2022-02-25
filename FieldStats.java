@@ -42,10 +42,31 @@ public class FieldStats
             buffer.append(": ");
             buffer.append(info.getCount());
             buffer.append(' ');
+            buffer.append(' ');
+            buffer.append(' ');
+            buffer.append(' ');
         }
         return buffer.toString();
     }
-    
+
+    /**
+     * Get total amount of entities on the field.
+     * @return The total amount of entities.
+     */
+    public int getTotalCount(Field field)
+    {
+        int total = 0;
+        StringBuffer buffer = new StringBuffer();
+        if(!countsValid) {
+            generateCounts(field);
+        }
+        for(Class key : counters.keySet()) {
+            Counter info = counters.get(key);
+            total += info.getCount();
+        }
+        return total;
+    }
+
     /**
      * Invalidate the current set of statistics; reset all 
      * counts to zero.

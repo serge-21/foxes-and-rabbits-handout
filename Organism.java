@@ -12,14 +12,12 @@ public abstract class Organism extends Entity {
      * @param field The field currently occupied.
      * @param initLocation The location within the field.
      */
-    public Organism(Field field, Location initLocation){
-        super(field, initLocation);
+    public Organism(EntityStats stats, Field field, Location initLocation){
+        super(stats, field, initLocation);
         diseases = new ArrayList<>();
         this.isInfected = false;
     }
-    public Organism(){
 
-    }
     /**
      * @param newOrganisms A list to return newly born animals.
      * @param isDay is it currently day or night ?

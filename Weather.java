@@ -3,7 +3,7 @@ import java.util.Random;
 // TODO make the seasons change periodically
 
 public class Weather {
-    private Random rand = new Random();
+    private Random rand = Randomizer.getRandom();
     private Seasons[] possibleSeasons = Seasons.values();
     private Seasons currentSeason;
 

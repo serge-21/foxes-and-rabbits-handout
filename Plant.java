@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.util.List;
 
-public class Plants extends Organism{
+public class Plant extends Organism{
     // characteristics all plants share
     private static final double BREEDING_PROBABILITY = 0.001;       // how likely a plant will breed in a step
     public static final int foodValue = 14;                         // for now make it public
@@ -10,15 +10,18 @@ public class Plants extends Organism{
     private int waterLevel;
     private int sunLightLevel;
 
+    private PlantStats plantStats;
+
     /**
      * Create a plant. A plant can be created as with a field and
      * a location
      * @param field The field currently occupied.
      * @param initLocation The location within the field.
      */
-    public Plants(Field field,  Location initLocation){
-        super(field, initLocation);
-        setColor(Color.GREEN);
+    public Plant(PlantStats stats, Field field,  Location initLocation){
+        super(stats, field, initLocation);
+        plantStats = stats;
+        //setColor(Color.GREEN);
         this.currentLevel = 1;
         this.waterLevel = 1;
         this.sunLightLevel = 1;
@@ -99,7 +102,7 @@ public class Plants extends Organism{
         int births = breed();
         for(int b = 0; b < births && free.size() > 0; b++) {
             Location loc = free.remove(0);
-            Plants young = new Plants(field, loc);
+            Plant young = new Plant(plantStats, field, loc);
             newPlants.add(young);
         }
     }
@@ -115,5 +118,9 @@ public class Plants extends Organism{
             births = getRand().nextInt(4) + 1;
         }
         return births;
+    }
+
+    public EntityStats getStats() {
+        return plantStats;
     }
 }

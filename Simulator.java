@@ -17,16 +17,16 @@ public class Simulator
     private static final int DEFAULT_DEPTH = 120;
 
     // DEFAULT VALUES
-    // The probability that a fox will be created in any given grid position.
-    private static final double FOX_CREATION_PROBABILITY = 0.01;
-    // The probability that a rabbit will be created in any given grid position.
-    private static double RABBIT_CREATION_PROBABILITY = 0.04;
-    private static double PREDATOR1_CREATION_PROBABILITY = 0.03;
-    private static double PREY1_CREATION_PROBABILITY = 0.04;
-    private static double PLANT_CREATION_PROBABILITY = 0.01;
+//    // The probability that a fox will be created in any given grid position.
+//    private static final double PREDATOR2_CREATION_PROBABILITY = 0.01;
+//    // The probability that a rabbit will be created in any given grid position.
+//    private static double PREY2_CREATION_PROBABILITY = 0.04;
+//    private static double PREDATOR1_CREATION_PROBABILITY = 0.03;
+//    private static double PREY1_CREATION_PROBABILITY = 0.04;
+//    private static double PLANT_CREATION_PROBABILITY = 0.01;
 
-    private static double prey1Prob, prey2Prob, predator1Prob, predator2Prob, plant1Prob;
-    private static boolean prey1Enabled, prey2Enabled, predator1Enabled, predator2Enabled, plant1Enabled;
+//    private static double prey1Prob, prey2Prob, predator1Prob, predator2Prob, plant1Prob;
+//    private static boolean prey1Enabled, prey2Enabled, predator1Enabled, predator2Enabled, plant1Enabled;
 
     private static final ArrayList<Integer> speeds = new ArrayList<Integer>(Arrays.asList(100, 200, 400, 800));
     private static int currentSpeed;
@@ -52,6 +52,13 @@ public class Simulator
     // if the simulator is currently running
     private static boolean isRunning;
 
+    Random rand = Randomizer.getRandom();
+
+    private final ArrayList<EntityStats> DEFAULT_ENTITIES;
+    private ArrayList<EntityStats> possibleEntities;
+
+
+
     /**
      * Construct a simulation field with default size.
      */
@@ -59,7 +66,7 @@ public class Simulator
     {
         this(DEFAULT_DEPTH, DEFAULT_WIDTH);
     }
-    
+
     /**
      * Create a simulation field with the given size.
      * @param depth Depth of the field. Must be greater than zero.
@@ -74,17 +81,27 @@ public class Simulator
             width = DEFAULT_WIDTH;
         }
 
-        prey1Prob= PREY1_CREATION_PROBABILITY;
-        prey2Prob = RABBIT_CREATION_PROBABILITY;
-        predator1Prob = PREDATOR1_CREATION_PROBABILITY;
-        predator2Prob = FOX_CREATION_PROBABILITY;
-        plant1Prob = PLANT_CREATION_PROBABILITY;
+        possibleEntities = new ArrayList<>();
+        AnimalStats predator1 = new AnimalStats("Predator1", EntityStats.EntityType.PREDATOR, Color.RED, 0.37, 1.0, 15, 130, 2, 20);
+        possibleEntities.add(predator1);
+        AnimalStats predator2 = new AnimalStats("Predator2", EntityStats.EntityType.PREDATOR, Color.BLUE, 0.28, 4.0, 16, 150, 2, 16);
+        possibleEntities.add(predator2);
+        AnimalStats prey1 = new AnimalStats("Prey1", EntityStats.EntityType.PREY, Color.MAGENTA, 0.07, 3.0, 5, 50, 3, 40);
+        possibleEntities.add(prey1);
+        AnimalStats prey2 = new AnimalStats("Prey2", EntityStats.EntityType.PREY, Color.ORANGE, 0.12, 1.0, 6, 40, 4, 40);
+        possibleEntities.add(prey2);
+        PlantStats plant1 = new PlantStats("Plant1", EntityStats.EntityType.PLANT, Color.GREEN, 0.01, 1.0, 14, 5);
+        possibleEntities.add(plant1);                                                // PLANT BREEDING MEANT TO BE 0.001
 
-        prey1Enabled = true;
-        prey2Enabled = true;
-        predator1Enabled = true;
-        predator2Enabled = true;
-        plant1Enabled = true;
+        DEFAULT_ENTITIES = new ArrayList<>();
+        for (EntityStats stat : possibleEntities){
+            try {
+                DEFAULT_ENTITIES.add(stat.clone());
+            } catch (CloneNotSupportedException e) {
+               //e.printStackTrace();
+            }
+        }
+
 
         currentSpeed = speeds.get(0);
         currentSpeedSymbol = speedSymbols.get(0);
@@ -92,35 +109,55 @@ public class Simulator
         organisms = new ArrayList<>();
         field = new Field(depth, width);
         weather = new Weather();
-        // Create a view of the state of each location in the field.
+        //Create a view of the state of each location in the field.
         view = new SimulatorView(depth, width, this);
-        view.setColor(Rabbit.class, Color.ORANGE);
-        view.setColor(Fox.class, Color.BLUE);
-        view.setColor(Prey1.class, Color.MAGENTA);
-        view.setColor(Predator1.class, Color.RED);
-        view.setColor(Plants.class, Color.GREEN);
+
         // Setup a valid starting point.
         reset();
         pickWeather();
     }
 
-    public void setPrey1Prob(double prob){prey1Prob = prob;}
-    public void setPrey2Prob(double prob){prey2Prob = prob;}
-    public void setPredator1Prob(double prob){predator1Prob = prob;}
-    public void setPredator2Prob(double prob){predator2Prob = prob;}
-    public void setPlant1Prob(double prob){plant1Prob = prob;}
 
-    public double getPrey1Prob(){return prey1Prob;}
-    public double getPrey2Prob(){return prey2Prob;}
-    public double getPredator1Prob(){return predator1Prob;}
-    public double getPredator2Prob(){return predator2Prob;}
-    public double getPlant1Prob(){return plant1Prob;}
+    public void resetEntities(){
+        possibleEntities = new ArrayList<>();
+        for (EntityStats stat : DEFAULT_ENTITIES){
+            try {
+                possibleEntities.add(stat.clone());
+            } catch (CloneNotSupportedException e) {
+                //e.printStackTrace();
+            }
+        }
+    }
 
-    public void togglePrey1Enabled(){prey1Enabled = !prey1Enabled;}
-    public void togglePrey2Enabled(){prey2Enabled = !prey2Enabled;}
-    public void togglePredator1Enabled(){predator1Enabled = !predator1Enabled;}
-    public void togglePredator2Enabled(){predator2Enabled = !predator2Enabled;}
-    public void togglePlant1Enabled(){plant1Enabled = !plant1Enabled;}
+    public void addEntity(EntityStats entity){
+        possibleEntities.add(entity);
+    }
+
+    public void removeEntity(EntityStats entity){
+        possibleEntities.remove(entity);
+    }
+
+    public ArrayList<EntityStats> getPossibleEntities(){
+        return possibleEntities;
+    }
+
+//    public void setPrey1Prob(double prob){prey1Prob = prob;}
+//    public void setPrey2Prob(double prob){prey2Prob = prob;}
+//    public void setPredator1Prob(double prob){predator1Prob = prob;}
+//    public void setPredator2Prob(double prob){predator2Prob = prob;}
+//    public void setPlant1Prob(double prob){plant1Prob = prob;}
+//
+//    public double getPrey1Prob(){return prey1Prob;}
+//    public double getPrey2Prob(){return prey2Prob;}
+//    public double getPredator1Prob(){return predator1Prob;}
+//    public double getPredator2Prob(){return predator2Prob;}
+//    public double getPlant1Prob(){return plant1Prob;}
+//
+//    public void togglePrey1Enabled(){prey1Enabled = !prey1Enabled;}
+//    public void togglePrey2Enabled(){prey2Enabled = !prey2Enabled;}
+//    public void togglePredator1Enabled(){predator1Enabled = !predator1Enabled;}
+//    public void togglePredator2Enabled(){predator2Enabled = !predator2Enabled;}
+//    public void togglePlant1Enabled(){plant1Enabled = !plant1Enabled;}
 
 
     private void pickWeather(){
@@ -214,6 +251,8 @@ public class Simulator
      */
     public void reset()
     {
+        Randomizer.resetRandom();
+
         step = 0;
         time = 0;
         organisms.clear();
@@ -227,40 +266,68 @@ public class Simulator
      */
     private void populate()
     {
-        Random rand = Randomizer.getRandom();
+
+
+
         field.clear();
         for(int row = 0; row < field.getDepth(); row++) {
             for(int col = 0; col < field.getWidth(); col++) {
-                if(rand.nextDouble() <= predator2Prob && predator2Enabled) {
-                    Location location = new Location(row, col);
-                    Fox fox = new Fox(true, field, location);
-                    organisms.add(fox);
-                }
-                else if(rand.nextDouble() <= prey2Prob && prey2Enabled) {
-                    Location location = new Location(row, col);
-                    Rabbit rabbit = new Rabbit(true, field, location);
-                    organisms.add(rabbit);
-                }
-                // else leave the location empty.
-                else if(rand.nextDouble() <= predator1Prob && predator1Enabled) {
-                    Location location = new Location(row, col);
-                    Predator1 rabbit = new Predator1(true, field, location);
-                    organisms.add(rabbit);
-                }
-                else if(rand.nextDouble() <= prey1Prob && prey1Enabled) {
-                    Location location = new Location(row, col);
-                    Prey1 rabbit = new Prey1(true, field, location);
-                    organisms.add(rabbit);
-                }
-                 else if(rand.nextDouble() <= plant1Prob && plant1Enabled) {
-                    Location location = new Location(row, col);
-                    Plants plant = new Plants(field, location);
-                    organisms.add(plant);
+                EntityStats newEntity = getRandomEntity(getChanceLimit());
+                if (newEntity != null && newEntity.isEnabled()) {
+                        Location location = new Location(row, col);
+                    if (newEntity.getEntityType() == AnimalStats.EntityType.PREDATOR){
+                        Predator entity = new Predator((AnimalStats) newEntity, true, field, location);
+                        organisms.add(entity);
+                    }
+                    else if (newEntity.getEntityType() == AnimalStats.EntityType.PREY){
+                        Prey entity = new Prey((AnimalStats) newEntity, true, field, location);
+                        organisms.add(entity);
+                    }
+                    else if (newEntity.getEntityType() == AnimalStats.EntityType.PLANT){
+                        Plant entity = new Plant((PlantStats) newEntity, field, location);
+                        organisms.add(entity);
+                    }
                 }
             }
         }
     }
-    
+
+
+    /**
+     * If the total spawnrate exeedes 100, this returns to larger value. Prevents some entities from never being spawned if too many at high percentage.
+     * @return If the total probability exceeds 100, then the total, otherwise 100
+     */
+    private int getChanceLimit(){
+        int limit = 1000;
+        int total = 0;
+        for (EntityStats entity : possibleEntities){
+            total += entity.getCreationProbability();
+        }
+        if (total > limit){
+            return total;
+        }
+        else {
+            return limit;
+        }
+    }
+
+    /**
+     * Returns a random possible entitiy.
+     * @param limit the max of the field of random numbers. The larger the more likely of empty fields.
+     * @return Returns a random possible entity.
+     */
+    private EntityStats getRandomEntity(int limit){
+        int total = 0;
+        int probability = rand.nextInt(limit);
+        for (EntityStats entity : possibleEntities){
+            total += entity.getCreationProbability()*10;
+            if (probability <= total){
+                return entity;
+            }
+        }
+        return null;
+    }
+
     /**
      * Pause for a given time.
      * @param millisec  The time to pause for, in milliseconds
@@ -277,6 +344,10 @@ public class Simulator
 
     public void toggleRunning(){
         isRunning = !isRunning;
+    }
+
+    public boolean isRunning(){
+        return isRunning;
     }
 
     public String getSpeedSymbol(){return currentSpeedSymbol;}
@@ -302,14 +373,16 @@ public class Simulator
     public static void main(String[] args) {
         Simulator simulator = new Simulator();
         isRunning = true;
-        for(int i = 0; i< 1000; i++){
-            simulator.simulateOneStep();
-            simulator.delay(currentSpeed);
+        //for(int i = 0; i< 1000; i++){
+        while (true){
 
             // In case the simulation is paused.
             while (!isRunning){
                 simulator.delay(200);
             }
+
+            simulator.simulateOneStep();
+            simulator.delay(currentSpeed);
         }
     }
 }

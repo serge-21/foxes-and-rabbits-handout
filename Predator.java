@@ -8,15 +8,18 @@ import java.util.List;
  * @author Syraj Alkhalil and Cosmo
  * @version 2016.02.29 (2)
  */
-public class Predator1 extends Animal
+public class Predator extends Animal
 {
-    // Characteristics shared by all predator1s (class variables).
-    private static final int BREEDING_AGE = 15;                 // The age at which a predator1 can start to breed.
-    private static final int MAX_AGE = 130;                     // The age to which a predator1 can live.
-    private static final double BREEDING_PROBABILITY = 0.37;    // The likelihood of a predator1 breeding.
-    private static final int MAX_LITTER_SIZE = 2;               // The maximum number of births.
-    private static final int PREY1_FOOD_VALUE = 20;             // The food value of a single prey1. In effect, this is the
-                                                                // number of steps a predator1 can go before it has to eat again.
+//    // Characteristics shared by all predator1s (class variables).
+//    private static final int breedingAge = 15;                 // The age at which a predator1 can start to breed.
+//    private static final int maxAge = 130;                     // The age to which a predator1 can live.
+//    private static final double breedingProbability = 0.37;    // The likelihood of a predator1 breeding.
+//    private static final int maxLitterSize = 2;               // The maximum number of births.
+//    private static final int hungerValue = 20;             // The food value of a single prey1. In effect, this is the
+//    // number of steps a predator1 can go before it has to eat again.
+
+
+    private AnimalStats animalStats;
 
     /**
      * Create a predator1. A predator1 can be created as a newborn (age zero
@@ -26,31 +29,32 @@ public class Predator1 extends Animal
      * @param field The field currently occupied.
      * @param initLocation The location within the field.
      */
-    public Predator1(boolean randomAge, Field field, Location initLocation) {
-        super(randomAge, field, initLocation, true, PREY1_FOOD_VALUE, MAX_AGE);
-        setColor(Color.RED);
+    public Predator(AnimalStats stats, boolean randomAge, Field field, Location initLocation) {
+        super(stats, randomAge, field, initLocation, true, stats.getHungerValue(), stats.getMaxAge());
+        animalStats = stats;
+        //setColor(Color.RED);
         setPrey();
     }
 
     private void setPrey(){
-        addPrey(Prey1.class);
+        addPrey(Prey.class);
     }
-    
+
     /**
      * This is what the predator1 does most of the time: it hunts for
      * prey1s. In the process, it might breed, die of hunger,
      * or die of old age.
-     * @param newPredator1 A list to return newly born predator1es.
+     * @param newPredator A list to return newly born predator1es.
      * @param isDay is it currently day or night ?
      */
-    public void act(List<Organism> newPredator1, boolean isDay, Weather currentWeather)
+    public void act(List<Organism> newPredator, boolean isDay, Weather currentWeather)
     {
         if(determineDay(isDay)){
             updateStatsOfAnimal();
             incrementAge();     // age is unique and can't be updated with other stats.
             if(getIsAlive()) {
                 if(getBreedCounter() <= 0){
-                    giveBirth(newPredator1);
+                    giveBirth(newPredator);
                 }
                 moveLocationOfAnimal(currentWeather);
             }
@@ -64,17 +68,17 @@ public class Predator1 extends Animal
     private void incrementAge()
     {
         setAge(getAge() + 1);
-        if(getAge() > MAX_AGE) {
+        if(getAge() > animalStats.getMaxAge()) {
             setDead();
         }
     }
-    
+
     /**
      * Check whether or not this predator1 is to give birth at this step.
      * New births will be made into free adjacent locations.
-     * @param newPredator1 A list to return newly born predator1es.
+     * @param newPredator A list to return newly born predator1es.
      */
-    private void giveBirth(List<Organism> newPredator1)
+    private void giveBirth(List<Organism> newPredator)
     {
         // New predator1es are born into adjacent locations.
         // Get a list of adjacent free locations.
@@ -86,15 +90,15 @@ public class Predator1 extends Animal
             int births = breed();
             for(int b = 0; b < births && free.size() > 0; b++) {
                 Location loc = free.remove(0);
-                Predator1 young = new Predator1(false, field, loc);
-                newPredator1.add(young);
+                Predator young = new Predator(animalStats, false, field, loc);
+                newPredator.add(young);
             }
         }
     }
 
     @Override
     protected int getBreedingAge() {
-        return BREEDING_AGE;
+        return animalStats.getBreedingAge();
     }
 
     /**
@@ -105,8 +109,8 @@ public class Predator1 extends Animal
     private int breed()
     {
         int births = 0;
-        if(canBreed() && getRand().nextDouble() <= BREEDING_PROBABILITY) {
-            births = getRand().nextInt(MAX_LITTER_SIZE) + 1;
+        if(canBreed() && getRand().nextDouble() <= animalStats.getBreedingProbability()) {
+            births = getRand().nextInt(animalStats.getMaxLitterSize()) + 1;
         }
         return births;
     }
@@ -116,6 +120,10 @@ public class Predator1 extends Animal
      */
     private boolean canBreed()
     {
-        return getAge() >= BREEDING_AGE;
+        return getAge() >= animalStats.getBreedingAge();
+    }
+
+    public Predator createClone(boolean randomAge, Field field, Location initLocation){
+        return new Predator(this.animalStats, randomAge, field, initLocation);
     }
 }

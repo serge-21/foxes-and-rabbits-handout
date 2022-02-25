@@ -8,8 +8,9 @@ import java.util.Random;
  * @version 10-02-2022
  */
 public class Entity {
+
     private boolean isDrawable = true;
-    private Color color;
+    //private Color color;
     private int age;
     private Field field;
 
@@ -17,35 +18,43 @@ public class Entity {
     private boolean isAlive;                                    // is the organism currently alive
     private Location location;
     private static final Random rand = Randomizer.getRandom();  // the randomness all organisms share
+
+    private EntityStats entityStats;
+    private final EntityStats DEFAULT_STATS;
+
     /**
      * Constructor for objects of class Entity
      */
-    public Entity(Field field, Location initLocation) {
+    public Entity(EntityStats stats ,Field field, Location initLocation) {
         // initialise instance variables
+        this.entityStats = stats;
+        DEFAULT_STATS = entityStats;
+
         this.age = 0;
         this.isAlive = true;
         this.field = field;
         setLocation(initLocation);
     }
 
-    public Entity(){
-        // this will help in setting colours hopefully?
-    }
+//    public Entity(){
+//        // this will help in setting colours hopefully?
+//    }
+
 
     public boolean getIsDrwable(){
         return isDrawable;
     }
 
-    public void setColor(Color color){
-        this.color = color;
-    }
+//    public void setColor(Color color){
+//        this.color = color;
+//    }
 
-    public Color getColor() {
-        if(isDrawable){
-            return color;
-        }
-        return Color.white;
-    }
+//    public Color getColor() {
+//        if(isDrawable){
+//            return color;
+//        }
+//        return Color.white;
+//    }
 
     public int getAge() {
         return age;
@@ -119,5 +128,13 @@ public class Entity {
             location  = null;
             setField(null);
         }
+    }
+
+    public EntityStats getStats() {
+        return entityStats;
+    }
+
+    public EntityStats getDefaultStats() {
+        return DEFAULT_STATS;
     }
 }

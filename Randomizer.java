@@ -11,17 +11,36 @@ import java.util.Random;
 public class  Randomizer
 {
     // The default seed for control of randomization.
-    private static final int SEED = 1111;
+    private static final int DEFAULT_SEED = 1111;
+
+    private static int seed = DEFAULT_SEED;
+
     // A shared Random object, if required.
-    private static final Random rand = new Random(SEED);
-    // Determine whether a shared random generator is to be provided.
-    private static final boolean useShared = true;
+    private static Random rand = new Random(seed);
+//    // Determine whether a shared random generator is to be provided.
+//    private static final boolean useShared = true;
 
     /**
      * Constructor for objects of class Randomizer
      */
     public Randomizer()
     {
+    }
+
+    public static void resetRandom(){
+        rand.setSeed(seed);
+    }
+
+    public static int getSeed(){
+        return seed;
+    }
+
+    public static void setSeed(int newSeed){
+        seed = newSeed;
+    }
+
+    public static void restoreDefaultSeed(){
+        seed = DEFAULT_SEED;
     }
 
     /**
@@ -46,23 +65,32 @@ public class  Randomizer
      */
     public static Random getRandom()
     {
-        if(useShared) {
-            return rand;
-        }
-        else {
-            return new Random();
-        }
+        return rand;
     }
+
+//    /**
+//     * Provide a random generator.
+//     * @return A random object.
+//     */
+//    public static Random getRandom()
+//    {
+//        if(useShared) {
+//            return rand;
+//        }
+//        else {
+//            return new Random();
+//        }
+//    }
     
-    /**
-     * Reset the randomization.
-     * This will have no effect if randomization is not through
-     * a shared Random generator.
-     */
-    public static void reset()
-    {
-        if(useShared) {
-            rand.setSeed(SEED);
-        }
-    }
+//    /**
+//     * Reset the randomization.
+//     * This will have no effect if randomization is not through
+//     * a shared Random generator.
+//     */
+//    public static void reset()
+//    {
+//        if(useShared) {
+//            rand.setSeed(seed);
+//        }
+//    }
 }

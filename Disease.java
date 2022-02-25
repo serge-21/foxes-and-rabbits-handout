@@ -6,8 +6,8 @@ public class Disease extends Entity{
     private double deadliness;
     private HashMap<Organism, Integer> numOfInteractions;
 
-    public Disease(Field field, double spreadRate, double deadliness, Organism mainHost, Location initLocation){
-        super(field, initLocation);
+    public Disease(AnimalStats temp, Field field, double spreadRate, double deadliness, Organism mainHost, Location initLocation){
+        super(temp, field, initLocation);
         this.spreadRate = spreadRate;
         this.deadliness = deadliness;
         numOfInteractions = new HashMap<>();
