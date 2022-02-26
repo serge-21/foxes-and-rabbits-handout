@@ -443,7 +443,7 @@ public class SimulatorView extends JFrame
         // Resets the field
         spawnrate_seedResetButton.addActionListener(e -> {
             Randomizer.restoreDefaultSeed();
-            spawnrate_seedResetButton.setText(Randomizer.getSeed() + "");
+            spawnrate_seedTextField.setText(Randomizer.getSeed() + "");
         });
 
         //Creates listener for each existing entity in the simulation
@@ -651,22 +651,6 @@ public class SimulatorView extends JFrame
 
         panel.add(valedit_Container, BorderLayout.CENTER);
 
-//
-//        panel.add(valedit_TypeContainerPanels.get(0), layout);
-//
-//        valuesComboBox.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                int index = valuesComboBox.getSelectedIndex();
-//
-//                valedit_Container.removeAll();
-//                valedit_Container.add(valedit_TypeContainerPanels.get(index), BorderLayout.CENTER);
-//               // valedit_Container = valedit_TypeContainerPanels.get(index);
-//                options_Panel.updateUI();
-//                //valedit_Container.updateUI();
-//
-//            }
-//        });
     }
 
     /**
