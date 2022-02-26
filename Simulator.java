@@ -236,6 +236,7 @@ public class Simulator
 
         step = 0;
         time = 0;
+        numOfDays = 0;
         organisms.clear();
         populate();
         // Show the starting state in the view.
@@ -247,9 +248,6 @@ public class Simulator
      */
     private void populate()
     {
-
-
-
         field.clear();
         for(int row = 0; row < field.getDepth(); row++) {
             for(int col = 0; col < field.getWidth(); col++) {
