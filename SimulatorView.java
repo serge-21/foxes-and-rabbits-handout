@@ -494,7 +494,7 @@ public class SimulatorView extends JFrame
         JComboBox<EntityStats> valuesComboBox = new JComboBox<>(simulator.getPossibleEntities().toArray(new EntityStats[0]));
         panel.add(valuesComboBox, BorderLayout.NORTH);
 
-        valedit_Container = new JPanel(); // THIS METHOD ISN'T GREAT BUT ROLL WITH IT
+        valedit_Container = new JPanel(new BorderLayout()); // THIS METHOD ISN'T GREAT BUT ROLL WITH IT
         panel.add(valedit_Container, BorderLayout.CENTER);
 
 
@@ -638,21 +638,35 @@ public class SimulatorView extends JFrame
             valedit_TypeContainerPanels.add(currentStatSliderContainer);
         }
 
-        panel.add(valedit_TypeContainerPanels.get(0), layout);
 
-        valuesComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int index = valuesComboBox.getSelectedIndex();
 
-                valedit_Container.removeAll();
-                valedit_Container.add(valedit_TypeContainerPanels.get(index), BorderLayout.CENTER);
-               // valedit_Container = valedit_TypeContainerPanels.get(index);
-                options_Panel.updateUI();
-                //valedit_Container.updateUI();
+        valedit_Container.add(valedit_TypeContainerPanels.get(0), BorderLayout.CENTER);
 
-            }
+        valuesComboBox.addActionListener(e -> {
+            int index = valuesComboBox.getSelectedIndex();
+            valedit_Container.removeAll();
+            valedit_Container.add(valedit_TypeContainerPanels.get(index), BorderLayout.CENTER);
+            valedit_Container.updateUI();
         });
+
+        panel.add(valedit_Container, BorderLayout.CENTER);
+
+//
+//        panel.add(valedit_TypeContainerPanels.get(0), layout);
+//
+//        valuesComboBox.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                int index = valuesComboBox.getSelectedIndex();
+//
+//                valedit_Container.removeAll();
+//                valedit_Container.add(valedit_TypeContainerPanels.get(index), BorderLayout.CENTER);
+//               // valedit_Container = valedit_TypeContainerPanels.get(index);
+//                options_Panel.updateUI();
+//                //valedit_Container.updateUI();
+//
+//            }
+//        });
     }
 
     /**
