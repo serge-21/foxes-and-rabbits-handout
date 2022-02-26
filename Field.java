@@ -97,6 +97,9 @@ public class Field
      */
     public Object getObjectAt(int row, int col)
     {
+        if (row > depth - 1 || col > width - 1){
+            return null;
+        }
         return field[row][col];
     }
     

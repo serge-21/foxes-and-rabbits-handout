@@ -110,7 +110,7 @@ public class Simulator
         field = new Field(depth, width);
         weather = new Weather();
         //Create a view of the state of each location in the field.
-        view = new SimulatorView(depth, width, this);
+        view = new SimulatorView(depth, width, this, field);
 
         // Setup a valid starting point.
         reset();
@@ -140,25 +140,6 @@ public class Simulator
     public ArrayList<EntityStats> getPossibleEntities(){
         return possibleEntities;
     }
-
-//    public void setPrey1Prob(double prob){prey1Prob = prob;}
-//    public void setPrey2Prob(double prob){prey2Prob = prob;}
-//    public void setPredator1Prob(double prob){predator1Prob = prob;}
-//    public void setPredator2Prob(double prob){predator2Prob = prob;}
-//    public void setPlant1Prob(double prob){plant1Prob = prob;}
-//
-//    public double getPrey1Prob(){return prey1Prob;}
-//    public double getPrey2Prob(){return prey2Prob;}
-//    public double getPredator1Prob(){return predator1Prob;}
-//    public double getPredator2Prob(){return predator2Prob;}
-//    public double getPlant1Prob(){return plant1Prob;}
-//
-//    public void togglePrey1Enabled(){prey1Enabled = !prey1Enabled;}
-//    public void togglePrey2Enabled(){prey2Enabled = !prey2Enabled;}
-//    public void togglePredator1Enabled(){predator1Enabled = !predator1Enabled;}
-//    public void togglePredator2Enabled(){predator2Enabled = !predator2Enabled;}
-//    public void togglePlant1Enabled(){plant1Enabled = !plant1Enabled;}
-
 
     private void pickWeather(){
         this.weather.pickSeason();

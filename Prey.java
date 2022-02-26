@@ -34,7 +34,7 @@ public class Prey extends Animal
         setPrey();
     }
     private void setPrey(){
-        addPrey(Plant1.class);
+        addPrey(Plant.class);
     }
 
     /**

@@ -1,4 +1,8 @@
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -44,6 +48,52 @@ public abstract class Animal extends Organism{
         }
     }
 
+    public JPanel getInspectPanel(){
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(new LineBorder(getStats().getColor(), 4));
+
+        ArrayList<String> labelItems = new ArrayList<>(Arrays.asList(
+                "Age:",this.getAge() + "/" + ((AnimalStats)this.getStats()).getMaxAge(),
+                "Pregnant:", (isPregnant + "").toUpperCase(),
+                "Food Level:", foodLevel + "",
+                "Water Level:", waterLevel + ""));
+
+        JLabel sexSymbol = new JLabel("   F   ");
+        sexSymbol.setOpaque(true);
+        sexSymbol.setBackground(Color.PINK);
+        if (this.isMale){
+            sexSymbol.setText("   M   ");
+            sexSymbol.setBackground(Color.cyan);
+            labelItems.remove(2);
+            labelItems.remove(3);
+        }
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.CENTER;
+
+        panel.add(new JLabel(this.getStats().getName()), gbc);
+
+        gbc.gridx = 1;
+        panel.add(sexSymbol, gbc);
+
+        gbc.gridy++;
+        for (int index = 0; index < labelItems.size(); index += 2){
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.gridx = 0;
+            panel.add(new JLabel(labelItems.get(index)), gbc);
+
+            gbc.anchor = GridBagConstraints.CENTER;
+            gbc.gridx = 1;
+            panel.add(new JLabel(labelItems.get(index+1)), gbc);
+
+            gbc.gridy++;
+        }
+
+        return panel;
+    }
+
 //    public Animal(){
 //        this.isNocturnal = false;
 //    }
@@ -79,6 +129,10 @@ public abstract class Animal extends Organism{
      */
     public int getFoodLevel(){
         return foodLevel;
+    }
+
+    public int getWaterLevel(){
+        return waterLevel;
     }
 
     /**
@@ -149,9 +203,9 @@ public abstract class Animal extends Organism{
             Object organism = field.getObjectAt(where);
             for(Class animal : animalsToEat){
                 if(animal.isInstance(organism)){
-                    if(organism instanceof Plant1){
-                        ((Plant1) organism).setDead();
-                        setFoodLevel(Plant1.foodValue);
+                    if(organism instanceof Plant){
+                        ((Plant) organism).setDead();
+                        setFoodLevel(((PlantStats)(((Plant) organism).getStats())).getFoodValue());
                     }else {
                         Animal dinner = (Animal) organism;
                         dinner.setDead();

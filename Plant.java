@@ -1,11 +1,15 @@
+import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Plant extends Organism{
     // characteristics all plants share
-    private static final double BREEDING_PROBABILITY = 0.001;       // how likely a plant will breed in a step
-    public static final int foodValue = 14;                         // for now make it public
-    private static final int MAX_LEVEL = 5;
+    //private static final double BREEDING_PROBABILITY = 0.001;       // how likely a plant will breed in a step
+    //public static final int foodValue = 14;                         // for now make it public
+    //private static final int MAX_LEVEL = 5;
     private int currentLevel;
     private int waterLevel;
     private int sunLightLevel;
@@ -25,6 +29,38 @@ public class Plant extends Organism{
         this.currentLevel = 1;
         this.waterLevel = 1;
         this.sunLightLevel = 1;
+    }
+
+    public JPanel getInspectPanel(){
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(new LineBorder(getStats().getColor(), 4));
+
+        ArrayList<String> labelItems = new ArrayList<>(Arrays.asList(
+                "Level:",this.getCurrentLevel() + "/" + ((PlantStats)this.getStats()).getMaxLevel(),
+                "Water Level:", waterLevel + "",
+                "Sunlight Level:", sunLightLevel + ""));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.CENTER;
+
+        panel.add(new JLabel(this.getStats().getName()), gbc);
+
+        gbc.gridy++;
+        for (int index = 0; index < labelItems.size(); index += 2){
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.gridx = 0;
+            panel.add(new JLabel(labelItems.get(index)), gbc);
+
+            gbc.anchor = GridBagConstraints.CENTER;
+            gbc.gridx = 1;
+            panel.add(new JLabel(labelItems.get(index+1)), gbc);
+
+            gbc.gridy++;
+        }
+
+        return panel;
     }
 
     /**
@@ -49,7 +85,7 @@ public class Plant extends Organism{
         // allow growth
         if(this.sunLightLevel > 10 && this.waterLevel > 12){
             // then increment the level
-            if(this.currentLevel < MAX_LEVEL){
+            if(this.currentLevel < ((PlantStats)this.getStats()).getMaxLevel()){
                 this.currentLevel += 1;
                 // we should also reduce the resources of plants IFF they grow
                 this.waterLevel = 3;
@@ -114,10 +150,14 @@ public class Plant extends Organism{
      */
     private int breed() {
         int births = 0;
-        if(getRand().nextDouble() <= BREEDING_PROBABILITY) {
+        if(getRand().nextDouble() <= ((PlantStats)this.getStats()).getBreedingProbability()) {
             births = getRand().nextInt(4) + 1;
         }
         return births;
+    }
+
+    public int getCurrentLevel() {
+        return currentLevel;
     }
 
     public EntityStats getStats() {

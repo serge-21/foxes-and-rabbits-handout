@@ -134,12 +134,54 @@ public class SimulatorView extends JFrame
      * @param height The simulation's height.
      * @param width  The simulation's width.
      */
-    public SimulatorView(int height, int width, Simulator simulator)
+    public SimulatorView(int height, int width, Simulator simulator, Field field)
     {
         this.simulator = simulator;
         stats = new FieldStats();
         fieldView = new FieldView(height, width);
         mainPanel = getContentPane();
+
+        JFrame inspectFrame = new JFrame();
+        Container inspectContainer = inspectFrame.getContentPane();
+        JPanel inspectPanel = new JPanel(new BorderLayout());
+        inspectContainer.add(inspectPanel, BorderLayout.CENTER);
+
+        inspectFrame.setUndecorated(true);
+        inspectFrame.setPreferredSize(new Dimension(150,110));
+        inspectFrame.pack();
+
+        fieldView.addMouseMotionListener(new MouseAdapter() {
+
+            public void mouseMoved(java.awt.event.MouseEvent e) {
+                inspectPanel.removeAll();
+
+                inspectFrame.setLocation(e.getXOnScreen() + 20, e.getYOnScreen() + 20);
+                int fieldX = e.getX()/(fieldView.getWidth()/width);
+                int fieldY = e.getY()/(fieldView.getHeight()/height);
+
+                Entity entity = (Entity)field.getObjectAt(fieldY, fieldX);
+
+                if (entity == null){
+                    inspectFrame.setVisible(false);
+                }
+                else {
+                    inspectFrame.setVisible(true);
+                    if (entity instanceof Animal){
+                        inspectPanel.add(((Animal) entity).getInspectPanel(), BorderLayout.CENTER);
+                    }
+                    else if(entity instanceof  Plant){
+                        inspectPanel.add(((Plant) entity).getInspectPanel(), BorderLayout.CENTER);
+                    }
+                }
+                inspectPanel.updateUI();
+            }
+        });
+
+        fieldView.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                inspectFrame.setVisible(false);
+            }
+        });
 
         playIcon = new ImageIcon("resources/play.png");
         pauseIcon = new ImageIcon("resources/pause.png");
@@ -165,12 +207,12 @@ public class SimulatorView extends JFrame
         setLocation(100, 50);
         setPreferredSize(new Dimension(1492,821));
 
-        // ADDED FOR DEBUGGING AND TRYING TO FIND THE BEST PREFERRED SIZE WHERE THINGS DIDNT BUG OUT
-        addComponentListener(new ComponentAdapter() {
-             public void componentResized(ComponentEvent componentEvent) {
-                 setTitle("Width:" + getWidth() + " Height: " + getHeight());
-             }
-        });
+//        // ADDED FOR DEBUGGING AND TRYING TO FIND THE BEST PREFERRED SIZE WHERE THINGS DIDNT BUG OUT
+//        addComponentListener(new ComponentAdapter() {
+//             public void componentResized(ComponentEvent componentEvent) {
+//                 setTitle("Width:" + getWidth() + " Height: " + getHeight());
+//             }
+//        });
 
         pack();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -966,7 +1008,7 @@ public class SimulatorView extends JFrame
                 Entity animal = (Entity)field.getObjectAt(row, col);
                 if(animal != null) {
                     int index = simulator.getPossibleEntities().indexOf(animal.getStats());
-                    popstats_EntityCount.set(simulator.getPossibleEntities().indexOf(animal.getStats()), popstats_EntityCount.get(index) + 1);
+                    //popstats_EntityCount.set(simulator.getPossibleEntities().indexOf(animal.getStats()), popstats_EntityCount.get(index) + 1);
 
                     stats.incrementCount(animal.getClass());
                     fieldView.drawMark(col, row, animal.getStats().getColor());
