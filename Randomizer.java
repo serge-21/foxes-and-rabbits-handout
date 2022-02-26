@@ -59,6 +59,10 @@ public class  Randomizer
         }
     }
 
+    public int nextInt(int limit){
+        return rand.nextInt(limit);
+    }
+
     /**
      * Provide a random generator.
      * @return A random object.
@@ -66,6 +70,10 @@ public class  Randomizer
     public static Random getRandom()
     {
         return rand;
+    }
+
+    public void completeReset(){
+        resetRandom();
     }
 
 //    /**

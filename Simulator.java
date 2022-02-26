@@ -16,18 +16,6 @@ public class Simulator
     // The default depth of the grid.
     private static final int DEFAULT_DEPTH = 120;
 
-    // DEFAULT VALUES
-//    // The probability that a fox will be created in any given grid position.
-//    private static final double PREDATOR2_CREATION_PROBABILITY = 0.01;
-//    // The probability that a rabbit will be created in any given grid position.
-//    private static double PREY2_CREATION_PROBABILITY = 0.04;
-//    private static double PREDATOR1_CREATION_PROBABILITY = 0.03;
-//    private static double PREY1_CREATION_PROBABILITY = 0.04;
-//    private static double PLANT_CREATION_PROBABILITY = 0.01;
-
-//    private static double prey1Prob, prey2Prob, predator1Prob, predator2Prob, plant1Prob;
-//    private static boolean prey1Enabled, prey2Enabled, predator1Enabled, predator2Enabled, plant1Enabled;
-
     private static final ArrayList<Integer> speeds = new ArrayList<Integer>(Arrays.asList(100, 200, 400, 800));
     private static int currentSpeed;
     private static final ArrayList<String> speedSymbols = new ArrayList<String>(Arrays.asList("1", "2", "4", "8"));
@@ -52,7 +40,7 @@ public class Simulator
     // if the simulator is currently running
     private static boolean isRunning;
 
-    Random rand = Randomizer.getRandom();
+    private Randomizer rand = new Randomizer();
 
     private final ArrayList<EntityStats> DEFAULT_ENTITIES;
     private ArrayList<EntityStats> possibleEntities;
@@ -239,6 +227,7 @@ public class Simulator
         numOfDays = 0;
         organisms.clear();
         populate();
+        this.weather.resetWeather();
         // Show the starting state in the view.
         showStatus();
     }
@@ -351,6 +340,7 @@ public class Simulator
 
     public static void main(String[] args) {
         Simulator simulator = new Simulator();
+        simulator.reset();
         isRunning = true;
         //for(int i = 0; i< 1000; i++){
         while (true){
