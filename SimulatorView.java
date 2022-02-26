@@ -66,15 +66,15 @@ public class SimulatorView extends JFrame
     // The Main Panel of the whole Window
     Container mainPanel;
 
-    // Components for MAIN -> NORTH Simulation Stats Panel (simstats)
+    // Components for MAIN -> NORTH Simulation Stats Panel (sim stats)
     private JPanel simstats_Panel;
-    private JLabel simstats_StepLabel, simstats_TimeLabel, simstats_DaytimeLabel, simstats_DayCountLabel;
+    private JLabel simStats_StepLabel, simStats_TimeLabel, simStats_DaytimeLabel, simStats_DayCountLabel;
 
-    // Components for MAIN -> SOUTH Population Stats Panel (popstats)
-    private JPanel popstats_Panel;
-    private JLabel popstats_TotalLabel, popstats_TypeLabel;
-    private ArrayList<Integer> popstats_EntityCount;
-    private ArrayList<JLabel> popstats_EntityLabels;
+    // Components for MAIN -> SOUTH Population Stats Panel (pop stats)
+    private JPanel popStats_Panel;
+    private JLabel popStats_TotalLabel, popStats_TypeLabel;
+    private ArrayList<Integer> popStats_EntityCount;
+    private ArrayList<JLabel> popStats_EntityLabels;
 
     // Components for MAIN -> EAST Options Panel (options)
     private JPanel options_Panel;
@@ -104,24 +104,15 @@ public class SimulatorView extends JFrame
     private JPanel addent_Container;
     private HashMap<Enum<EntityStats.EntityType>, JPanel> typePanel;
     private EntityStats newEntity;
-
-
+    
     private JButton fullResetButton;
-
-
-
-
     private ImageIcon playIcon, pauseIcon, stepIcon, resetIcon, restoreIcon, deleteIcon;
-
-
-
+    
     private final static ArrayList<Color> COLORS = new ArrayList<>(Arrays.asList(Color.RED,Color.BLUE,Color.MAGENTA,Color.ORANGE,Color.GREEN, Color.CYAN, Color.BLACK, Color.DARK_GRAY, Color.LIGHT_GRAY, Color.PINK));
     private HashMap<Color, EntityStats> entityColor;
 
-    private JButton music;
     private FieldView fieldView;
     private Histogram histogram;
-    private Music mu = new Music();
     private boolean isPlaying = false;
     private PieChart pieChart;
 
@@ -189,16 +180,12 @@ public class SimulatorView extends JFrame
         resetIcon = new ImageIcon("resources/reset.png");
         restoreIcon = new ImageIcon("resources/restore.png");
         deleteIcon = new ImageIcon("resources/delete.png");
-
-
-
+        
         mainPanel.add(fieldView, BorderLayout.CENTER);              // CENTRE Simulation Panel
-        initialiseSimstatsPanel(mainPanel, BorderLayout.NORTH);     // NORTH Simulation Stats Panel
-        initialisePopstatsPanel(mainPanel, BorderLayout.SOUTH);     // SOUTH Population Stats Panel
+        initialiseSimStatsPanel(mainPanel, BorderLayout.NORTH);     // NORTH Simulation Stats Panel
+        initialisePopStatsPanel(mainPanel, BorderLayout.SOUTH);     // SOUTH Population Stats Panel
         initialiseOptionsPanel(mainPanel, BorderLayout.EAST);       // EAST Options Stats Panel
-
-
-
+        
         // extra methods for diagrams and buttons
         setTitle("Fox and Rabbit Simulation");
         //makePieChart(height, width);
@@ -206,14 +193,7 @@ public class SimulatorView extends JFrame
         //makeDiagramsVisible();
         setLocation(100, 50);
         setPreferredSize(new Dimension(1492,821));
-
-//        // ADDED FOR DEBUGGING AND TRYING TO FIND THE BEST PREFERRED SIZE WHERE THINGS DIDNT BUG OUT
-//        addComponentListener(new ComponentAdapter() {
-//             public void componentResized(ComponentEvent componentEvent) {
-//                 setTitle("Width:" + getWidth() + " Height: " + getHeight());
-//             }
-//        });
-
+        
         pack();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
@@ -225,13 +205,13 @@ public class SimulatorView extends JFrame
      * @param container The container you want to initialise components to.
      * @param layout The position to assign the components.
      */
-    private void initialiseSimstatsPanel(Container container, String layout){
+    private void initialiseSimStatsPanel(Container container, String layout){
         simstats_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, LABEL_SPACING_HGAP, LABEL_SPACING_VGAP));
-        simstats_StepLabel = new JLabel(SIMSTATS_STEP_PREFIX, SIMSTATS_LABEL_LAYOUT);
-        simstats_TimeLabel = new JLabel(SIMSTATS_TIME_PREFIX, SIMSTATS_LABEL_LAYOUT);
-        simstats_DaytimeLabel = new JLabel(SIMSTATS_DAYTIME_PREFIX, SIMSTATS_LABEL_LAYOUT);
-        simstats_DayCountLabel = new JLabel(SIMSTATS_DAYCOUNT_PREFIX, SIMSTATS_LABEL_LAYOUT);
-        addAll(simstats_Panel, simstats_StepLabel, simstats_TimeLabel, simstats_DaytimeLabel, simstats_DayCountLabel);
+        simStats_StepLabel = new JLabel(SIMSTATS_STEP_PREFIX, SIMSTATS_LABEL_LAYOUT);
+        simStats_TimeLabel = new JLabel(SIMSTATS_TIME_PREFIX, SIMSTATS_LABEL_LAYOUT);
+        simStats_DaytimeLabel = new JLabel(SIMSTATS_DAYTIME_PREFIX, SIMSTATS_LABEL_LAYOUT);
+        simStats_DayCountLabel = new JLabel(SIMSTATS_DAYCOUNT_PREFIX, SIMSTATS_LABEL_LAYOUT);
+        addAll(simstats_Panel, simStats_StepLabel, simStats_TimeLabel, simStats_DaytimeLabel, simStats_DayCountLabel);
         container.add(simstats_Panel, layout);
     }
 
@@ -240,19 +220,19 @@ public class SimulatorView extends JFrame
      * @param container The container you want to initialise components to.
      * @param layout The position to assign the components.
      */
-    private void initialisePopstatsPanel(Container container, String layout){
-        popstats_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, LABEL_SPACING_HGAP , LABEL_SPACING_VGAP));
-        popstats_TotalLabel = new JLabel();
-        popstats_TypeLabel = new JLabel();
-        addAll(popstats_Panel, popstats_TotalLabel, new JLabel("     ", JLabel.CENTER), popstats_TypeLabel, new JLabel("     ", JLabel.CENTER));
+    private void initialisePopStatsPanel(Container container, String layout){
+        popStats_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, LABEL_SPACING_HGAP , LABEL_SPACING_VGAP));
+        popStats_TotalLabel = new JLabel();
+        popStats_TypeLabel = new JLabel();
+        addAll(popStats_Panel, popStats_TotalLabel, new JLabel("     ", JLabel.CENTER), popStats_TypeLabel, new JLabel("     ", JLabel.CENTER));
 
-        popstats_EntityLabels = new ArrayList<>();
+        popStats_EntityLabels = new ArrayList<>();
         for (EntityStats entity : simulator.getPossibleEntities()){
             JLabel currentEntity = new JLabel();
-            popstats_EntityLabels.add(currentEntity);
-            popstats_Panel.add(currentEntity); // IF THIS BREAKS THEN USE INDEX OF
+            popStats_EntityLabels.add(currentEntity);
+            popStats_Panel.add(currentEntity); // IF THIS BREAKS THEN USE INDEX OF
         }
-        container.add(popstats_Panel, layout);
+        container.add(popStats_Panel, layout);
     }
 
     /**
@@ -286,7 +266,7 @@ public class SimulatorView extends JFrame
         valedit_Panel.removeAll();
 
         drawTab1Spawnrate(spawnrate_Panel, BorderLayout.CENTER);
-        drawTab2Valedit(valedit_Panel, BorderLayout.CENTER);
+        drawTab2Validate(valedit_Panel, BorderLayout.CENTER);
 
         spawnrate_Panel.updateUI();
         valedit_Panel.updateUI();
@@ -342,7 +322,7 @@ public class SimulatorView extends JFrame
 
         // Tab 2
         valedit_Panel = new JPanel(new BorderLayout());
-        drawTab2Valedit(valedit_Panel, BorderLayout.CENTER);
+        drawTab2Validate(valedit_Panel, BorderLayout.CENTER);
         tabmenu_TabbedPane.addTab(TAB2_NAME, valedit_Panel);
 
         // Tab 3
@@ -381,7 +361,7 @@ public class SimulatorView extends JFrame
             holder.add(checkBox, gbc);
 
             gbc.anchor = GridBagConstraints.SOUTH;
-            gbc.gridx = 1;
+            gbc.gridx = -1;
             JButton deleteButton = new JButton(deleteIcon);
             deleteButton.setPreferredSize(SMALL_BUTTON_SIZE);
             spawnrate_DeleteButton.add(deleteButton);
@@ -398,7 +378,7 @@ public class SimulatorView extends JFrame
             holder.add(slider, gbc);
 
             gbc.anchor = GridBagConstraints.NORTH;
-            gbc.gridx = 1;
+            gbc.gridx = -1;
             JButton defaultsButton = new JButton(restoreIcon);
             defaultsButton.setPreferredSize(SMALL_BUTTON_SIZE);
             spawnrate_RestoreDefaultButton.add(defaultsButton);
@@ -407,7 +387,7 @@ public class SimulatorView extends JFrame
 
         // Makes it so the tab is anchored to the top of the tab
         gbc.gridy++;
-        gbc.weightx = 1;
+        gbc.weightx = 0;
         gbc.weighty = 1;
         holder.add(new JLabel(""),gbc);
 
@@ -490,7 +470,7 @@ public class SimulatorView extends JFrame
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
-    private void drawTab2Valedit(JPanel panel, String layout){
+    private void drawTab2Validate(JPanel panel, String layout){
         JComboBox<EntityStats> valuesComboBox = new JComboBox<>(simulator.getPossibleEntities().toArray(new EntityStats[0]));
         panel.add(valuesComboBox, BorderLayout.NORTH);
 
@@ -510,7 +490,7 @@ public class SimulatorView extends JFrame
             GridBagConstraints gbc;
 
             JSlider breedingSlider;
-            JLabel valueBreedingLabel = new JLabel("Breeding Probability: " + stat.getBreedingProbability());;
+            JLabel valueBreedingLabel = new JLabel("Breeding Probability: " + stat.getBreedingProbability());
             JButton valueBreedingDefaultButton;
 
             // Breeding Probability SLIDER
@@ -556,7 +536,7 @@ public class SimulatorView extends JFrame
                 double defaultBreedProb = stat.getDefaults().getBreedingProbability();
 
                 breedingSlider.setValue((int)(defaultBreedProb * 100));
-                valueBreedingLabel.setText("Breeding Probabiity: " + defaultBreedProb);
+                valueBreedingLabel.setText("Breeding Probability: " + defaultBreedProb);
                 stat.setBreedingProbability(defaultBreedProb);
             });
 
@@ -579,53 +559,30 @@ public class SimulatorView extends JFrame
             }
 
             gbc.gridx = 0;
-            gbc.gridwidth = 3;
+            gbc.gridwidth = 2;
             gbc.anchor = GridBagConstraints.WEST;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             JComboBox<Color> colorComboBox = new JComboBox<>(COLORS.toArray(new Color[0]));
-            //colorComboBox.setPreferredSize(new Dimension(23, 23));
             colorComboBox.setSelectedIndex(simulator.getPossibleEntities().indexOf(stat));
             colorComboBox.setBackground(stat.getColor());
 
             entityColor.replace(stat.getColor(), stat);
-
-//            // CREDIT TO https://stackoverflow.com/a/7485978/11245518
-//            // Removes Combobox arrow
-//            colorComboBox.setUI(new BasicComboBoxUI() {
-//                protected JButton createArrowButton() {
-//                    return new JButton() {
-//                        public int getWidth() {
-//                            return 0;
-//                        }
-//                    };
-//                }
-//            });
-
+            
             ComboBoxRenderer renderer = new ComboBoxRenderer(colorComboBox);
             colorComboBox.setRenderer(renderer);
 
             currentStatSliderContainer.add(colorComboBox, gbc);
 
-            colorComboBox.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Color selectedColor = (Color) colorComboBox.getSelectedItem();
-                    if (selectedColor != null){
-                        entityColor.replace(stat.getColor(), null);
-                        entityColor.replace(selectedColor, stat);
-                        stat.setColor(selectedColor);
-                        colorComboBox.setBackground(selectedColor);
-                    }
-
+            colorComboBox.addActionListener(e -> {
+                Color selectedColor = (Color) colorComboBox.getSelectedItem();
+                if (selectedColor != null){
+                    entityColor.replace(stat.getColor(), null);
+                    entityColor.replace(selectedColor, stat);
+                    stat.setColor(selectedColor);
+                    colorComboBox.setBackground(selectedColor);
                 }
-            });
 
-            // Makes it so the tab is anchored to the top of the tab
-//            gbc.gridy++;
-//            gbc.gridx = 0;
-//            gbc.weightx = 1;
-//            gbc.weighty = 1;
-//            currentStatSliderContainer.add(new JLabel(""),gbc);
+            });
 
             gbc = new GridBagConstraints();
             gbc.gridx = 0;
@@ -637,9 +594,7 @@ public class SimulatorView extends JFrame
             // Adds Panel to ArrayList
             valedit_TypeContainerPanels.add(currentStatSliderContainer);
         }
-
-
-
+        
         valedit_Container.add(valedit_TypeContainerPanels.get(0), BorderLayout.CENTER);
 
         valuesComboBox.addActionListener(e -> {
@@ -671,17 +626,14 @@ public class SimulatorView extends JFrame
         JComboBox<EntityStats.EntityType> typeComboBox = new JComboBox(EntityStats.EntityType.values());
         nameAndTypesPanel.add(typeComboBox, gbc);
 
-        typeComboBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                EntityStats.EntityType type =  (EntityStats.EntityType) typeComboBox.getSelectedItem();
+        typeComboBox.addItemListener(e -> {
+            EntityStats.EntityType type =  (EntityStats.EntityType) typeComboBox.getSelectedItem();
 
-                newEntity.setEntityType(type);
+            newEntity.setEntityType(type);
 
-                addent_Container.removeAll();
-                addent_Container.add(typePanel.get(type),BorderLayout.CENTER);
-                addent_Container.updateUI();
-            }
+            addent_Container.removeAll();
+            addent_Container.add(typePanel.get(type),BorderLayout.CENTER);
+            addent_Container.updateUI();
         });
 
         gbc = new GridBagConstraints();
@@ -757,6 +709,8 @@ public class SimulatorView extends JFrame
             panel.updateUI();
 
             refreshOptions();
+//            simulator.resetEntities();
+
         });
 
         gbc = new GridBagConstraints();
@@ -815,7 +769,7 @@ public class SimulatorView extends JFrame
             @Override
             public void stateChanged(ChangeEvent e) {
                 try {inputSpinner.commitEdit();}
-                catch ( java.text.ParseException err ) {}
+                catch ( java.text.ParseException ignored) {}
 
                 setMethod.accept((Double)inputSpinner.getValue());
             }
@@ -850,7 +804,7 @@ public class SimulatorView extends JFrame
             @Override
             public void stateChanged(ChangeEvent e) {
                 try {inputSpinner.commitEdit();}
-                catch ( java.text.ParseException err ) {}
+                catch ( java.text.ParseException ignored) {}
 
                 setMethod.accept((Integer)inputSpinner.getValue());
             }
@@ -899,7 +853,7 @@ public class SimulatorView extends JFrame
             @Override
             public void stateChanged(ChangeEvent e) {
                 try {spinner.commitEdit();}
-                catch ( java.text.ParseException err ) {}
+                catch ( java.text.ParseException ignored) {}
 
                 setMethod.accept((Integer) spinner.getValue());
             }
@@ -935,10 +889,6 @@ public class SimulatorView extends JFrame
         }
     }
 
-
-
-
-
     private void makeDiagramsVisible(){
         JFrame diagrams = new JFrame("Histogram and PieChart");
         diagrams.setSize(1150, 550);
@@ -950,18 +900,6 @@ public class SimulatorView extends JFrame
         diagrams.setVisible(true);
     }
 
-    private void music(){
-        if(!isPlaying){
-            mu.setFile(this.getClass().getResourceAsStream("resources/newBeats.wav"));
-            mu.play();
-            isPlaying = true;
-            music.setText("Music on");
-        }else{
-            mu.stop();
-            isPlaying = false;
-            music.setText("Music off");
-        }
-    }
 
     private void makePieChart(int height, int width) {
         this.pieChart = new PieChart();
@@ -988,17 +926,17 @@ public class SimulatorView extends JFrame
             setVisible(true);
         }
 
-        simstats_StepLabel.setText(SIMSTATS_STEP_PREFIX + step);
-        simstats_TimeLabel.setText(SIMSTATS_TIME_PREFIX + currentTime);
-        simstats_DaytimeLabel.setText(SIMSTATS_DAYTIME_PREFIX + day);
-        simstats_DayCountLabel.setText(SIMSTATS_DAYCOUNT_PREFIX + numOfDays);
+        simStats_StepLabel.setText(SIMSTATS_STEP_PREFIX + step);
+        simStats_TimeLabel.setText(SIMSTATS_TIME_PREFIX + currentTime);
+        simStats_DaytimeLabel.setText(SIMSTATS_DAYTIME_PREFIX + day);
+        simStats_DayCountLabel.setText(SIMSTATS_DAYCOUNT_PREFIX + numOfDays);
         stats.reset();
         
         fieldView.preparePaint();
 
-        popstats_EntityCount = new ArrayList<>();
+        popStats_EntityCount = new ArrayList<>();
         for (EntityStats entity : simulator.getPossibleEntities()){
-            popstats_EntityCount.add(0);
+            popStats_EntityCount.add(0);
         }
 
         for(int row = 0; row < field.getDepth(); row++) {
@@ -1006,7 +944,7 @@ public class SimulatorView extends JFrame
                 Entity animal = (Entity)field.getObjectAt(row, col);
                 if(animal != null) {
                     int index = simulator.getPossibleEntities().indexOf(animal.getStats());
-                    //popstats_EntityCount.set(simulator.getPossibleEntities().indexOf(animal.getStats()), popstats_EntityCount.get(index) + 1);
+                    //popStats_EntityCount.set(simulator.getPossibleEntities().indexOf(animal.getStats()), popStats_EntityCount.get(index) + 1);
 
                     stats.incrementCount(animal.getClass());
                     fieldView.drawMark(col, row, animal.getStats().getColor());
@@ -1022,11 +960,11 @@ public class SimulatorView extends JFrame
         //this.pieChart.stats(this.getPopulationDetails());
         //this.pieChart.repaint();
 
-        popstats_TotalLabel.setText(POPSTATS_TOTAL_PREFIX + stats.getTotalCount(field));
-        popstats_TypeLabel.setText(stats.getPopulationDetails(field));
+        popStats_TotalLabel.setText(POPSTATS_TOTAL_PREFIX + stats.getTotalCount(field));
+        popStats_TypeLabel.setText(stats.getPopulationDetails(field));
         for (EntityStats entity : simulator.getPossibleEntities()){
             int index = simulator.getPossibleEntities().indexOf(entity);
-            popstats_EntityLabels.get(index).setText(entity.getName() + ": " + popstats_EntityCount.get(index));
+            popStats_EntityLabels.get(index).setText(entity.getName() + ": " + popStats_EntityCount.get(index));
         }
         fieldView.repaint();
     }
