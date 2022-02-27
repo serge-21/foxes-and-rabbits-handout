@@ -172,7 +172,6 @@ public class Simulator
             // do all changes
             daycount += 1;
             pickWeather();
-            System.out.println(this.weather.toString());
         }
     }
 
@@ -212,7 +211,7 @@ public class Simulator
     }
 
     public void showStatus(){
-        view.showStatus(step, field, daytime, daycount, updateTime());
+        view.showStatus(step, field, daytime, daycount, updateTime(), this.weather);
     }
 
     /**
@@ -228,6 +227,7 @@ public class Simulator
         organisms.clear();
         populate();
         this.weather.resetWeather();
+        pickWeather();
         // Show the starting state in the view.
         showStatus();
     }

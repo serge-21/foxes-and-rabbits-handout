@@ -25,7 +25,8 @@ import java.util.function.*;
  */
 public class SimulatorView extends JFrame
 {
-    private static final Color EMPTY_COLOR = Color.white;               // Colors used for empty locations.
+    private static Color EMPTY_COLOR = Color.white;               // Colors used for empty locations.
+    private static Color EMPTY_COLOR_DARK = EMPTY_COLOR.darker();
     private static final Color UNKNOWN_COLOR = Color.gray;              // Color used for objects that have no defined color.
 
     private final Color SUCCESS_COLOR = new Color(27, 157, 21);
@@ -121,7 +122,7 @@ public class SimulatorView extends JFrame
 
     // Components for MAIN -> EAST -> SOUTH -> CENTRE Environment View (enview)
     private JPanel enview_Panel;        // For telling the user important details
-
+    private JLabel weather;
 
 
 
@@ -299,9 +300,9 @@ public class SimulatorView extends JFrame
         // Centre
         // THING THAT SHOWS WEATHER STATS AND IMAGES GOES HERE, PREFERABLE AS A SQUARE
         enview_Panel = new JPanel(new BorderLayout());
-        enview_Panel.add(new JLabel("lol", JLabel.CENTER), BorderLayout.CENTER);
+        weather = new JLabel("", JLabel.CENTER);
+        enview_Panel.add(weather, BorderLayout.CENTER);
         enview_Panel.setPreferredSize(new Dimension(200,200));
-        enview_Panel.setBackground(Color.cyan);
         extras_Panel.add(enview_Panel, BorderLayout.CENTER);
 
         // South
@@ -1253,21 +1254,35 @@ public class SimulatorView extends JFrame
         this.histogram.repaint();
     }
 
+    private void updateWeather(Weather currentWeather){
+        weather.setText("<html>"+ currentWeather.toString() +"</html>");
+        enview_Panel.add(weather, BorderLayout.CENTER);
+        enview_Panel.setPreferredSize(new Dimension(200,200));
+        extras_Panel.add(enview_Panel, BorderLayout.CENTER);
+    }
 
     /**
      * Show the current status of the field.
      * @param step Which iteration step it is.
      * @param field The field whose status is to be displayed.
      */
-    public void showStatus(int step, Field field, String daytime, int daycount, String time){
+    public void showStatus(int step, Field field, String daytime, int daycount, String time, Weather currentWeather){
         if(!isVisible()) {
             setVisible(true);
+        }
+
+        // display visually the day night cycle
+        if(daytime.equals("night")){
+            EMPTY_COLOR = EMPTY_COLOR_DARK;
+        }else{
+            EMPTY_COLOR = EMPTY_COLOR.brighter();
         }
 
         simStats_StepLabel.setText(SIMSTATS_STEP_PREFIX + step);
         simStats_TimeLabel.setText(SIMSTATS_TIME_PREFIX + time);
         simStats_DaytimeLabel.setText(SIMSTATS_DAYTIME_PREFIX + daytime);
         simStats_DayCountLabel.setText(SIMSTATS_DAYCOUNT_PREFIX + daycount);
+        updateWeather(currentWeather);
         stats.reset();
 
         fieldView.preparePaint();
@@ -1406,6 +1421,11 @@ public class SimulatorView extends JFrame
 
 
 // CREDIT TO https://stackoverflow.com/q/10951449/11245518
+
+/**
+ * This class is responsible for displaying and manipulating the colour of the organism
+ * @author Cosmo
+ */
 class ComboBoxRenderer extends JPanel implements ListCellRenderer {
     private static final long serialVersionUID = -1L;
     private Color[] colors;
@@ -1434,21 +1454,17 @@ class ComboBoxRenderer extends JPanel implements ListCellRenderer {
         text.setText(" ");
         list.setSelectionBackground((Color) value);
 
-        if (isSelected)
-        {
+        if (isSelected) {
             text.setBackground(((Color) value).darker());
         }
-        else
-        {
+        else {
             text.setBackground((Color)value);
         }
 
-        if(hashmap.get((Color)value) != null){
+        if(hashmap.get((Color)value) != null) {
             text.setBackground(((Color) value).darker());
             text.setText(hashmap.get((Color)value).toString());
         }
-
-
         return text;
     }
 }

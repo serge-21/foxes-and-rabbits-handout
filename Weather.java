@@ -24,16 +24,6 @@ public class Weather {
     }
 
     public void pickSeason(){
-        // 256 322 99
-
-//        if(current++ < max){
-//            current = current+1;
-//            this.currentSeason = possibleSeasons[rand.nextInt(possibleSeasons.length)];
-//        }else{
-//            current = 0;
-//        }
-
-        // 256 322 99 337/142/92
         if(current + 1 < max){
             current++;
         }else{
@@ -51,10 +41,10 @@ public class Weather {
     }
 
     public String toString(){
-        String s = "Current season: " + currentSeason.toString() + "\n";
-        s += "actual vis: " + getActualVisibility();
-        s += "\n";
-        s += "actual downfall: " + getActualDownfall();
+        String s = "Current season: " + currentSeason.toString() + "<br>";
+        s += "Current visibility: " + getActualVisibility();
+        s += "<br>";
+        s += "Current downfall: " + getActualDownfall();
         return s;
     }
 
