@@ -34,6 +34,19 @@ public class Location
             return false;
         }
     }
+
+    /**
+     * Checks if the location is within a passed bound.
+     * @param rowBounds the max row value.
+     * @param colBounds the max column value.
+     * @return true if within bounds.
+     */
+    public boolean withinBounds(int rowBounds, int colBounds){
+        if ((row <= rowBounds && col <= colBounds) && (row >= 0 && col >= 0)){
+            return true;
+        }
+        return false;
+    }
     
     /**
      * Return a string of the form row,column

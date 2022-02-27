@@ -28,8 +28,8 @@ public class Simulator
     // The current step of the simulation with the time of the day
     private int step;
     private boolean isDay = true;
-    private String timeOfDay = "day";
-    private int numOfDays = 0;
+    private String daytime = "day";
+    private int daycount = 0;
     private int time;
 
     // the current weather
@@ -117,7 +117,7 @@ public class Simulator
         }
     }
 
-    public void addEntity(EntityStats entity){
+    public void addEntityToPossibilities(EntityStats entity){
         possibleEntities.add(entity);
     }
 
@@ -161,16 +161,16 @@ public class Simulator
         time = step % 24;
         if(time < 4 || time > 16){
             // then it's night
-            timeOfDay = "night";
+            daytime = "night";
             isDay = false;
         }else {
-            timeOfDay = "day";
+            daytime = "day";
             isDay = true;
         }
 
         if(time == 0) {
             // do all changes
-            numOfDays += 1;
+            daycount += 1;
             pickWeather();
             System.out.println(this.weather.toString());
         }
@@ -211,10 +211,10 @@ public class Simulator
         showStatus();
     }
 
-    private void showStatus(){
-        view.showStatus(step, field, timeOfDay, numOfDays, updateTime());
+    public void showStatus(){
+        view.showStatus(step, field, daytime, daycount, updateTime());
     }
-        
+
     /**
      * Reset the simulation to a starting position.
      */
@@ -224,7 +224,7 @@ public class Simulator
 
         step = 0;
         time = 0;
-        numOfDays = 0;
+        daycount = 0;
         organisms.clear();
         populate();
         this.weather.resetWeather();
@@ -242,24 +242,36 @@ public class Simulator
             for(int col = 0; col < field.getWidth(); col++) {
                 EntityStats newEntity = getRandomEntity(getChanceLimit());
                 if (newEntity != null && newEntity.isEnabled()) {
-                        Location location = new Location(row, col);
-                    if (newEntity.getEntityType() == AnimalStats.EntityType.PREDATOR){
-                        Predator entity = new Predator((AnimalStats) newEntity, true, field, location);
-                        organisms.add(entity);
-                    }
-                    else if (newEntity.getEntityType() == AnimalStats.EntityType.PREY){
-                        Prey entity = new Prey((AnimalStats) newEntity, true, field, location);
-                        organisms.add(entity);
-                    }
-                    else if (newEntity.getEntityType() == AnimalStats.EntityType.PLANT){
-                        Plant entity = new Plant((PlantStats) newEntity, field, location);
-                        organisms.add(entity);
-                    }
+                    Location location = new Location(row, col);
+                    addEntityToSimulator(newEntity, true, field, location);
                 }
             }
         }
     }
 
+    public void clearScreen(){
+        field.clear();
+        organisms.clear();
+    }
+
+    public void addEntityToSimulator(EntityStats entity, boolean randomAge, Field field, Location location){
+        if (entity.getEntityType() == AnimalStats.EntityType.PREDATOR){
+            Predator predator = new Predator((AnimalStats) entity, true, field, location);
+            organisms.add(predator);
+        }
+        else if (entity.getEntityType() == AnimalStats.EntityType.PREY){
+            Prey prey = new Prey((AnimalStats) entity, true, field, location);
+            organisms.add(prey);
+        }
+        else if (entity.getEntityType() == AnimalStats.EntityType.PLANT) {
+            Plant plant = new Plant((PlantStats) entity, field, location);
+            organisms.add(plant);
+        }
+    }
+
+    public void removeEntityInSimulator(Field field, Location location){
+        field.clear(location);
+    }
 
     /**
      * If the total spawnrate exeedes 100, this returns to larger value. Prevents some entities from never being spawned if too many at high percentage.

@@ -2,24 +2,24 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.NumberFormatter;
 import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.awt.Dimension;
-import java.util.function.DoubleConsumer;
-import java.util.function.DoubleSupplier;
-import java.util.function.IntConsumer;
-import java.util.function.IntSupplier;
+import java.util.function.*;
 
 /**
  * A graphical view of the simulation grid.
- * The view displays a colored rectangle for each location 
+ * The view displays a colored rectangle for each location
  * representing its contents. It uses a default background color.
  * Colors for each type of species can be defined using the
  * setColor method.
- * 
+ * setColor method.
+ *
  * @author David J. Barnes and Michael Kölling
  * @version 2016.02.29
  */
@@ -27,6 +27,9 @@ public class SimulatorView extends JFrame
 {
     private static final Color EMPTY_COLOR = Color.white;               // Colors used for empty locations.
     private static final Color UNKNOWN_COLOR = Color.gray;              // Color used for objects that have no defined color.
+
+    private final Color SUCCESS_COLOR = new Color(27, 157, 21);
+    private final Color FAIL_COLOR = new Color(207, 39, 39);
 
     // Constants or MAIN -> NORTH Simulation Stats Panel (simstats)
     private final String SIMSTATS_STEP_PREFIX = "Step: ";
@@ -41,6 +44,7 @@ public class SimulatorView extends JFrame
     private final String TAB1_NAME = "SpawnRate";
     private final String TAB2_NAME = "Values";
     private final String TAB3_NAME = "Add";
+    private final String TAB4_NAME = "Draw";
 
     private final String FULL_RESET = "Full Reset";
 
@@ -104,12 +108,31 @@ public class SimulatorView extends JFrame
     private JPanel addent_Container;
     private HashMap<Enum<EntityStats.EntityType>, JPanel> typePanel;
     private EntityStats newEntity;
-    
+
+    // Components for MAIN -> EAST -> CENTRE -> TAB4 Draw Entity Panel (drawent)
+    private JPanel drawent_Panel;
+    private boolean drawmodeEnabled = false;
+
+    // Components for MAIN -> EAST -> SOUTH Extras panel (extras)
+    private JPanel extras_Panel;
+
+    // Components for MAIN -> EAST -> SOUTH -> NORTH details Label
+    private JLabel detailsLabel;        // For telling the user important details
+
+    // Components for MAIN -> EAST -> SOUTH -> CENTRE Environment View (enview)
+    private JPanel enview_Panel;        // For telling the user important details
+
+
+
+
+
     private JButton fullResetButton;
     private ImageIcon playIcon, pauseIcon, stepIcon, resetIcon, restoreIcon, deleteIcon;
-    
+
     private final static ArrayList<Color> COLORS = new ArrayList<>(Arrays.asList(Color.RED,Color.BLUE,Color.MAGENTA,Color.ORANGE,Color.GREEN, Color.CYAN, Color.BLACK, Color.DARK_GRAY, Color.LIGHT_GRAY, Color.PINK));
     private HashMap<Color, EntityStats> entityColor;
+
+    private final int MAX_ENTITIES = COLORS.size();
 
     private FieldView fieldView;
     private Histogram histogram;
@@ -120,6 +143,9 @@ public class SimulatorView extends JFrame
     private FieldStats stats;
     private final Simulator simulator;
 
+    private int height, width;
+    private Field field;
+
     /**
      * Create a view of the given width and height.
      * @param height The simulation's height.
@@ -127,7 +153,10 @@ public class SimulatorView extends JFrame
      */
     public SimulatorView(int height, int width, Simulator simulator, Field field)
     {
+        this.height = height;
+        this.width = width;
         this.simulator = simulator;
+        this.field = field;
         stats = new FieldStats();
         fieldView = new FieldView(height, width);
         mainPanel = getContentPane();
@@ -142,8 +171,7 @@ public class SimulatorView extends JFrame
         inspectFrame.pack();
 
         fieldView.addMouseMotionListener(new MouseAdapter() {
-
-            public void mouseMoved(java.awt.event.MouseEvent e) {
+            public void mouseMoved(MouseEvent e) {
                 inspectPanel.removeAll();
 
                 inspectFrame.setLocation(e.getXOnScreen() + 20, e.getYOnScreen() + 20);
@@ -168,8 +196,8 @@ public class SimulatorView extends JFrame
             }
         });
 
-        fieldView.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+        fieldView.addMouseListener(new MouseAdapter() {
+            public void mouseExited(MouseEvent evt) {
                 inspectFrame.setVisible(false);
             }
         });
@@ -180,12 +208,12 @@ public class SimulatorView extends JFrame
         resetIcon = new ImageIcon("resources/reset.png");
         restoreIcon = new ImageIcon("resources/restore.png");
         deleteIcon = new ImageIcon("resources/delete.png");
-        
+
         mainPanel.add(fieldView, BorderLayout.CENTER);              // CENTRE Simulation Panel
         initialiseSimStatsPanel(mainPanel, BorderLayout.NORTH);     // NORTH Simulation Stats Panel
         initialisePopStatsPanel(mainPanel, BorderLayout.SOUTH);     // SOUTH Population Stats Panel
         initialiseOptionsPanel(mainPanel, BorderLayout.EAST);       // EAST Options Stats Panel
-        
+
         // extra methods for diagrams and buttons
         setTitle("Fox and Rabbit Simulation");
         //makePieChart(height, width);
@@ -193,11 +221,13 @@ public class SimulatorView extends JFrame
         //makeDiagramsVisible();
         setLocation(100, 50);
         setPreferredSize(new Dimension(1492,821));
-        
+
         pack();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
     }
+
+
 
 
     /**
@@ -233,6 +263,7 @@ public class SimulatorView extends JFrame
             popStats_Panel.add(currentEntity); // IF THIS BREAKS THEN USE INDEX OF
         }
         container.add(popStats_Panel, layout);
+        popStats_Panel.updateUI();
     }
 
     /**
@@ -242,34 +273,86 @@ public class SimulatorView extends JFrame
      */
     private void initialiseOptionsPanel(Container container, String layout){
         options_Panel = new JPanel(new BorderLayout());
+
         initialisePlaypauseButtons(options_Panel, BorderLayout.NORTH);
         initialiseTabbedMenu(options_Panel, BorderLayout.CENTER);
-
-        fullResetButton = new JButton(FULL_RESET);
-        options_Panel.add(fullResetButton, BorderLayout.SOUTH);
-
-        fullResetButton.addActionListener(e -> {
-            simulator.resetEntities();
-            Randomizer.restoreDefaultSeed();
-
-            refreshOptions();
-        });
+        initialiseExtrasPanel(options_Panel, BorderLayout.SOUTH);
 
         container.add(options_Panel, layout);
     }
 
     /**
+     * Initialises the Control Buttons located North of the Options frame.
+     * @param panel The panel you want to initialise components to.
+     * @param layout The position to assign the components.
+     */
+    private void initialiseExtrasPanel(JPanel panel, String layout){
+        extras_Panel = new JPanel(new BorderLayout());
+
+        //North
+        detailsLabel = new JLabel("", JLabel.CENTER);
+        detailsLabel.setHorizontalAlignment(JLabel.CENTER);
+        detailsLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
+        extras_Panel.add(detailsLabel, BorderLayout.NORTH);
+
+
+        // Centre
+        // THING THAT SHOWS WEATHER STATS AND IMAGES GOES HERE, PREFERABLE AS A SQUARE
+        enview_Panel = new JPanel(new BorderLayout());
+        enview_Panel.add(new JLabel("lol", JLabel.CENTER), BorderLayout.CENTER);
+        enview_Panel.setPreferredSize(new Dimension(200,200));
+        enview_Panel.setBackground(Color.cyan);
+        extras_Panel.add(enview_Panel, BorderLayout.CENTER);
+
+        // South
+        fullResetButton = new JButton(FULL_RESET);
+        extras_Panel.add(fullResetButton, BorderLayout.SOUTH);
+
+        fullResetButton.addActionListener(e -> {
+            simulator.resetEntities();
+            Randomizer.restoreDefaultSeed();
+
+            refreshPanels();
+        });
+
+        panel.add(extras_Panel, layout);
+
+    }
+
+    private void setDetailText(String text){
+        setDetailText(text, Color.BLACK);
+    }
+
+    private void setDetailText(String text, Color color){
+        detailsLabel.setForeground(color);
+        detailsLabel.setText("<html><p style=\"width:" + 160 + "px\">"+text+"</p></html>");
+        detailsLabel.updateUI();
+    }
+
+    /**
      * Refreshes the content of tab1 and tab2.
      */
-    private void refreshOptions(){
-        spawnrate_Panel.removeAll();
-        valedit_Panel.removeAll();
+    private void refreshPanels(){
+        //spawnrate_Panel.removeAll();
+//        valedit_Panel.removeAll();
+//        addent_Panel.removeAll();
+//        drawent_Panel.removeAll();
+
+        //popStats_Panel.removeAll();
+        initialisePopStatsPanel(mainPanel, BorderLayout.SOUTH);
+        //popStats_Panel.updateUI();
 
         drawTab1Spawnrate(spawnrate_Panel, BorderLayout.CENTER);
         drawTab2Validate(valedit_Panel, BorderLayout.CENTER);
+        drawTab3Addent(addent_Panel, BorderLayout.CENTER);
+        drawTab4Drawent(drawent_Panel, BorderLayout. CENTER);
 
-        spawnrate_Panel.updateUI();
-        valedit_Panel.updateUI();
+        simulator.showStatus();
+
+        //spawnrate_Panel.updateUI();
+//        valedit_Panel.updateUI();
+//        addent_Panel.updateUI();
+//        drawent_Panel.updateUI();
     }
 
     /**
@@ -330,15 +413,23 @@ public class SimulatorView extends JFrame
         drawTab3Addent(addent_Panel, BorderLayout.CENTER);
         tabmenu_TabbedPane.addTab(TAB3_NAME, addent_Panel);
 
+        // Tab 4
+        drawent_Panel = new JPanel(new BorderLayout());
+        drawTab4Drawent(drawent_Panel, BorderLayout.CENTER);
+        tabmenu_TabbedPane.addTab(TAB4_NAME, drawent_Panel);
+
         panel.add(tabmenu_TabbedPane, layout);
     }
 
     /**
      * Initialises the first tab of the TabbedPane, the Spawnrate tab.
+     * This tab lets you change the spawnrate, remove, or disable an entity on reset.
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
     private void drawTab1Spawnrate(JPanel panel, String layout){
+        panel.removeAll();
+
         spawnrate_seedTextField = new JTextField(Randomizer.getSeed() + "");
         spawnrate_seedResetButton = new JButton(restoreIcon);
         spawnrate_seedResetButton.setPreferredSize(SMALL_BUTTON_SIZE);
@@ -447,11 +538,14 @@ public class SimulatorView extends JFrame
             });
 
             currentDeleteButton.addActionListener(e -> {
-                simulator.removeEntity(entity);
-
-                panel.removeAll();
-                drawTab1Spawnrate(panel, layout);
-                panel.updateUI();
+                if (simulator.getPossibleEntities().size() > 1) {
+                    simulator.removeEntity(entity);
+                    setDetailText("Successfully removed the " + entity.getName() + " entity!", SUCCESS_COLOR);
+                    refreshPanels();
+                }
+                else{
+                    setDetailText("Removal Failed. There needs to be at least one entity!", FAIL_COLOR);
+                }
             });
 
             currentDefaultsButton.addActionListener(e -> {
@@ -463,14 +557,18 @@ public class SimulatorView extends JFrame
             });
         }
 
+        panel.updateUI();
     }
 
     /**
      * Initialises the second tab of the TabbedPane, the Value Editor tab.
+     * This tab lets you live edit an entities properties in the simulation.
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
     private void drawTab2Validate(JPanel panel, String layout){
+        panel.removeAll();
+
         JComboBox<EntityStats> valuesComboBox = new JComboBox<>(simulator.getPossibleEntities().toArray(new EntityStats[0]));
         panel.add(valuesComboBox, BorderLayout.NORTH);
 
@@ -567,21 +665,24 @@ public class SimulatorView extends JFrame
             colorComboBox.setBackground(stat.getColor());
 
             entityColor.replace(stat.getColor(), stat);
-            
-            ComboBoxRenderer renderer = new ComboBoxRenderer(colorComboBox);
+
+            ComboBoxRenderer renderer = new ComboBoxRenderer(colorComboBox, entityColor);
             colorComboBox.setRenderer(renderer);
 
             currentStatSliderContainer.add(colorComboBox, gbc);
 
             colorComboBox.addActionListener(e -> {
                 Color selectedColor = (Color) colorComboBox.getSelectedItem();
-                if (selectedColor != null){
+                if (entityColor.get(selectedColor) == null){
                     entityColor.replace(stat.getColor(), null);
                     entityColor.replace(selectedColor, stat);
                     stat.setColor(selectedColor);
                     colorComboBox.setBackground(selectedColor);
+                    setDetailText("Changed colour of " + stat.getName() + "." , SUCCESS_COLOR);
                 }
-
+                else{
+                    setDetailText("Colour already taken by " + entityColor.get(selectedColor).getName() + "!", FAIL_COLOR);
+                }
             });
 
             gbc = new GridBagConstraints();
@@ -594,7 +695,7 @@ public class SimulatorView extends JFrame
             // Adds Panel to ArrayList
             valedit_TypeContainerPanels.add(currentStatSliderContainer);
         }
-        
+
         valedit_Container.add(valedit_TypeContainerPanels.get(0), BorderLayout.CENTER);
 
         valuesComboBox.addActionListener(e -> {
@@ -606,17 +707,23 @@ public class SimulatorView extends JFrame
 
         panel.add(valedit_Container, BorderLayout.CENTER);
 
+        panel.updateUI();
     }
 
     /**
      * Initialises the third tab of the TabbedPane, the Add Entity tab.
+     * This tab lets you add a custom entity to the simulaton.
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
     private void drawTab3Addent(JPanel panel, String layout){
+        panel.removeAll();
+
         JPanel nameAndTypesPanel = new JPanel(new GridBagLayout());
 
         addent_Container = new JPanel(new BorderLayout());
+
+        newEntity = new EntityStats();
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -636,16 +743,38 @@ public class SimulatorView extends JFrame
             addent_Container.updateUI();
         });
 
+//        for (Color color : entityColor.keySet()){
+//            if (entityColor.get(color) == null){
+//                newEntity.setColor(color);
+//                break;
+//            }
+//        }
+
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         JComboBox<Color> colorComboBox  = new JComboBox<>(COLORS.toArray(new Color[0]));
-        ComboBoxRenderer renderer = new ComboBoxRenderer(colorComboBox);
+        ComboBoxRenderer renderer = new ComboBoxRenderer(colorComboBox, entityColor);
         colorComboBox.setPreferredSize(new Dimension(43, 23));
         colorComboBox.setRenderer(renderer);
         nameAndTypesPanel.add(colorComboBox, gbc);
+
+        colorComboBox.addActionListener(e -> {
+            Color selectedColor = (Color) colorComboBox.getSelectedItem();
+            if (entityColor.get(selectedColor) == null){
+//                entityColor.replace(newEntity.getColor(), null);
+//                entityColor.replace(selectedColor, newEntity);
+//                newEntity.setColor(selectedColor);
+//                colorComboBox.setBackground(selectedColor);
+                //setDetailText("Changed colour of " + stat.getName() + "." , SUCCESS_COLOR);
+            }
+            else{
+                //setDetailText("Colour already taken by " + entityColor.get(selectedColor).getName() + "!", FAIL_COLOR);
+            }
+        });
+
 
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -656,6 +785,26 @@ public class SimulatorView extends JFrame
         nameTextField.setText("SampleName");
         nameTextField.setPreferredSize(TEXTFIELD_SIZE);
         nameAndTypesPanel.add(nameTextField, gbc);
+
+        nameTextField.getDocument().addDocumentListener(new DocumentListener() {
+            Runnable setNameAction = () -> {newEntity.setName(nameTextField.getText());};
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                setNameAction.run();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                setNameAction.run();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                setNameAction.run();
+            }
+
+        });
 
         panel.add(nameAndTypesPanel, BorderLayout.NORTH);
 
@@ -700,17 +849,19 @@ public class SimulatorView extends JFrame
         addAndClearButtonsPanel.add(addButton, gbc);
 
         addButton.addActionListener(e -> {
-            simulator.addEntity(newEntity);
-
-            newEntity.resetToDefault();
-
-            panel.removeAll();
-            drawTab3Addent(panel, layout);
-            panel.updateUI();
-
-            refreshOptions();
-//            simulator.resetEntities();
-
+            if (simulator.getPossibleEntities().size() < MAX_ENTITIES) {
+                try {
+                    simulator.addEntityToPossibilities(newEntity.clone());
+                } catch (CloneNotSupportedException ex) {
+                    ex.printStackTrace();
+                }
+                setDetailText("Sucessfuly added new " + newEntity.getName() + " " + newEntity.getEntityType().toString().toLowerCase() + "!" ,SUCCESS_COLOR);
+                newEntity.resetToDefault();
+                refreshPanels();
+            }
+            else{
+                setDetailText("Too many entities! Max of " + MAX_ENTITIES + ".", FAIL_COLOR);
+            }
         });
 
         gbc = new GridBagConstraints();
@@ -730,6 +881,193 @@ public class SimulatorView extends JFrame
         });
 
         panel.add(addAndClearButtonsPanel, BorderLayout.SOUTH);
+
+        panel.updateUI();
+    }
+
+    /**
+     * Initialises the fourth tab of the TabbedPane, the Draw Entity tab.
+     * This tab lets you draw entities whereever you want on the field.
+     * @param panel The panel you want to initialise components to.
+     * @param layout The position to assign the components.
+     */
+    private void drawTab4Drawent(JPanel panel, String layout){
+        panel.removeAll();
+
+        JButton drawent_EnableDisableButton = new JButton();
+        panel.add(drawent_EnableDisableButton, BorderLayout.NORTH);
+
+        JPanel drawent_OptionsPanel = new JPanel(new GridBagLayout());
+        panel.add(drawent_OptionsPanel, layout);
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JComboBox<EntityStats> entityComboBox = new JComboBox<>(simulator.getPossibleEntities().toArray(new EntityStats[0]));
+        drawent_OptionsPanel.add(entityComboBox, gbc);
+
+        gbc.gridwidth = 1;
+        gbc.gridy = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        drawent_OptionsPanel.add(new JLabel("Brush Size: "), gbc);
+
+        gbc.gridx = 1;
+        JRadioButton smallBrush = new JRadioButton("Small", true);
+        drawent_OptionsPanel.add(smallBrush, gbc);
+        buttonGroup.add(smallBrush);
+
+        gbc.gridy++;
+        JRadioButton mediumBrush = new JRadioButton("Medium");
+        drawent_OptionsPanel.add(mediumBrush, gbc);
+        buttonGroup.add(mediumBrush);
+
+        gbc.gridy++;
+        JRadioButton largeBrush = new JRadioButton("Large");
+        drawent_OptionsPanel.add(largeBrush, gbc);
+        buttonGroup.add(largeBrush);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.gridwidth = 2;
+        drawent_OptionsPanel.add(new JLabel(" "), gbc);
+
+        gbc.gridwidth = 1;
+        gbc.gridy++;
+        drawent_OptionsPanel.add(new JLabel("Eraser Size: "), gbc);
+
+        gbc.gridx = 1;
+        JRadioButton smallEraser = new JRadioButton("Small");
+        drawent_OptionsPanel.add(smallEraser, gbc);
+        buttonGroup.add(smallEraser);
+
+        gbc.gridy++;
+        JRadioButton mediumEraser = new JRadioButton("Medium");
+        drawent_OptionsPanel.add(mediumEraser, gbc);
+        buttonGroup.add(mediumEraser);
+
+        gbc.gridy++;
+        JRadioButton largeEraser = new JRadioButton("Large");
+        drawent_OptionsPanel.add(largeEraser, gbc);
+        buttonGroup.add(largeEraser);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JButton clearFieldButton = new JButton("Clear Field");
+        drawent_OptionsPanel.add(clearFieldButton, gbc);
+
+        clearFieldButton.addActionListener(e -> {
+            simulator.clearScreen();
+            simulator.showStatus();
+        });
+
+        // These specify the coordinate translations for the brush size.
+        int[][] smallTranslations = {
+                         {0,0}};
+
+        int[][] mediumTranslations = {
+                         {-1, 0},
+                {0, -1}, {0, 0}, {0, 1},
+                         {1, 0}};
+
+        int[][] largeTranslations = {
+                        {-2, -1}, {-2, 0}, {-2, 1},
+                {-1, -2}, {-1, -1}, {-1, 0}, {-1, 1}, {-1, 2},
+                {0, -2}, {0, -1}, {0, 0}, {0, 1}, {0, 2},
+                {1, -2}, {1, -1}, {1, 0}, {1, 1}, {1, 2},
+                        {2, -1}, {2, 0}, {2, 1}};
+
+        Consumer<MouseEvent> draw = (e) -> {
+            int fieldX = e.getX()/(fieldView.getWidth()/width);
+            int fieldY = e.getY()/(fieldView.getHeight()/height);
+
+            int[][] translations;
+            if (smallBrush.isSelected() || smallEraser.isSelected()){
+                translations = smallTranslations;
+            }
+            else if (mediumBrush.isSelected() || mediumEraser.isSelected()){
+                translations = mediumTranslations;
+            }
+            else{ //if (largeBrush.isSelected() || largeEraser.isSelected()){
+                translations = largeTranslations;
+            }
+
+            Consumer<Location> action;
+            if (smallBrush.isSelected() || mediumBrush.isSelected() || largeBrush.isSelected()) {
+                action = (location) -> {simulator.addEntityToSimulator((EntityStats)entityComboBox.getSelectedItem(), true, field, location);};
+            }
+            else{ // if(smallEraser.isSelected() || mediumEraser.isSelected() || largeEraser.isSelected()){
+                action = (location) -> {simulator.removeEntityInSimulator(field, location);};
+            }
+
+            for (int[] coordinate : translations) {
+                Location location = new Location(fieldY + coordinate[0], fieldX + coordinate[1]);
+                if (location.withinBounds(height - 1, width - 1)) {
+                    action.accept(location);
+                }
+            }
+            simulator.showStatus();
+        };
+
+        MouseListener drawClickLocationAction = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (drawmodeEnabled) {
+                    draw.accept(e);
+                }
+            }
+        };
+        fieldView.addMouseListener(drawClickLocationAction);
+
+        MouseAdapter drawDragLocationAction = new MouseAdapter() {
+            public void mouseDragged(MouseEvent e) {
+                if (drawmodeEnabled) {
+                    draw.accept(e);
+                }
+            }
+        };
+        fieldView.addMouseMotionListener(drawDragLocationAction);
+
+        Runnable setDisabled = () -> {
+            drawmodeEnabled = false;
+            drawent_EnableDisableButton.setText("Enable Draw Mode");
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            for (Component component : drawent_OptionsPanel.getComponents()){
+                component.setEnabled(false);
+            }
+        };
+        setDisabled.run();
+
+        drawent_EnableDisableButton.addActionListener(e -> {
+            if (!drawmodeEnabled) {
+                drawmodeEnabled = true;
+                drawent_EnableDisableButton.setText("Disable Draw Mode");
+                setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+                for (Component component : drawent_OptionsPanel.getComponents()){
+                     component.setEnabled(true);
+                }
+                tabmenu_TabbedPane.setEnabledAt(0, false);
+                tabmenu_TabbedPane.setEnabledAt(1, false);
+                tabmenu_TabbedPane.setEnabledAt(2, false);
+
+            }
+            else{
+                setDisabled.run();
+                tabmenu_TabbedPane.setEnabledAt(0, true);
+                tabmenu_TabbedPane.setEnabledAt(1, true);
+                tabmenu_TabbedPane.setEnabledAt(2, true);
+            }
+
+
+        });
+
+        panel.updateUI();
     }
 
     private void createAddSpinnerComponentDouble(JPanel panel, int position, String label, double max, double step, DoubleSupplier getMethod, DoubleConsumer setMethod) {
@@ -921,17 +1259,17 @@ public class SimulatorView extends JFrame
      * @param step Which iteration step it is.
      * @param field The field whose status is to be displayed.
      */
-    public void showStatus(int step, Field field, String day, int numOfDays, String currentTime){
+    public void showStatus(int step, Field field, String daytime, int daycount, String time){
         if(!isVisible()) {
             setVisible(true);
         }
 
         simStats_StepLabel.setText(SIMSTATS_STEP_PREFIX + step);
-        simStats_TimeLabel.setText(SIMSTATS_TIME_PREFIX + currentTime);
-        simStats_DaytimeLabel.setText(SIMSTATS_DAYTIME_PREFIX + day);
-        simStats_DayCountLabel.setText(SIMSTATS_DAYCOUNT_PREFIX + numOfDays);
+        simStats_TimeLabel.setText(SIMSTATS_TIME_PREFIX + time);
+        simStats_DaytimeLabel.setText(SIMSTATS_DAYTIME_PREFIX + daytime);
+        simStats_DayCountLabel.setText(SIMSTATS_DAYCOUNT_PREFIX + daycount);
         stats.reset();
-        
+
         fieldView.preparePaint();
 
         popStats_EntityCount = new ArrayList<>();
@@ -977,13 +1315,13 @@ public class SimulatorView extends JFrame
     {
         return stats.isViable(field);
     }
-    
+
     /**
-     * Provide a graphical view of a rectangular field. This is 
+     * Provide a graphical view of a rectangular field. This is
      * a nested class (a class defined inside a class) which
      * defines a custom component for the user interface. This
      * component displays the field.
-     * This is rather advanced GUI stuff - you can ignore this 
+     * This is rather advanced GUI stuff - you can ignore this
      * for your project if you like.
      */
     private class FieldView extends JPanel
@@ -1036,7 +1374,7 @@ public class SimulatorView extends JFrame
                 }
             }
         }
-        
+
         /**
          * Paint on grid location on this field in a given color.
          */
@@ -1076,18 +1414,23 @@ class ComboBoxRenderer extends JPanel implements ListCellRenderer {
     JPanel textPanel;
     JLabel text;
 
-    public ComboBoxRenderer(JComboBox combo){
+    HashMap<Color,EntityStats>  hashmap;
+
+    // TRIED TO MAKE IT ACCEPT <Color, Object> BUT IT WASNT LIKING IT LIKE BRUH
+    public ComboBoxRenderer(JComboBox comboBox, HashMap<Color,EntityStats>  hashmap){
+        this.hashmap = hashmap;
         textPanel = new JPanel();
         textPanel.add(this);
         text = new JLabel();
         text.setOpaque(true);
-        text.setFont(combo.getFont());
+        text.setFont(comboBox.getFont());
         textPanel.add(text);
     }
     @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
         text.setBackground((Color)value);
+        text.setHorizontalAlignment(JLabel.CENTER);
         text.setText(" ");
         list.setSelectionBackground((Color) value);
 
@@ -1099,6 +1442,12 @@ class ComboBoxRenderer extends JPanel implements ListCellRenderer {
         {
             text.setBackground((Color)value);
         }
+
+        if(hashmap.get((Color)value) != null){
+            text.setBackground(((Color) value).darker());
+            text.setText(hashmap.get((Color)value).toString());
+        }
+
 
         return text;
     }

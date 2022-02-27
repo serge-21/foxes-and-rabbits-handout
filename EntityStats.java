@@ -61,7 +61,7 @@ public class EntityStats implements Cloneable{
     public EntityStats(){
         this.name = "SampleName";
         this.entityType = EntityType.PREY;
-        this.color = Color.BLACK;
+        this.color = null;
         this.breedingProbability = 0.0;
         this.creationProbability = 0.0;
         this.isEnabled = true; // Enabled by default
