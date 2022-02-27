@@ -1,12 +1,28 @@
 import java.util.HashMap;
 import java.util.List;
 
-public class Disease extends Entity{
-    private double spreadRate;
-    private double deadliness;
-    private HashMap<Organism, Integer> numOfInteractions;
+/**
+ * The disease class which is responsible for infecting the animals and potentially killing them
+ *
+ * @author Syraj Alkhalil and Cosmo Colman
+ * @version 2022.02.27 (2)
+ */
+public class Disease extends Entity {
+    private final double spreadRate;                                // the spread rate of the disease
+    private final double deadliness;                                // how deadly the disease is
+    private final HashMap<Organism, Integer> numOfInteractions;     // the number of infections per animal type this helps in mutations
 
-    public Disease(AnimalStats temp, Field field, double spreadRate, double deadliness, Organism mainHost, Location initLocation){
+    /**
+     * make a disease that infects a certain type of animal
+     *
+     * @param temp The stats of the disease
+     * @param field The field currently occupied.
+     * @param initLocation The location within the field.
+     * @param spreadRate The spread rate (how contagious the disease is).
+     * @param deadliness How deadly the disease is
+     * @param mainHost the main type of host that this disease will infect
+     */
+    public Disease(AnimalStats temp, Field field, Location initLocation, double spreadRate, double deadliness, Organism mainHost) {
         super(temp, field, initLocation);
         this.spreadRate = spreadRate;
         this.deadliness = deadliness;
@@ -14,7 +30,12 @@ public class Disease extends Entity{
         numOfInteractions.put(mainHost, 10);
     }
 
-    public void updateInteractions(){
+    /**
+     * This method is used to update how many animals the disease comes in contact with
+     * this will be used to mutate the types of animals the disease can infect, for example
+     * if the disease comes in contact with
+     */
+    public void updateInteractions() {
         Field field = getField();
         List<Location> potentialVictim  = field.getNotNullAdjacentLocations(getLocation());
         for(Location victim : potentialVictim){
@@ -24,13 +45,17 @@ public class Disease extends Entity{
             }else{
                 numOfInteractions.put(organism, numOfInteractions.get(organism) +1 );
             }
-            // numOfInteractions.getOrDefault(organism + 1, 0) maybe simplify using this?
         }
     }
 
-    // this is essentially the act method for the disease.
-    // maybe make it affected by the weather??????
-    public void infect(Weather currentWeather){
+    /**
+     * This is essentially the act method for the disease.
+     * the disease will look for not null locations around it and will try to infect these organisms
+     * TODO make it affected by the weather
+     *
+     * @param currentWeather the current weather
+     */
+    public void infect(Weather currentWeather) {
         updateInteractions();
         if(getRand().nextDouble() < spreadRate){
             // infect neighbouring squares with a fixed probability.
@@ -48,11 +73,22 @@ public class Disease extends Entity{
         }
     }
 
-    public double getDeadliness(){
+    /**
+     * A simple getter method that returns the deadliness field
+     *
+     * @return how deadly the disease is
+     */
+    public double getDeadliness() {
         return deadliness;
     }
 
-    public boolean canInfect(Organism organism){
+    /**
+     * decide if we can infect a given organism
+     *
+     * @param organism the organism we wish to infect
+     * @return true if we can infect the organism
+     */
+    public boolean canInfect(Organism organism) {
         return numOfInteractions.get(organism) >= 10;
     }
 }
