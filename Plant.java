@@ -5,6 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * A class representing shared characteristics of all plants.
+ *
+ * @author Syraj Alkhalil and Cosmo Colman
+ * @version 2022.02.27 (2)
+ */
 public class Plant extends Organism{
     // characteristics all plants share
     private int currentLevel;               // The current level of the plant
