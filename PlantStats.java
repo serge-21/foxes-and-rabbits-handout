@@ -1,10 +1,15 @@
 import java.awt.*;
 
+/**
+ * A class representing shared statistics of all plants.
+ *
+ * @author Syraj Alkhalil and Cosmo Colman
+ * @version 2022.02.27 (2)
+ */
 public class PlantStats extends EntityStats {
-    private int foodValue;
-    private int maxLevel;
-
-    private final PlantStats DEFAULT_STATS;
+    private int foodValue;                      // The food value that the plant will give if eaten
+    private int maxLevel;                       // The max level a plant can reach
+    private final PlantStats DEFAULT_STATS;     // The default statistics of the plant
 
     /**
      * Created a container for the plant's statistics.
@@ -13,8 +18,8 @@ public class PlantStats extends EntityStats {
      * @param color The colour of the plant.
      * @param breedingProbability The probability that the plant will breed.
      * @param creationProbability The probability that the plant is places on the field.
-     * @param foodValue
-     * @param maxLevel
+     * @param foodValue The food value that the plant provides after it gets eaten
+     * @param maxLevel The max level a plant can reach
      */
     public PlantStats(String name, EntityType entityType, Color color, double breedingProbability, double creationProbability, int foodValue, int maxLevel){
         super(name, entityType, color, breedingProbability, creationProbability);
@@ -28,7 +33,7 @@ public class PlantStats extends EntityStats {
      * Clones a pre-existing PlantStats.
      * @param clone The PlantStats you wish to clone.
      */
-    protected PlantStats(PlantStats clone){
+    protected PlantStats(PlantStats clone) {
         super(clone);
         this.foodValue = clone.foodValue;
         this.maxLevel = clone.maxLevel;
@@ -39,7 +44,7 @@ public class PlantStats extends EntityStats {
     /**
      * Creates an AnimalStats with all values set to 0 and type to PREY.
      */
-    public PlantStats(){
+    public PlantStats() {
         super();
         this.foodValue = 0;
         this.maxLevel = 0;
@@ -47,6 +52,11 @@ public class PlantStats extends EntityStats {
         DEFAULT_STATS = new PlantStats(this);
     }
 
+    /**
+     * A simple getter method to get the stats of the plant
+     *
+     * @return the default stats of the plant
+     */
     @Override
     public PlantStats getDefaults(){
         return DEFAULT_STATS;
