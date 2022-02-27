@@ -45,9 +45,9 @@ public class Prey extends Animal
      */
     public void act(List<Organism> newPrey1, boolean isDay, Weather currentWeather)
     {
+        incrementAge();     // age is unique and can't be updated with other stats.
         if(determineDay(isDay)){
             updateStatsOfAnimal();
-            incrementAge();     // age is unique and can't be updated with other stats.
             if(getIsAlive()) {
                 if(getBreedCounter() <= 0){
                     giveBirth(newPrey1);
@@ -79,7 +79,7 @@ public class Prey extends Animal
         // New prey1s are born into adjacent locations.
         // Get a list of adjacent free locations.
         Field field = getField();
-        if(findMate(this.getClass())){
+        if(findMate(this)){
             List<Location> free = field.getFreeAdjacentLocations(getLocation());
             int births = breed();
             for(int b = 0; b < births && free.size() > 0; b++) {

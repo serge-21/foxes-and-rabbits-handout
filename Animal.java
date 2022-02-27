@@ -311,12 +311,12 @@ public abstract class Animal extends Organism{
      * @param matingPartner the class of animals
      * @return a boolean value of weather there is a mate to breed with
      */
-    protected boolean findMate(Class matingPartner){
+    protected boolean findMate(Entity matingPartner){
         Field field = getField();
         List<Location> adjacent = field.adjacentLocations(getLocation());
         for (Location where : adjacent) {
-            Object animal = field.getObjectAt(where);
-            if(matingPartner.isInstance(animal)){
+            Entity animal = (Entity) field.getObjectAt(where);
+            if(animal != null && matingPartner.getStats().getName().equals(animal.getStats().getName())){
                 Animal potentialMate = (Animal) animal;
                 if(potentialMate.getAge() >= potentialMate.getBreedingAge() && potentialMate.getIsMale() != this.getIsMale()){
                     if(!potentialMate.getIsMale() && !potentialMate.getIsPregnant()){

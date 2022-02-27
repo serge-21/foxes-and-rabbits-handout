@@ -42,9 +42,9 @@ public class Predator extends Animal {
      * @param currentWeather the current weather to affect the animal.
      */
     public void act(List<Organism> newPredator, boolean isDay, Weather currentWeather) {
+        incrementAge();     // age is unique and can't be updated with other stats.
         if(determineDay(isDay)){
             updateStatsOfAnimal();
-            incrementAge();     // age is unique and can't be updated with other stats.
             if(getIsAlive()) {
                 if(getBreedCounter() <= 0){
                     giveBirth(newPredator);
@@ -76,7 +76,7 @@ public class Predator extends Animal {
         Field field = getField();
 
         // we need to call find mate first.
-        if(findMate(this.getClass())){
+        if(findMate(this)){
             List<Location> free = field.getFreeAdjacentLocations(getLocation());
             int births = breed();
             for(int b = 0; b < births && free.size() > 0; b++) {
