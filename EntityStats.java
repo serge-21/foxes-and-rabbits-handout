@@ -1,22 +1,26 @@
 import java.awt.*;
 
 /**
- * A container for all the unique values for an entity. It also makes a backup of the values if the originals want to be reassigned if they're changed
+ * A container for all the unique values for an animal. It also makes a backup of the values if the originals want to be reassigned if they're changed
  *
- * @author -
- * @version -
+ * @author Syraj Alkhalil and Cosmo Colman
+ * @version 2022.02.27 (2)
  */
 public class EntityStats implements Cloneable{
+
+    /**
+     * this is the main enum that distinguishes the type of animals
+     */
     public enum EntityType{
         PREY, PREDATOR, PLANT
     }
 
-    private String name;
-    private EntityType entityType;
-    private Color color;
-    private boolean isEnabled;
-    private double breedingProbability;
-    private double creationProbability;
+    private String name;                            // The name of the entity
+    private EntityType entityType;                  // The type of the entity
+    private Color color;                            // The colour of the entity
+    private boolean isEnabled;                      // The what exactly is this ?
+    private double breedingProbability;             // The breeding probability i.e. how likely it is that this entity will breed
+    private double creationProbability;             // The creation probability i.e. how likely it is that this entity will get created in the first place
 
     private final EntityStats DEFAULT_STATS;
 
@@ -34,8 +38,7 @@ public class EntityStats implements Cloneable{
         this.color = color;
         this.breedingProbability = breedingProbability;
         this.creationProbability = creationProbability;
-        this.isEnabled = true; // Enabled by default
-
+        this.isEnabled = true;                              // Enabled by default
         DEFAULT_STATS = new EntityStats(this);
     }
 
@@ -69,8 +72,6 @@ public class EntityStats implements Cloneable{
         DEFAULT_STATS = new EntityStats(this);
     }
 
-    // DOES THIS WORK..? IDK
-    // (OKAY, I THINK IT FINE LOL)
     /**
      * Clones the entity.
      * @return The entity cloned.
@@ -97,7 +98,7 @@ public class EntityStats implements Cloneable{
      * Returns the default values in the form of an EntityStats from when the object was first initialised.
      * @return the default values in the form of an EntityStats from when the object was first initialised.
      */
-    public EntityStats getDefaults(){
+    public EntityStats getDefaults() {
         return DEFAULT_STATS;
     }
 
@@ -108,41 +109,107 @@ public class EntityStats implements Cloneable{
     public String getName() {
         return name;
     }
-    public EntityType getEntityType(){
+
+    /**
+     * A simple getter method to return the entityType field
+     *
+     * @return the entity type for example animal/plant/ etc...
+     */
+    public EntityType getEntityType() {
         return entityType;
     }
+
+    /**
+     * A simple getter method to return the colour of the entity
+     *
+     * @return the colour of the entity
+     */
     public Color getColor() {
         return color;
     }
-    public double getBreedingProbability(){
+
+    /**
+     * A simple getter method to return the breedingProbability field
+     *
+     * @return the breeding probability as a double
+     */
+    public double getBreedingProbability() {
         return breedingProbability;
     }
-    public double getCreationProbability(){
+
+    /**
+     * A simple getter method that returns the creation probability field
+     *
+     * @return the creation probability as a double
+     */
+    public double getCreationProbability() {
         return creationProbability;
     }
-    public boolean isEnabled(){
+
+    /**
+     * no clue what this does ask cosmo
+     *
+     * @return
+     */
+    public boolean isEnabled() {
         return isEnabled;
     }
 
+    /**
+     * A simple method to toggle the isEnabled field
+     */
     public void toggleEnabled() {
         isEnabled = !isEnabled;
     }
+
+    /**
+     * A simple setter method to set the name of the entity
+     *
+     * @param name the name we wish to give the entity
+     */
     public void setName(String name) {
         this.name = name;
     }
+
+    /**
+     * A simple setter method to set the colour of the entity
+     *
+     * @param color the colour we wish to give the entity
+     */
     public void setColor(Color color) {
         this.color = color;
     }
+
+    /**
+     * A simple setter method to set the entity type
+     *
+     * @param entityType the type we wish to give to the entity
+     */
     public void setEntityType(EntityType entityType) {
         this.entityType = entityType;
     }
+
+    /**
+     * A simple setter method to set the creation probability of the entity
+     *
+     * @param creationProbability the probability of creating this entity
+     */
     public void setCreationProbability(double creationProbability) {
         this.creationProbability = creationProbability;
     }
+
+    /**
+     * A simple setter method to set the breeding probability of the entity
+     *
+     * @param breedingProbability the probability of this entity breeding
+     */
     public void setBreedingProbability(double breedingProbability) {
         this.breedingProbability = breedingProbability;
     }
 
+    /**
+     * this method will restore all the default stats of a given entity
+     */
     public void resetToDefault() {
         EntityStats defaults = null;
         try {
@@ -150,7 +217,6 @@ public class EntityStats implements Cloneable{
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
-        //IDK IF THESE ARE ALLOWED OR I SHOULD MAKE THEM METHODS
         this.name = defaults.name;
         this.entityType = defaults.entityType;
         this.color = defaults.color;
