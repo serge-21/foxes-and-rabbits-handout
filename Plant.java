@@ -7,31 +7,34 @@ import java.util.List;
 
 public class Plant extends Organism{
     // characteristics all plants share
-    //private static final double BREEDING_PROBABILITY = 0.001;       // how likely a plant will breed in a step
-    //public static final int foodValue = 14;                         // for now make it public
-    //private static final int MAX_LEVEL = 5;
-    private int currentLevel;
-    private int waterLevel;
-    private int sunLightLevel;
-
-    private PlantStats plantStats;
+    private int currentLevel;               // The current level of the plant
+    private int waterLevel;                 // The water level of the plant (plants will die if they don't get enough water)
+    private int sunLightLevel;              // The sunlight level of the plant (plants will die if they don't get enough sunlight)
+    private final PlantStats plantStats;    // The statistics of the plant ranges from max level to food level
 
     /**
      * Create a plant. A plant can be created as with a field and
      * a location
+     * @param stats the statistics of the plant
      * @param field The field currently occupied.
      * @param initLocation The location within the field.
      */
-    public Plant(PlantStats stats, Field field,  Location initLocation){
+    public Plant(PlantStats stats, Field field,  Location initLocation) {
         super(stats, field, initLocation);
-        plantStats = stats;
-        //setColor(Color.GREEN);
+        this.plantStats = stats;
         this.currentLevel = 1;
         this.waterLevel = 1;
         this.sunLightLevel = 1;
     }
 
-    public JPanel getInspectPanel(){
+    /**
+     * This method is responsible for making a J-panel that will hold all the statistics
+     * of the plant this ranges from the water level of the plant to the sunlight level
+     * all the stats will be displayed on the gui IF the user hovers over the plant
+     *
+     * @return the statistics of the animal in gui form
+     */
+    public JPanel getInspectPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(new LineBorder(getStats().getColor(), 4));
 
@@ -64,10 +67,11 @@ public class Plant extends Organism{
     }
 
     /**
-     * This is what the plant does most of the time: FOR NOW nothing.
-     * for now plants will do nothing they will stay here and not die.
+     * This is what the plant does most of the time: 'breed', photosynthesise, and grow.
+     *
      * @param newPlants A list to return newly born plants.
      * @param isDay is it currently day or night ?
+     * @param currentWeather the current weather
      */
     @Override
     public void act(List<Organism> newPlants, boolean isDay, Weather currentWeather) {
@@ -79,7 +83,13 @@ public class Plant extends Organism{
         }
     }
 
-    private void grow(Weather currentWeather){
+    /**
+     * Allow the plants to grow according to the current weather
+     * plants may die in this process
+     *
+     * @param currentWeather the current weather
+     */
+    private void grow(Weather currentWeather) {
         photosynthesis(currentWeather);
         transpiration(currentWeather);
         // allow growth
@@ -92,12 +102,14 @@ public class Plant extends Organism{
                 this.sunLightLevel = 2;
             }
         }
-//        System.out.println(this.sunLightLevel);
-//        System.out.println(this.waterLevel);
-//        System.out.println(this.currentLevel);
-        // otherwise, do nothing
     }
 
+    /**
+     * This method is responsible for the plants getting the water they need.
+     * plants get water from rain
+     *
+     * @param currentWeather the current weather
+     */
     private void transpiration(Weather currentWeather){
         // neater way of writing if else blocks ew
         this.waterLevel = (currentWeather.getActualDownfall() < 10) ? this.waterLevel - 1 : this.waterLevel + 1;
@@ -106,6 +118,12 @@ public class Plant extends Organism{
         }
     }
 
+    /**
+     * This method is responsible for the plants getting the sunlight they need
+     * plants get the sunlight they need depending on the visibility in the current weather
+     *
+     * @param currentWeather the current weather
+     */
     private void photosynthesis(Weather currentWeather){
         // neater way of writing if else blocks ew
         this.sunLightLevel = (currentWeather.getActualVisibility() < 10) ? this.sunLightLevel - 1 : this.sunLightLevel + 1;
@@ -114,6 +132,10 @@ public class Plant extends Organism{
         }
     }
 
+    /**
+     * set the plant to dead if the level is not 0 then reduce the level by 1
+     * plants don't die as normal animals instead if the level of the plant is 0 then we allow the plants to die normally
+     */
     @Override
     protected void setDead() {
         if(this.currentLevel <= 0){
@@ -125,12 +147,12 @@ public class Plant extends Organism{
     }
 
     /**
-     * Check whether or not this plant is to give birth at this step.
+     * Check whether this plant is to give birth at this step.
      * New births will be made into free adjacent locations.
+     *
      * @param newPlants A list to return newly born plants.
      */
-    private void giveBirth(List<Organism> newPlants)
-    {
+    private void giveBirth(List<Organism> newPlants) {
         // New plants are born into adjacent locations.
         // Get a list of adjacent free locations.
         Field field = getField();
@@ -146,20 +168,31 @@ public class Plant extends Organism{
     /**
      * Generate a number representing the number of births,
      * if it can breed.
+     *
      * @return The number of births (maybe zero).
      */
     private int breed() {
         int births = 0;
-        if(getRand().nextDouble() <= ((PlantStats)this.getStats()).getBreedingProbability()) {
+        if(getRand().nextDouble() <= this.getStats().getBreedingProbability()) {
             births = getRand().nextInt(4) + 1;
         }
         return births;
     }
 
+    /**
+     * A simple getter method that returns the currentLevel field
+     *
+     * @return the current level of the plant
+     */
     public int getCurrentLevel() {
         return currentLevel;
     }
 
+    /**
+     * A simple getter method that returns the plantStats field
+     *
+     * @return the stats of the plant
+     */
     public EntityStats getStats() {
         return plantStats;
     }
