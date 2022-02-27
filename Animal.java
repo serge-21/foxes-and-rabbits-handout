@@ -8,24 +8,24 @@ import java.util.Random;
 
 /**
  * A class representing shared characteristics of animals.
- * @author David J. Barnes and Michael Kölling
- * @version 2016.02.29 (2)
+ * @author Syraj Alkhalil and Cosmo Colman
+ * @version 2022.02.27 (2)
  */
 public abstract class Animal extends Organism{
-
     // all the field shared by all animals
-    private static final Random rand = Randomizer.getRandom();          // shared by all animals
+    private static final Random rand = Randomizer.getRandom();          // a random chance of things happening shared by all animals
     private final boolean isMale = rand.nextDouble() < 0.5;             // random chance that each animal might be a male or female
-    private final boolean isNocturnal;                                  // passed in
+    private final boolean isNocturnal;                                  // is the animal nocturnal
     private boolean isPregnant;                                         // is pregnant is for both the recovery period AND pregnancy
-    private int breedCounter;
-    private int foodLevel;                                              // passed in
-    private ArrayList<Class> prey;
-    private int waterLevel = 500;
+    private int breedCounter;                                           // recovery from being pregnant
+    private int foodLevel;                                              // how hungry is the animal if food level is 0 animal dies
+    private final ArrayList<Class> prey;                                // arraylist of all animals that can be eaten by this animal
+    private int waterLevel = 500;                                       // how thirsty is the animal if water level is 0 animal dies
 
     /**
      * Create a new animal at location in field.
      *
+     * @param stats the statistics of this animal this ranges from the hunger level to breeding age etc...
      * @param randomAge to give more variance if we have a random age we set the food-level and age to random values
      * @param field The field currently occupied.
      * @param initLocation The location within the field.
@@ -39,6 +39,7 @@ public abstract class Animal extends Organism{
         this.prey = new ArrayList<>();
         this.breedCounter = 10;
 
+        // give the animal a random age + food level if we want to
         if(randomAge){
             setAge(getRand().nextInt(age));
             setFoodLevel(getRand().nextInt(foodVal));
@@ -48,7 +49,14 @@ public abstract class Animal extends Organism{
         }
     }
 
-    public JPanel getInspectPanel(){
+    /**
+     * This method is responsible for making a J-panel that will hold all the statistics
+     * of the animal this ranges from the sex of the animal to the food level or if the animal is pregnant
+     * all the stats will be displayed on the gui IF the user hovers over the animal
+     *
+     * @return the statistics of the animal in gui form
+     */
+    public JPanel getInspectPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(new LineBorder(getStats().getColor(), 4));
 
@@ -68,6 +76,7 @@ public abstract class Animal extends Organism{
             labelItems.remove(3);
         }
 
+        // positioning the information
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -94,44 +103,68 @@ public abstract class Animal extends Organism{
         return panel;
     }
 
-//    public Animal(){
-//        this.isNocturnal = false;
-//    }
-
-    protected int getBreedCounter(){
+    /**
+     * The breed counter is responsible for how much longer is left before
+     * the animal is able to breed again all (measurements are done in steps).
+     *
+     * @return the number of steps before the animal can breed again
+     */
+    protected int getBreedCounter() {
         return this.breedCounter;
     }
 
-    protected void setBreedCounter(int pregnancy){
+    /**
+     * This method is responsible for setting the length of the pregnancy per animal.
+     *
+     * @param pregnancy this is how long the pregnancy is going to last in steps
+     */
+    protected void setBreedCounter(int pregnancy) {
         this.breedCounter = pregnancy;
     }
 
-    protected void addPrey(Class prey){
+    /**
+     * Add the class to the arraylist so that this animal may feed on the animals of the specified class.
+     *
+     * @param prey a class of the animals that can be eaten by the current animal
+     */
+    protected void addPrey(Class prey) {
         this.prey.add(prey);
     }
 
-    protected ArrayList<Class> getPrey(){
+    /**
+     * A simple getter method to get the prey field.
+     *
+     * @return the arraylist of animals that this animal may eat
+     */
+    protected ArrayList<Class> getPrey() {
         return this.prey;
     }
     
     /**
-     * a getter method to get the isMale field.
+     * A getter method to get the isMale field.
+     *
      * @return a boolean value of weather the current Animal is male
      */
-    public boolean getIsMale(){
+    public boolean getIsMale() {
         return isMale;
     }
 
     /**
-     * a getter method to get the foodLevel field.
+     * A getter method to get the foodLevel field.
      * food level of 0 means the animal will die of hunger
      * @return an int value of how hungry an animal is.
      */
-    public int getFoodLevel(){
+    public int getFoodLevel() {
         return foodLevel;
     }
 
-    public int getWaterLevel(){
+    /**
+     * A getter method to get the waterLevel field.
+     * water level of 0 means the animal will die of thirst
+     *
+     * @return an int value of how thirsty an animal is.
+     */
+    public int getWaterLevel() {
         return waterLevel;
     }
 
@@ -147,6 +180,7 @@ public abstract class Animal extends Organism{
 
     /**
      * a getter method to get the isNocturnal field.
+     *
      * @return a boolean value of when the animal is active at night or not.
      */
     protected boolean getNocturnal(){
@@ -163,8 +197,22 @@ public abstract class Animal extends Organism{
         }
     }
 
-    protected void setPregnant(boolean pregnant){
+    /**
+     * Adjust if the animal is pregnant or not
+     *
+     * @param pregnant boolean value, 1 means pregnant and 0 means not pregnant
+     */
+    protected void setPregnant(boolean pregnant) {
         this.isPregnant = pregnant;
+    }
+
+    /**
+     * A simple getter method to get the field isPregnant
+     *
+     * @return if the animal is pregnant
+     */
+    private boolean getIsPregnant() {
+        return isPregnant;
     }
 
     /**
@@ -174,23 +222,31 @@ public abstract class Animal extends Organism{
         this.foodLevel = foodLevel;
     }
 
-
     /**
-     * check if it is day or night
+     * check if it is day or night note
+     *
+     * @param isDay boolean value of the day, 0 means night, 1 means day
+     * @return true if the animal can move during this time
      */
-    protected boolean determineDay(boolean isDay){
+    protected boolean determineDay(boolean isDay) {
         return ((isDay && !getNocturnal()) || (!isDay && getNocturnal()));
     }
 
-    abstract protected int getBreedingAge();
-
-    private void setWaterLevel(double waterLevel){
+    /**
+     * Adjust the water value of the waterLevel field
+     *
+     * @param waterLevel a double value of the water the animal is drinking
+     */
+    private void setWaterLevel(double waterLevel) {
         this.waterLevel += waterLevel;
     }
 
     /**
      * find the location of the food.
+     *
      * @return the location of the prey note this could be a plant
+     * @param animalsToEat a list of the animals to be eaten
+     * @param currentWeather the current weather
      */
     protected Location findFood(ArrayList<Class> animalsToEat, Weather currentWeather) {
         // first we allow the animal to drink
@@ -218,10 +274,11 @@ public abstract class Animal extends Organism{
         return null;
     }
 
-    private boolean getIsPregnant(){
-        return isPregnant;
-    }
-
+    /**
+     * Allow the animal to move locations
+     *
+     * @param currentWeather the current weather
+     */
     protected void moveLocationOfAnimal(Weather currentWeather){
         // Move towards a source of food if found.
         Location newLocation = findFood(getPrey(), currentWeather);
@@ -238,6 +295,10 @@ public abstract class Animal extends Organism{
         }
     }
 
+    /**
+     * Update the general statistics of the animal
+     * this includes: the hunger, thirst, and the pregnancy
+     */
     protected void updateStatsOfAnimal(){
         incrementThirst();
         incrementHunger();
@@ -246,6 +307,8 @@ public abstract class Animal extends Organism{
 
     /**
      * finds if it is possible to breed at a given location.
+     *
+     * @param matingPartner the class of animals
      * @return a boolean value of weather there is a mate to breed with
      */
     protected boolean findMate(Class matingPartner){
@@ -266,9 +329,15 @@ public abstract class Animal extends Organism{
                         return true;
                     }
                 }
-//                return potentialMate.getIsMale() != this.getIsMale() && potentialMate.getAge() >= potentialMate.getBreedingAge();
             }
         }
         return false;
     }
+
+    /**
+     * A simple getter method to get the breeding age. The age at which this animal is allowed to breed
+     *
+     * @return the breeding age
+     */
+    abstract protected int getBreedingAge();
 }
