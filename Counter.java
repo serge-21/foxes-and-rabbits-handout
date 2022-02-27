@@ -8,8 +8,8 @@
  * @version 2016.02.29
  */
 public class Counter {
-    private String name;        // A name for this type of simulation participant
-    private int count;          // How many of this type exist in the simulation.
+    private final String name;        // A name for this type of simulation participant
+    private int count;                // How many of this type exist in the simulation.
 
     /**
      * Provide a name for one of the simulation types.
