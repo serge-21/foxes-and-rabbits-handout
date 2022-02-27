@@ -5,21 +5,17 @@ import java.util.HashMap;
  * of a field. It is flexible: it will create and maintain a counter 
  * for any class of object that is found within the field.
  * 
- * @author David J. Barnes and Michael Kölling
- * @version 2016.02.29
+ * @author David J. Barnes, Michael Kölling, Syraj Alkhalil and Cosmo Colman
+ * @version 2022.02.27 (2)
  */
-public class FieldStats
-{
-    // Counters for each type of entity (fox, rabbit, etc.) in the simulation.
-    private HashMap<Class, Counter> counters;
-    // Whether the counters are currently up to date.
-    private boolean countsValid;
+public class FieldStats {
+    private final HashMap<Class, Counter> counters;   // Counters for each type of entity (fox, rabbit, etc.) in the simulation.
+    private boolean countsValid;                      // Whether the counters are currently up-to-date.
 
     /**
      * Construct a FieldStats object.
      */
-    public FieldStats()
-    {
+    public FieldStats() {
         // Set up a collection for counters for each type of animal that
         // we might find
         counters = new HashMap<>();
@@ -28,10 +24,11 @@ public class FieldStats
 
     /**
      * Get details of what is in the field.
+     *
+     * @param field the current field
      * @return A string describing what is in the field.
      */
-    public String getPopulationDetails(Field field)
-    {
+    public String getPopulationDetails(Field field) {
         StringBuffer buffer = new StringBuffer();
         if(!countsValid) {
             generateCounts(field);
@@ -53,10 +50,8 @@ public class FieldStats
      * Get total amount of entities on the field.
      * @return The total amount of entities.
      */
-    public int getTotalCount(Field field)
-    {
+    public int getTotalCount(Field field) {
         int total = 0;
-        StringBuffer buffer = new StringBuffer();
         if(!countsValid) {
             generateCounts(field);
         }
@@ -71,8 +66,7 @@ public class FieldStats
      * Invalidate the current set of statistics; reset all 
      * counts to zero.
      */
-    public void reset()
-    {
+    public void reset() {
         countsValid = false;
         for(Class key : counters.keySet()) {
             Counter count = counters.get(key);
@@ -84,8 +78,7 @@ public class FieldStats
      * Increment the count for one class of animal.
      * @param animalClass The class of animal to increment.
      */
-    public void incrementCount(Class animalClass)
-    {
+    public void incrementCount(Class animalClass) {
         Counter count = counters.get(animalClass);
         if(count == null) {
             // We do not have a counter for this species yet.
@@ -99,8 +92,7 @@ public class FieldStats
     /**
      * Indicate that an animal count has been completed.
      */
-    public void countFinished()
-    {
+    public void countFinished() {
         countsValid = true;
     }
 
@@ -109,8 +101,7 @@ public class FieldStats
      * I.e., should it continue to run.
      * @return true If there is more than one species alive.
      */
-    public boolean isViable(Field field)
-    {
+    public boolean isViable(Field field) {
         // How many counts are non-zero.
         int nonZero = 0;
         if(!countsValid) {
@@ -130,10 +121,10 @@ public class FieldStats
      * These are not kept up to date as foxes and rabbits
      * are placed in the field, but only when a request
      * is made for the information.
+     *
      * @param field The field to generate the stats for.
      */
-    private void generateCounts(Field field)
-    {
+    private void generateCounts(Field field) {
         reset();
         for(int row = 0; row < field.getDepth(); row++) {
             for(int col = 0; col < field.getWidth(); col++) {
@@ -149,5 +140,4 @@ public class FieldStats
     public HashMap<Class, Counter> getPopulation() {
         return this.counters;
     }
-
 }
