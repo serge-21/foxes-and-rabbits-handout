@@ -210,6 +210,8 @@ public class SimulatorView extends JFrame
         restoreIcon = new ImageIcon("resources/restore.png");
         deleteIcon = new ImageIcon("resources/delete.png");
 
+        setupTab1();
+
         mainPanel.add(fieldView, BorderLayout.CENTER);              // CENTRE Simulation Panel
         initialiseSimStatsPanel(mainPanel, BorderLayout.NORTH);     // NORTH Simulation Stats Panel
         initialisePopStatsPanel(mainPanel, BorderLayout.SOUTH);     // SOUTH Population Stats Panel
@@ -228,7 +230,11 @@ public class SimulatorView extends JFrame
         setVisible(true);
     }
 
-
+    private void setupTab1() {
+        spawnrate_seedTextField = new JTextField(Randomizer.getSeed() + "");
+        spawnrate_seedResetButton = new JButton(restoreIcon);
+        spawnrate_seedResetButton.setPreferredSize(SMALL_BUTTON_SIZE);
+    }
 
 
     /**
@@ -431,9 +437,6 @@ public class SimulatorView extends JFrame
     private void drawTab1Spawnrate(JPanel panel, String layout){
         panel.removeAll();
 
-        spawnrate_seedTextField = new JTextField(Randomizer.getSeed() + "");
-        spawnrate_seedResetButton = new JButton(restoreIcon);
-        spawnrate_seedResetButton.setPreferredSize(SMALL_BUTTON_SIZE);
         spawnrate_Slider = new ArrayList<>();
         spawnrate_CheckBox = new ArrayList<>();
         spawnrate_DeleteButton = new ArrayList<>();
