@@ -41,10 +41,10 @@ public abstract class Animal extends Organism{
 
         // give the animal a random age + food level if we want to
         if(randomAge){
-            setAge(getRand().nextInt(age));
+            setAgeInSteps(getRand().nextInt(age));
             setFoodLevel(getRand().nextInt(foodVal));
         } else {
-            setAge(0);
+            setAgeInSteps(0);
             setFoodLevel(foodVal);
         }
     }
@@ -61,7 +61,7 @@ public abstract class Animal extends Organism{
         panel.setBorder(new LineBorder(getStats().getColor(), 4));
 
         ArrayList<String> labelItems = new ArrayList<>(Arrays.asList(
-                "Age:",this.getAge() + "/" + ((AnimalStats)this.getStats()).getMaxAge(),
+                "Age:",this.getAgeInDays() + "/" + ((AnimalStats)this.getStats()).getMaxAge(),
                 "Pregnant:", (isPregnant + "").toUpperCase(),
                 "Food Level:", foodLevel + "",
                 "Water Level:", waterLevel + ""));
@@ -318,7 +318,7 @@ public abstract class Animal extends Organism{
             Entity animal = (Entity) field.getObjectAt(where);
             if(animal != null && matingPartner.getStats().getName().equals(animal.getStats().getName())){
                 Animal potentialMate = (Animal) animal;
-                if(potentialMate.getAge() >= potentialMate.getBreedingAge() && potentialMate.getIsMale() != this.getIsMale()){
+                if(potentialMate.getAgeInDays() >= potentialMate.getBreedingAge() && potentialMate.getIsMale() != this.getIsMale()){
                     if(!potentialMate.getIsMale() && !potentialMate.getIsPregnant()){
                         potentialMate.setPregnant(true);
                         potentialMate.setBreedCounter(10);

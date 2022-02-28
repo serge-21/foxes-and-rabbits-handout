@@ -1,4 +1,3 @@
-import java.awt.*;
 import java.util.List;
 
 /**
@@ -63,8 +62,8 @@ public class Prey extends Animal
      */
     private void incrementAge()
     {
-        setAge(getAge() + 1);
-        if(getAge() > animalStats.getMaxAge()) {
+        setAgeInSteps(getAgeInSteps() + 1);
+        if(getAgeInDays() > animalStats.getMaxAge()) {
             setDead();
         }
     }
@@ -115,7 +114,7 @@ public class Prey extends Animal
      */
     private boolean canBreed()
     {
-        return getAge() >= animalStats.getBreedingAge();
+        return getAgeInDays() >= animalStats.getBreedingAge();
     }
 
     public Prey createClone(boolean randomAge, Field field, Location initLocation){

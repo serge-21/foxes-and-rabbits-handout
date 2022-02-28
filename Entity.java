@@ -8,7 +8,7 @@ import java.util.Random;
  * @version 2022.02.27 (2)
  */
 public class Entity {
-    private int age;                                            // The age of the entity
+    private int ageInSteps;                                     // get the age of the entity in steps
     private Field field;                                        // The field occupied by the entity
     private boolean isAlive;                                    // Is the entity currently alive
     private Location location;                                  // The location of the entity
@@ -21,10 +21,20 @@ public class Entity {
     public Entity(EntityStats stats ,Field field, Location initLocation) {
         // initialise instance variables
         this.entityStats = stats;
-        this.age = 0;
+        this.ageInSteps = 0;
         this.isAlive = true;
         this.field = field;
         setLocation(initLocation);
+    }
+
+    /**
+     * A simple method to return the age of the entity in days instead of steps
+     *
+     * @return the current age of the entity
+     */
+    public double getAgeInDays() {
+        double value = getAgeInSteps() / 24.0;
+        return Math.floor(value * 100) / 100;
     }
 
     /**
@@ -32,8 +42,8 @@ public class Entity {
      *
      * @return the current age of the entity
      */
-    public int getAge() {
-        return age;
+    public int getAgeInSteps() {
+        return ageInSteps;
     }
 
     /**
@@ -54,13 +64,14 @@ public class Entity {
         return field;
     }
 
+
     /**
      * A simple setter method to set the age of the entity
      *
-     * @param age the age we want the entity to have
+     * @param ageInSteps the age we want the entity to have
      */
-    public void setAge(int age) {
-        this.age = age;
+    public void setAgeInSteps(int ageInSteps) {
+        this.ageInSteps = ageInSteps;
     }
 
     /**

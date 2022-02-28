@@ -59,8 +59,8 @@ public class Predator extends Animal {
      * Increase the age. This could result in the predator's death.
      */
     private void incrementAge() {
-        setAge(getAge() + 1);
-        if(getAge() > animalStats.getMaxAge()) {
+        setAgeInSteps(getAgeInSteps() + 1);
+        if(getAgeInDays() > animalStats.getMaxAge()) {
             setDead();
         }
     }
@@ -114,6 +114,6 @@ public class Predator extends Animal {
      * @return a boolean if this animal can breed or not
      */
     private boolean canBreed() {
-        return getAge() >= animalStats.getBreedingAge();
+        return getAgeInDays() >= animalStats.getBreedingAge();
     }
 }
