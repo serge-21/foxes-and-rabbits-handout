@@ -32,6 +32,11 @@ public class SimulatorView extends JFrame
     private final Color SUCCESS_COLOR = new Color(27, 157, 21);
     private final Color FAIL_COLOR = new Color(207, 39, 39);
 
+    private final Color DAY_COLOR = new Color(78, 206, 243);
+    private final Color SUNRISE_COLOR = new Color(255, 167, 0);
+    private final Color SUNSET_COLOR = new Color(75, 119,201);
+    private final Color NIGHT_COLOR = new Color(36, 36, 113);
+
     // Constants or MAIN -> NORTH Simulation Stats Panel (simstats)
     private final String SIMSTATS_STEP_PREFIX = "Step: ";
     private final String SIMSTATS_TIME_PREFIX = "Time: ";
@@ -123,6 +128,8 @@ public class SimulatorView extends JFrame
     // Components for MAIN -> EAST -> SOUTH -> CENTRE Environment View (enview)
     private JPanel enview_Panel;        // For telling the user important details
     private JLabel weather;
+    private ArrayList<ImageIcon> enview_clockFaces;
+    private JLabel enview_clock;
 
 
 
@@ -263,8 +270,11 @@ public class SimulatorView extends JFrame
         popStats_TypeLabel = new JLabel();
         addAll(popStats_Panel, popStats_TotalLabel, new JLabel("     ", JLabel.CENTER), popStats_TypeLabel, new JLabel("     ", JLabel.CENTER));
 
+        popStats_EntityCount = new ArrayList<>();
         popStats_EntityLabels = new ArrayList<>();
         for (EntityStats entity : simulator.getPossibleEntities()){
+            popStats_EntityCount.add(0);
+
             JLabel currentEntity = new JLabel();
             popStats_EntityLabels.add(currentEntity);
             popStats_Panel.add(currentEntity); // IF THIS BREAKS THEN USE INDEX OF
@@ -280,21 +290,22 @@ public class SimulatorView extends JFrame
      */
     private void initialiseOptionsPanel(Container container, String layout){
         options_Panel = new JPanel(new BorderLayout());
+        container.add(options_Panel, layout);
 
         initialisePlaypauseButtons(options_Panel, BorderLayout.NORTH);
         initialiseTabbedMenu(options_Panel, BorderLayout.CENTER);
         initialiseExtrasPanel(options_Panel, BorderLayout.SOUTH);
 
-        container.add(options_Panel, layout);
     }
 
     /**
-     * Initialises the Control Buttons located North of the Options frame.
+     * Initlialise the extras panel located South of tabs
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
     private void initialiseExtrasPanel(JPanel panel, String layout){
         extras_Panel = new JPanel(new BorderLayout());
+        panel.add(extras_Panel, layout);
 
         //North
         detailsLabel = new JLabel("", JLabel.CENTER);
@@ -302,14 +313,8 @@ public class SimulatorView extends JFrame
         detailsLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
         extras_Panel.add(detailsLabel, BorderLayout.NORTH);
 
-
         // Centre
-        // THING THAT SHOWS WEATHER STATS AND IMAGES GOES HERE, PREFERABLE AS A SQUARE
-        enview_Panel = new JPanel(new BorderLayout());
-        weather = new JLabel("", JLabel.CENTER);
-        enview_Panel.add(weather, BorderLayout.CENTER);
-        enview_Panel.setPreferredSize(new Dimension(200,200));
-        extras_Panel.add(enview_Panel, BorderLayout.CENTER);
+        initialiseEnvViewPanel(extras_Panel, BorderLayout.CENTER);
 
         // South
         fullResetButton = new JButton(FULL_RESET);
@@ -322,7 +327,64 @@ public class SimulatorView extends JFrame
             refreshPanels();
         });
 
-        panel.add(extras_Panel, layout);
+
+    }
+
+    /**
+     * Initialises the environment views located centre of extras panel.
+     * @param panel The panel you want to initialise components to.
+     * @param layout The position to assign the components.
+     */
+    private void initialiseEnvViewPanel(JPanel panel, String layout){
+        enview_Panel = new JPanel(new BorderLayout());
+        panel.add(enview_Panel, layout);
+
+
+        // Weather text
+        weather = new JLabel("", JLabel.CENTER);
+        enview_Panel.add(weather, BorderLayout.CENTER);
+        enview_Panel.setPreferredSize(new Dimension(200,200));
+
+
+        // Time Clock
+        JPanel clockPanel = new JPanel(new BorderLayout());
+        enview_Panel.add(clockPanel, BorderLayout.SOUTH);
+
+        enview_clockFaces = new ArrayList<>();
+        for (int index = 0; index < 24; index++){
+            String stage;
+            if (index < 10)
+                stage = "0" + index;
+            else
+                stage = index + "";
+
+            ImageIcon clockIcon = new ImageIcon(String.format("resources/clock/clock_%s.png", stage));
+            clockIcon = new ImageIcon(clockIcon.getImage().getScaledInstance(120,120, Image.SCALE_FAST));
+            enview_clockFaces.add(clockIcon);
+        }
+        enview_clock = new JLabel(enview_clockFaces.get(0));
+        //enview_clock.setOpaque(true);
+        enview_clock.setBackground(new Color(0,0,0,0));     // Makes the clock background same as panel.
+        clockPanel.add(enview_clock,BorderLayout.CENTER);
+
+        // Pie Chart
+//        JFrame lol = new JFrame("ok");
+//        //Container stupidcontainer = lol.getContentPane();
+//
+//        JPanel pieChartPanel = new JPanel(new BorderLayout());
+//
+//        lol.add(pieChartPanel, BorderLayout.CENTER);
+//
+//        //enview_Panel.add(pieChartPanel, BorderLayout.EAST);
+//        this.pieChart = new PieChart();
+//        pieChartPanel.add(pieChart, BorderLayout.CENTER);
+//        this.pieChart.setSize(120, 120);
+//        this.pieChart.stats(popStats_EntityCount, simulator.getPossibleEntities());
+//        this.pieChart.repaint();
+//
+//        lol.setSize(500,500);
+//        lol.pack();
+//        lol.setVisible(true);
 
     }
 
@@ -437,6 +499,9 @@ public class SimulatorView extends JFrame
     private void drawTab1Spawnrate(JPanel panel, String layout){
         panel.removeAll();
 
+        spawnrate_seedTextField = new JTextField(Randomizer.getSeed() + "");
+        spawnrate_seedResetButton = new JButton(restoreIcon);
+        spawnrate_seedResetButton.setPreferredSize(SMALL_BUTTON_SIZE);
         spawnrate_Slider = new ArrayList<>();
         spawnrate_CheckBox = new ArrayList<>();
         spawnrate_DeleteButton = new ArrayList<>();
@@ -545,6 +610,14 @@ public class SimulatorView extends JFrame
                 if (simulator.getPossibleEntities().size() > 1) {
                     simulator.removeEntity(entity);
                     setDetailText("Successfully removed the " + entity.getName() + " entity!", SUCCESS_COLOR);
+
+
+                    simulator.removeFromOrganisms(entity);
+                    field.removeAllObjectsOf(entity);
+                    simulator.removeEntity(entity);
+
+
+                    simulator.showStatus();
                     refreshPanels();
                 }
                 else{
@@ -747,12 +820,7 @@ public class SimulatorView extends JFrame
             addent_Container.updateUI();
         });
 
-//        for (Color color : entityColor.keySet()){
-//            if (entityColor.get(color) == null){
-//                newEntity.setColor(color);
-//                break;
-//            }
-//        }
+
 
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
@@ -763,6 +831,7 @@ public class SimulatorView extends JFrame
         ComboBoxRenderer renderer = new ComboBoxRenderer(colorComboBox, entityColor);
         colorComboBox.setPreferredSize(new Dimension(43, 23));
         colorComboBox.setRenderer(renderer);
+//        colorComboBox.setBackground(newEntity.getColor());
         nameAndTypesPanel.add(colorComboBox, gbc);
 
         colorComboBox.addActionListener(e -> {
@@ -770,8 +839,8 @@ public class SimulatorView extends JFrame
             if (entityColor.get(selectedColor) == null){
 //                entityColor.replace(newEntity.getColor(), null);
 //                entityColor.replace(selectedColor, newEntity);
-//                newEntity.setColor(selectedColor);
-//                colorComboBox.setBackground(selectedColor);
+                newEntity.setColor(selectedColor);
+                colorComboBox.setBackground(selectedColor);
                 //setDetailText("Changed colour of " + stat.getName() + "." , SUCCESS_COLOR);
             }
             else{
@@ -779,6 +848,23 @@ public class SimulatorView extends JFrame
             }
         });
 
+        tabmenu_TabbedPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (tabmenu_TabbedPane.getSelectedIndex() == 2){
+//                    for (Color color : entityColor.keySet()){
+//                        if (entityColor.get(color) == null){
+//                            newEntity.setColor(color);
+//                            break;
+//                        }
+//                    }
+                }
+                else{
+                    newEntity.setColor(null);
+                    colorComboBox.setBackground(null);
+                }
+            }
+        });
 
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -831,7 +917,7 @@ public class SimulatorView extends JFrame
         inputBoxesPanel = new JPanel(new GridBagLayout());
 
         PlantStats newPlant = new PlantStats();
-        createAddSpinnerComponentDouble(inputBoxesPanel, 0, "Breeding Prob", 0.2,0.1, newPlant::getBreedingProbability, newPlant::setBreedingProbability);
+        createAddSpinnerComponentDouble(inputBoxesPanel, 0, "Breeding Prob", 20,0.1, newPlant::getBreedingProbability, newPlant::setBreedingProbability);
         createAddSpinnerComponentDouble(inputBoxesPanel, 1, "Creation Prob", 0.2,0.01, newPlant::getCreationProbability, newPlant::setCreationProbability);
         createAddSpinnerComponentInteger(inputBoxesPanel, 2, "Food Value", 30,1, newPlant::getFoodValue, newPlant::setFoodValue);
         createAddSpinnerComponentInteger(inputBoxesPanel, 3, "Max Level", 10,1, newPlant::getMaxLevel, newPlant::setMaxLevel);
@@ -853,18 +939,30 @@ public class SimulatorView extends JFrame
         addAndClearButtonsPanel.add(addButton, gbc);
 
         addButton.addActionListener(e -> {
-            if (simulator.getPossibleEntities().size() < MAX_ENTITIES) {
+            boolean nameTaken = false;
+            for (EntityStats entity : simulator.getPossibleEntities()){
+                if (entity.getName().equals(newEntity.getName())){
+                    nameTaken = true;
+                }
+            }
+            if (!(simulator.getPossibleEntities().size() < MAX_ENTITIES)){
+                setDetailText("Too many entities! Max of " + MAX_ENTITIES + ".", FAIL_COLOR);
+            }
+            else if (nameTaken) {
+                setDetailText("Entity with that name already exists!", FAIL_COLOR);
+            }
+            else if (newEntity.getColor() == null){
+                setDetailText("Please choose a colour!", FAIL_COLOR);
+            }
+            else {
                 try {
                     simulator.addEntityToPossibilities(newEntity.clone());
                 } catch (CloneNotSupportedException ex) {
                     ex.printStackTrace();
                 }
-                setDetailText("Sucessfuly added new " + newEntity.getName() + " " + newEntity.getEntityType().toString().toLowerCase() + "!" ,SUCCESS_COLOR);
+                setDetailText("Successfully added new " + newEntity.getName() + " " + newEntity.getEntityType().toString().toLowerCase() + "!", SUCCESS_COLOR);
                 newEntity.resetToDefault();
                 refreshPanels();
-            }
-            else{
-                setDetailText("Too many entities! Max of " + MAX_ENTITIES + ".", FAIL_COLOR);
             }
         });
 
@@ -973,19 +1071,19 @@ public class SimulatorView extends JFrame
 
         // These specify the coordinate translations for the brush size.
         int[][] smallTranslations = {
-                         {0,0}};
+                {0,0}};
 
         int[][] mediumTranslations = {
-                         {-1, 0},
+                {-1, 0},
                 {0, -1}, {0, 0}, {0, 1},
-                         {1, 0}};
+                {1, 0}};
 
         int[][] largeTranslations = {
-                        {-2, -1}, {-2, 0}, {-2, 1},
+                {-2, -1}, {-2, 0}, {-2, 1},
                 {-1, -2}, {-1, -1}, {-1, 0}, {-1, 1}, {-1, 2},
                 {0, -2}, {0, -1}, {0, 0}, {0, 1}, {0, 2},
                 {1, -2}, {1, -1}, {1, 0}, {1, 1}, {1, 2},
-                        {2, -1}, {2, 0}, {2, 1}};
+                {2, -1}, {2, 0}, {2, 1}};
 
         Consumer<MouseEvent> draw = (e) -> {
             int fieldX = e.getX()/(fieldView.getWidth()/width);
@@ -1054,7 +1152,7 @@ public class SimulatorView extends JFrame
                 drawent_EnableDisableButton.setText("Disable Draw Mode");
                 setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
                 for (Component component : drawent_OptionsPanel.getComponents()){
-                     component.setEnabled(true);
+                    component.setEnabled(true);
                 }
                 tabmenu_TabbedPane.setEnabledAt(0, false);
                 tabmenu_TabbedPane.setEnabledAt(1, false);
@@ -1259,9 +1357,9 @@ public class SimulatorView extends JFrame
 
     private void updateWeather(Weather currentWeather){
         weather.setText("<html>"+ currentWeather.toString() +"</html>");
-        enview_Panel.add(weather, BorderLayout.CENTER);
-        enview_Panel.setPreferredSize(new Dimension(200,200));
-        extras_Panel.add(enview_Panel, BorderLayout.CENTER);
+        //enview_Panel.add(weather, BorderLayout.CENTER);
+        //enview_Panel.setPreferredSize(new Dimension(200,200));
+        //extras_Panel.add(enview_Panel, BorderLayout.CENTER);
     }
 
     /**
@@ -1274,12 +1372,7 @@ public class SimulatorView extends JFrame
             setVisible(true);
         }
 
-        // display visually the day night cycle
-        if(daytime.equals("night")){
-            EMPTY_COLOR = EMPTY_COLOR_DARK;
-        }else{
-            EMPTY_COLOR = EMPTY_COLOR.brighter();
-        }
+        paintEnviewPanel(step);
 
         simStats_StepLabel.setText(SIMSTATS_STEP_PREFIX + step);
         simStats_TimeLabel.setText(SIMSTATS_TIME_PREFIX + time);
@@ -1299,7 +1392,9 @@ public class SimulatorView extends JFrame
             for(int col = 0; col < field.getWidth(); col++) {
                 Entity animal = (Entity)field.getObjectAt(row, col);
                 if(animal != null) {
-                    int index = simulator.getPossibleEntities().indexOf(animal.getStats());
+//                    int index = simulator.getPossibleEntities().indexOf(animal.getStats());
+//                    int currentCount = popStats_EntityCount.get(index);
+//                    popStats_EntityCount.set(index, ++currentCount);
                     //popStats_EntityCount.set(simulator.getPossibleEntities().indexOf(animal.getStats()), popStats_EntityCount.get(index) + 1);
 
                     stats.incrementCount(animal.getClass());
@@ -1313,8 +1408,8 @@ public class SimulatorView extends JFrame
         stats.countFinished();
         //this.histogram.stats(this.getPopulationDetails());
         //this.histogram.repaint();
-        //this.pieChart.stats(this.getPopulationDetails());
-        //this.pieChart.repaint();
+//        this.pieChart.stats(popStats_EntityCount, simulator.getPossibleEntities());
+//        this.pieChart.repaint();
 
         popStats_TotalLabel.setText(POPSTATS_TOTAL_PREFIX + stats.getTotalCount(field));
         popStats_TypeLabel.setText(stats.getPopulationDetails(field));
@@ -1323,6 +1418,57 @@ public class SimulatorView extends JFrame
             popStats_EntityLabels.get(index).setText(entity.getName() + ": " + popStats_EntityCount.get(index));
         }
         fieldView.repaint();
+    }
+
+    /**
+     * Paints the contents of Environment View panel with new stats
+     * @param step The current step of the simulation.
+     */
+    private void paintEnviewPanel(int step){
+//        double doubleStep = step;
+//        double partOfDay = (doubleStep % Simulator.STEP_PER_DAY)/Simulator.STEP_PER_DAY;
+//        double partOfSection;
+//        Color oldColor, newColor;
+//        if (partOfDay >= 0 && partOfDay < 0.25){
+//            oldColor = NIGHT_COLOR;
+//            newColor = SUNRISE_COLOR;
+//            partOfSection = partOfDay/0.25;
+//        }
+//        else if (partOfDay >= 0.25 && partOfDay < 0.5){
+//            oldColor = SUNRISE_COLOR;
+//            newColor = DAY_COLOR;
+//
+//            partOfSection = (partOfDay - 0.25)/0.25;
+//        }
+//        else if (partOfDay >= 0.25 && partOfDay < 0.75){
+//            oldColor = DAY_COLOR;
+//            newColor = SUNSET_COLOR;
+//
+//            partOfSection = (partOfDay - 0.5)/0.25;
+//        }
+//        else{// if (partOfDay >= 0.75 && partOfDay < 1){
+//            oldColor = SUNSET_COLOR;
+//            newColor = NIGHT_COLOR;
+//
+//            partOfSection = (partOfDay - 0.75)/0.25;
+//        }
+//
+//        enview_Panel.setBackground(new Color(getColorChangeValue(oldColor.getRed(), newColor.getRed(), partOfSection), getColorChangeValue(oldColor.getGreen(), newColor.getGreen(), partOfSection), getColorChangeValue(oldColor.getBlue(), newColor.getBlue(), partOfSection)));
+
+        enview_clock.setIcon(enview_clockFaces.get(step % Simulator.STEP_PER_DAY));
+        enview_clock.repaint();
+        enview_clock.revalidate();
+    }
+
+    /**
+     *
+     * @param oldValue
+     * @param newValue
+     * @param position The double position through thr number (0 to 1). For exmaple 0.5 will set the number halfway between the two values.
+     * @return
+     */
+    private int getColorChangeValue(int oldValue, int newValue, double position){
+        return (int)(oldValue + ((newValue-oldValue)*(position)));
     }
 
     /**
@@ -1368,7 +1514,7 @@ public class SimulatorView extends JFrame
         public Dimension getPreferredSize()
         {
             return new Dimension(gridWidth * GRID_VIEW_SCALING_FACTOR,
-                                 gridHeight * GRID_VIEW_SCALING_FACTOR);
+                    gridHeight * GRID_VIEW_SCALING_FACTOR);
         }
 
         /**

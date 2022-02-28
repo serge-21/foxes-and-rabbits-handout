@@ -6,7 +6,7 @@ import java.util.Random;
 /**
  * Represent a rectangular grid of field positions.
  * Each position is able to store a single animal.
- * 
+ *
  * @author David J. Barnes and Michael Kölling
  * @version 2016.02.29
  */
@@ -14,7 +14,7 @@ public class Field
 {
     // A random number generator for providing random locations.
     private static final Random rand = Randomizer.getRandom();
-    
+
     // The depth and width of the field.
     private final int depth, width;
     // Storage for the animals.
@@ -30,7 +30,7 @@ public class Field
         this.width = width;
         field = new Object[depth][width];
     }
-    
+
     /**
      * Empty the field.
      */
@@ -41,7 +41,21 @@ public class Field
             }
         }
     }
-    
+
+    /**
+     * Removes all instances of the object from the field.
+     * @param entity the object to remove.
+     */
+    public void removeAllObjectsOf(EntityStats entity) {
+        for(int row = 0; row < depth; row++) {
+            for(int col = 0; col < width; col++) {
+                if((field[row][col] != null) && ((Entity)field[row][col]).getStats().equals(entity)){
+                    field[row][col] = null;
+                }
+            }
+        }
+    }
+
     /**
      * Clear the given location.
      * @param location The location to clear.
@@ -49,7 +63,7 @@ public class Field
     public void clear(Location location) {
         field[location.getRow()][location.getCol()] = null;
     }
-    
+
     /**
      * Place an animal at the given location.
      * If there is already an animal at the location it will
@@ -61,7 +75,7 @@ public class Field
     public void place(Object animal, int row, int col) {
         place(animal, new Location(row, col));
     }
-    
+
     /**
      * Place an animal at the given location.
      * If there is already an animal at the location it will
@@ -72,7 +86,7 @@ public class Field
     public void place(Object animal, Location location) {
         field[location.getRow()][location.getCol()] = animal;
     }
-    
+
     /**
      * Return the animal at the given location, if any.
      * @param location Where in the field.
@@ -81,7 +95,7 @@ public class Field
     public Object getObjectAt(Location location) {
         return getObjectAt(location.getRow(), location.getCol());
     }
-    
+
     /**
      * Return the animal at the given location, if any.
      * @param row The desired row.
@@ -94,7 +108,7 @@ public class Field
         }
         return field[row][col];
     }
-    
+
     /**
      * Generate a random location that is adjacent to the
      * given location, or is the same location.
@@ -107,7 +121,7 @@ public class Field
         List<Location> adjacent = adjacentLocations(location);
         return adjacent.get(0);
     }
-    
+
     /**
      * Get a shuffled list of the free adjacent locations.
      * @param location Get locations adjacent to this.
@@ -139,7 +153,7 @@ public class Field
         }
         return occupied;
     }
-    
+
     /**
      * Try to find a free location that is adjacent to the
      * given location. If there is none, return null.
@@ -185,7 +199,7 @@ public class Field
                     }
                 }
             }
-            
+
             // Shuffle the list. Several other methods rely on the list
             // being in a random order.
             Collections.shuffle(locations, rand);
@@ -200,7 +214,7 @@ public class Field
     public int getDepth() {
         return depth;
     }
-    
+
     /**
      * Return the width of the field.
      * @return The width of the field.

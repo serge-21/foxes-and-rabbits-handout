@@ -4,7 +4,7 @@ import java.awt.Color;
 /**
  * A simple predator-prey simulator, based on a rectangular field
  * containing rabbits and foxes.
- * 
+ *
  * @author David J. Barnes and Michael Kölling
  * @version 2016.02.29 (2)
  */
@@ -20,6 +20,8 @@ public class Simulator
     private static int currentSpeed;
     private static final ArrayList<String> speedSymbols = new ArrayList<String>(Arrays.asList("1", "2", "4", "8"));
     private static String currentSpeedSymbol;
+
+    public static final int STEP_PER_DAY = 24;
 
     // List of animals in the field.
     private final List<Organism> organisms;
@@ -86,7 +88,7 @@ public class Simulator
             try {
                 DEFAULT_ENTITIES.add(stat.clone());
             } catch (CloneNotSupportedException e) {
-               //e.printStackTrace();
+                //e.printStackTrace();
             }
         }
 
@@ -142,7 +144,7 @@ public class Simulator
     {
         simulate(4000);
     }
-    
+
     /**
      * Run the simulation from its current state for the given number of steps.
      * Stop before the given number of steps if it ceases to be viable.
@@ -158,7 +160,7 @@ public class Simulator
 
     private void checkForDayChange(){
         // from 16 to 5 is night.
-        time = step % 24;
+        time = step % STEP_PER_DAY;
         if(time < 4 || time > 16){
             // then it's night
             daytime = "night";
@@ -200,7 +202,7 @@ public class Simulator
         for (Iterator<Organism> it = organisms.iterator(); it.hasNext(); ) {
             Organism entity = it.next();
             entity.act(newOrganisms, isDay, this.weather);
-            if (!entity.getIsAlive()) {
+            if (!entity.getIsAlive()){ // || !possibleEntities.contains(entity.getStats())) {
                 it.remove();
             }
         }
@@ -208,6 +210,11 @@ public class Simulator
         // Add the newly created organisms to the list.
         organisms.addAll(newOrganisms);
         showStatus();
+    }
+
+    public void removeFromOrganisms(EntityStats entityStats){
+        // || !possibleEntities.contains(entity.getStats())) {
+        organisms.removeIf(entity -> entity.getStats().equals(entityStats));
     }
 
     public void showStatus(){
@@ -231,7 +238,7 @@ public class Simulator
         // Show the starting state in the view.
         showStatus();
     }
-    
+
     /**
      * Randomly populate the field with foxes and rabbits.
      */
