@@ -73,7 +73,7 @@ public abstract class Animal extends Organism{
             sexSymbol.setText("   M   ");
             sexSymbol.setBackground(Color.cyan);
             labelItems.remove(2);
-            labelItems.remove(3);
+            labelItems.remove(2);
         }
 
         // positioning the information
