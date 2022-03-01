@@ -12,6 +12,12 @@ public class AnimalStats extends EntityStats {
     private int maxAge;                      // The age to which a predator1 can live.
     private int maxLitterSize;               // The maximum number of births.
     private int hungerValue;                 // The food value of a single prey1. In effect, this is the
+    private boolean isNocturnal;
+
+    public static final int BREEDINGAGE_MAX = 100;
+    public static final int MAXAGE_MAX = 100;
+    public static final int MAXLITTERSIZE_MAX = 8;
+    public static final int HUNGERVALUE_MAX = 50;
 
     private final AnimalStats DEFAULT_STATS; // The default stats of the animal
 
@@ -20,19 +26,20 @@ public class AnimalStats extends EntityStats {
      * @param name The name of the animal.
      * @param entityType The type of the animal. Should be declared as an EntityType Enum
      * @param color The colour of the animal.
-     * @param breedingProbability The probability that the animal will breed.
      * @param creationProbability The probability that the animal is places on the field.
+     * @param breedingProbability The probability that the animal will breed.
      * @param breedingAge The Age at which the animal can start breeding.
      * @param maxAge The max age of the animal before it dies.
      * @param maxLitterSize The max amount of offspring the animal can produce.
      * @param hungerValue The number of steps before the animal need to eat again.
      */
-    public AnimalStats(String name, EntityType entityType, Color color, double breedingProbability, double creationProbability, int breedingAge, int maxAge, int maxLitterSize, int hungerValue){
-        super(name, entityType, color, breedingProbability, creationProbability);
-        this.breedingAge = breedingAge;
-        this.maxAge = maxAge;
-        this.maxLitterSize = maxLitterSize;
-        this.hungerValue = hungerValue;
+    public AnimalStats(String name, EntityType entityType, Color color, double creationProbability, double breedingProbability, boolean isNocturnal, int breedingAge, int maxAge, int maxLitterSize, int hungerValue){
+        super(name, entityType, color, creationProbability, breedingProbability);
+        this.isNocturnal = isNocturnal;
+        this.breedingAge = Math.min(breedingAge, BREEDINGAGE_MAX);
+        this.maxAge = Math.min(maxAge, MAXAGE_MAX);
+        this.maxLitterSize = Math.min(maxLitterSize, MAXLITTERSIZE_MAX);
+        this.hungerValue = Math.min(hungerValue, HUNGERVALUE_MAX);
 
         DEFAULT_STATS = new AnimalStats(this);
     }
@@ -43,6 +50,7 @@ public class AnimalStats extends EntityStats {
      */
     protected AnimalStats(AnimalStats clone) {
         super(clone);
+        this.isNocturnal = clone.isNocturnal;
         this.breedingAge = clone.breedingAge;
         this.maxAge = clone.maxAge;
         this.maxLitterSize = clone.maxLitterSize;
@@ -56,10 +64,11 @@ public class AnimalStats extends EntityStats {
      */
     public AnimalStats() {
         super();
-        this.breedingAge = 0;
-        this.maxAge = 0;
-        this.maxLitterSize = 0;
-        this.hungerValue = 0;
+        this.isNocturnal = false;
+        this.breedingAge = 1;
+        this.maxAge = 1;
+        this.maxLitterSize = 1;
+        this.hungerValue = 1;
 
         DEFAULT_STATS = new AnimalStats(this);
     }
@@ -86,6 +95,7 @@ public class AnimalStats extends EntityStats {
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
+        this.isNocturnal = defaults.isNocturnal;
         this.breedingAge = defaults.breedingAge;
         this.maxAge = defaults.maxAge;
         this.maxLitterSize = defaults.maxLitterSize;
@@ -93,6 +103,15 @@ public class AnimalStats extends EntityStats {
     }
 
     // a list of all the getter and setter methods
+
+    /**
+     * A simple getter method to return if the animal is nocturnal.
+     *
+     * @return the isNocturnal field.
+     */
+    public boolean isNocturnal() {
+        return isNocturnal;
+    }
 
     /**
      * A simple getter method to return the breeding age
@@ -128,6 +147,15 @@ public class AnimalStats extends EntityStats {
      */
     public int getHungerValue(){
         return hungerValue;
+    }
+
+    /**
+     * A simple setter method to set if nocturnal
+     *
+     * @param isNocturnal true if animal is nocturnal
+     */
+    public void setNocturnal(boolean isNocturnal) {
+        this.isNocturnal = isNocturnal;
     }
 
     /**

@@ -15,7 +15,7 @@ public abstract class Animal extends Organism{
     // all the field shared by all animals
     private static final Random rand = Randomizer.getRandom();          // a random chance of things happening shared by all animals
     private final boolean isMale = rand.nextDouble() < 0.5;             // random chance that each animal might be a male or female
-    private final boolean isNocturnal;                                  // is the animal nocturnal
+    //private final boolean isNocturnal;                                  // is the animal nocturnal
     private boolean isPregnant;                                         // is pregnant is for both the recovery period AND pregnancy
     private int breedCounter;                                           // recovery from being pregnant
     private int foodLevel;                                              // how hungry is the animal if food level is 0 animal dies
@@ -29,13 +29,13 @@ public abstract class Animal extends Organism{
      * @param randomAge to give more variance if we have a random age we set the food-level and age to random values
      * @param field The field currently occupied.
      * @param initLocation The location within the field.
-     * @param nocturnal a boolean value of weather the animal is nocturnal
+     //* @param nocturnal a boolean value of weather the animal is nocturnal
      * @param foodVal the food value of the animal when born
      * @param age the age of the animal when born
      */
     public Animal(AnimalStats stats, boolean randomAge, Field field,  Location initLocation, boolean nocturnal, int foodVal, int age) {
         super(stats, field, initLocation);
-        this.isNocturnal = nocturnal;
+        //this.isNocturnal = nocturnal;
         this.prey = new ArrayList<>();
         this.breedCounter = 10;
 
@@ -178,14 +178,14 @@ public abstract class Animal extends Organism{
         }
     }
 
-    /**
-     * a getter method to get the isNocturnal field.
-     *
-     * @return a boolean value of when the animal is active at night or not.
-     */
-    protected boolean getNocturnal(){
-        return isNocturnal;
-    }
+//    /**
+//     * a getter method to get the isNocturnal field.
+//     *
+//     * @return a boolean value of when the animal is active at night or not.
+//     */
+//    protected boolean getNocturnal(){
+//        return isNocturnal;
+//    }
 
     /**
      * Make the animal more hungry. This could result in the animal's death.
@@ -229,7 +229,7 @@ public abstract class Animal extends Organism{
      * @return true if the animal can move during this time
      */
     protected boolean determineDay(boolean isDay) {
-        return ((isDay && !getNocturnal()) || (!isDay && getNocturnal()));
+        return ((isDay && !((AnimalStats)getStats()).isNocturnal()) || (!isDay && ((AnimalStats)getStats()).isNocturnal()));
     }
 
     /**

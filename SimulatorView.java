@@ -5,7 +5,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultFormatter;
-import javax.swing.text.NumberFormatter;
 import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -48,9 +47,20 @@ public class SimulatorView extends JFrame
 
     // Constants for MAIN -> EAST -> CENTRE TabbedPane (tabmenu)
     private final String TAB1_NAME = "SpawnRate";
+    private final String TAB1_TOOLTIP = "Control the spawnrate of an entity on simulation restart";
     private final String TAB2_NAME = "Values";
+    private final String TAB2_TOOLTIP = "Change the constants that define an entity";
     private final String TAB3_NAME = "Add";
+    private final String TAB3_TOOLTIP = "Add your own custom entities";
     private final String TAB4_NAME = "Draw";
+    private final String TAB4_TOOLTIP = "Draw entities on the simulation";
+
+    private final String PLAYPAUSE_TOOLTIP = "Play or pause the simulation";
+    private final String SPEED_TOOLTIP = "Toggle simulator speeds";
+    private final String STEP_TOOLTIP = "Step the simulation once";
+    private final String RESET_TOOLTIP = "Reset the simulation";
+
+
 
     private final String FULL_RESET = "Full Reset";
 
@@ -117,6 +127,7 @@ public class SimulatorView extends JFrame
 
     // Components for MAIN -> EAST -> CENTRE -> TAB4 Draw Entity Panel (drawent)
     private JPanel drawent_Panel;
+    private JButton drawent_EnableButton;
     private boolean drawmodeEnabled = false;
 
     // Components for MAIN -> EAST -> SOUTH Extras panel (extras)
@@ -144,7 +155,6 @@ public class SimulatorView extends JFrame
 
     private FieldView fieldView;
     private Histogram histogram;
-    private boolean isPlaying = false;
     private PieChart pieChart;
 
     // A statistics object computing and storing simulation information
@@ -318,6 +328,7 @@ public class SimulatorView extends JFrame
 
         // South
         fullResetButton = new JButton(FULL_RESET);
+        fullResetButton.setEnabled(simulator.isRunning());
         extras_Panel.add(fullResetButton, BorderLayout.SOUTH);
 
         fullResetButton.addActionListener(e -> {
@@ -432,21 +443,45 @@ public class SimulatorView extends JFrame
     private void initialisePlaypauseButtons(JPanel panel, String layout){
         playpause_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, PLAYPAUSE_BUTTON_SPACING_HGAP, PLAYPAUSE_BUTTON_SPACING_VGAP));
         playpause_playpauseButton = new JButton(pauseIcon);
+        playpause_playpauseButton.setToolTipText(PLAYPAUSE_TOOLTIP);
         playpause_speedButton = new JButton(simulator.getSpeedSymbol());
+        playpause_speedButton.setToolTipText(SPEED_TOOLTIP);
         playpause_stepButton = new JButton(stepIcon);
+        playpause_stepButton.setToolTipText(STEP_TOOLTIP);
         playpause_resetButton = new JButton(resetIcon);
+        playpause_resetButton.setToolTipText(RESET_TOOLTIP);
         setSizeForAll(PLAYPAUSE_BUTTON_SIZE, playpause_playpauseButton, playpause_speedButton, playpause_stepButton, playpause_resetButton);
         addAll(playpause_Panel, playpause_playpauseButton, playpause_speedButton, playpause_stepButton, playpause_resetButton);
         panel.add(playpause_Panel, layout);
+
+        playpause_speedButton.setEnabled(simulator.isRunning());
+        playpause_stepButton.setEnabled(simulator.isRunning());
+        playpause_resetButton.setEnabled(simulator.isRunning());
 
         // Button Events
         // Stops and Starts the simulation
         playpause_playpauseButton.addActionListener(e -> {
             simulator.toggleRunning();
-            if(!simulator.isRunning())
+            if(!simulator.isRunning()){
                 playpause_playpauseButton.setIcon(playIcon);
-            else
+
+                playpause_speedButton.setEnabled(true);
+                playpause_stepButton.setEnabled(true);
+                playpause_resetButton.setEnabled(true);
+
+                fullResetButton.setEnabled(true);
+                setTabsEnabled(true);
+            }
+            else{
                 playpause_playpauseButton.setIcon(pauseIcon);
+
+                playpause_speedButton.setEnabled(false);
+                playpause_stepButton.setEnabled(false);
+                playpause_resetButton.setEnabled(false);
+
+                fullResetButton.setEnabled(false);
+                setTabsEnabled(false);
+            }
         });
         // Toggles the speed at which the simulator runs
         playpause_speedButton.addActionListener(e -> {
@@ -457,6 +492,38 @@ public class SimulatorView extends JFrame
         playpause_stepButton.addActionListener(e -> simulator.simulateOneStep());
         // Resets the simulation to default
         playpause_resetButton.addActionListener(e -> simulator.reset());
+    }
+
+    /**
+     * Disables the interaction of tabs 2, 3 and 4.
+     * @param isEnabled The state you want to set the tabs
+     */
+    void setTabsEnabled(boolean isEnabled){
+        tabmenu_TabbedPane.setEnabledAt(1, isEnabled);
+        setPanelEnabled((JPanel) tabmenu_TabbedPane.getComponentAt(1), isEnabled);
+
+        tabmenu_TabbedPane.setEnabledAt(2, isEnabled);
+        setPanelEnabled((JPanel) tabmenu_TabbedPane.getComponentAt(2), isEnabled);
+
+        tabmenu_TabbedPane.setEnabledAt(3, isEnabled);
+        drawent_EnableButton.setEnabled(isEnabled);
+    }
+
+    /**
+     * Sets the state of all components within a panel, as well as all the components within all the panels within the panel.
+     * @author Creit to https://stackoverflow.com/a/32481577/11245518
+     * @param panel The panel you wish to set the state of.
+     * @param isEnabled The state you wish to set the panel's components.
+     */
+    void setPanelEnabled(JPanel panel, Boolean isEnabled) {
+        panel.setEnabled(isEnabled);
+        Component[] components = panel.getComponents();
+        for (Component component : components) {
+            if (component instanceof JPanel) {
+                setPanelEnabled((JPanel) component, isEnabled);
+            }
+            component.setEnabled(isEnabled);
+        }
     }
 
     /**
@@ -471,22 +538,27 @@ public class SimulatorView extends JFrame
         spawnrate_Panel = new JPanel(new BorderLayout());
         drawTab1Spawnrate(spawnrate_Panel, BorderLayout.CENTER);
         tabmenu_TabbedPane.addTab(TAB1_NAME, spawnrate_Panel);
+        tabmenu_TabbedPane.setToolTipTextAt(0, TAB1_TOOLTIP);
 
         // Tab 2
         valedit_Panel = new JPanel(new BorderLayout());
         drawTab2Validate(valedit_Panel, BorderLayout.CENTER);
         tabmenu_TabbedPane.addTab(TAB2_NAME, valedit_Panel);
+        tabmenu_TabbedPane.setToolTipTextAt(1, TAB2_TOOLTIP);
 
         // Tab 3
         addent_Panel = new JPanel(new BorderLayout());
         drawTab3Addent(addent_Panel, BorderLayout.CENTER);
         tabmenu_TabbedPane.addTab(TAB3_NAME, addent_Panel);
+        tabmenu_TabbedPane.setToolTipTextAt(2, TAB3_TOOLTIP);
 
         // Tab 4
         drawent_Panel = new JPanel(new BorderLayout());
         drawTab4Drawent(drawent_Panel, BorderLayout.CENTER);
         tabmenu_TabbedPane.addTab(TAB4_NAME, drawent_Panel);
+        tabmenu_TabbedPane.setToolTipTextAt(3, TAB4_TOOLTIP);
 
+        setTabsEnabled(simulator.isRunning());          // SHOULDN'T THIS BE !simulator.isRunning() ERM????
         panel.add(tabmenu_TabbedPane, layout);
     }
 
@@ -607,22 +679,26 @@ public class SimulatorView extends JFrame
             });
 
             currentDeleteButton.addActionListener(e -> {
-                if (simulator.getPossibleEntities().size() > 1) {
-                    simulator.removeEntity(entity);
-                    setDetailText("Successfully removed the " + entity.getName() + " entity!", SUCCESS_COLOR);
-
-
-                    simulator.removeFromOrganisms(entity);
-                    field.removeAllObjectsOf(entity);
-                    simulator.removeEntity(entity);
-
-
-                    simulator.showStatus();
-                    refreshPanels();
-                }
-                else{
+                if (!(simulator.getPossibleEntities().size() > 1)) {
                     setDetailText("Removal Failed. There needs to be at least one entity!", FAIL_COLOR);
                 }
+                else if (simulator.isRunning()){
+                    setDetailText("Please don't remove while simulator is running", FAIL_COLOR);
+                }
+                else {
+                        simulator.removeEntity(entity);
+                        setDetailText("Successfully removed the " + entity.getName() + " entity!", SUCCESS_COLOR);
+
+
+                        simulator.removeFromOrganisms(entity);
+                        field.removeAllObjectsOf(entity);
+                        simulator.removeEntity(entity);
+
+
+                        simulator.showStatus();
+                        refreshPanels();
+                    }
+
             });
 
             currentDefaultsButton.addActionListener(e -> {
@@ -662,75 +738,103 @@ public class SimulatorView extends JFrame
         for (EntityStats stat : simulator.getPossibleEntities()){
             JPanel currentStatSliderContainer = new JPanel(new GridBagLayout());
 
-            GridBagConstraints gbc;
+            GridBagConstraints gbc = new GridBagConstraints();
 
-            JSlider breedingSlider;
-            JLabel valueBreedingLabel = new JLabel("Breeding Probability: " + stat.getBreedingProbability());
-            JButton valueBreedingDefaultButton;
+//            JSlider breedingSlider;
+//            JLabel valueBreedingLabel = new JLabel("Breeding Probability: " + stat.getBreedingProbability());
+//            JButton valueBreedingDefaultButton;
 
-            // Breeding Probability SLIDER
-            gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 2;
-            gbc.gridwidth = 2;
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            breedingSlider = new JSlider(0, 40, (int) (stat.getBreedingProbability() * 100));
-            breedingSlider.setPaintTicks(true);
-            breedingSlider.setSnapToTicks(true);
-            breedingSlider.setMinorTickSpacing(1);
-            breedingSlider.setMajorTickSpacing(5);
-            currentStatSliderContainer.add(breedingSlider, gbc);
+//            // Breeding Probability SLIDER
+//            gbc = new GridBagConstraints();
+//            gbc.gridx = 0;
+//            gbc.gridy = 2;
+//            gbc.gridwidth = 2;
+//            gbc.anchor = GridBagConstraints.WEST;
+//            gbc.fill = GridBagConstraints.HORIZONTAL;
+//            breedingSlider = new JSlider(0, 40, (int) (stat.getBreedingProbability() * 100));
+//            breedingSlider.setPaintTicks(true);
+//            breedingSlider.setSnapToTicks(true);
+//            breedingSlider.setMinorTickSpacing(1);
+//            breedingSlider.setMajorTickSpacing(5);
+//            currentStatSliderContainer.add(breedingSlider, gbc);
+//
+//            breedingSlider.addChangeListener(e -> {
+//                double currentBreedProb = (double)breedingSlider.getValue()/100;
+//
+//                stat.setBreedingProbability(currentBreedProb);
+//                valueBreedingLabel.setText("Breeding Probability: " + currentBreedProb);
+//            });
 
-            breedingSlider.addChangeListener(e -> {
-                double currentBreedProb = (double)breedingSlider.getValue()/100;
+//            // Breeding PROBABILITY LABEL
+//            gbc = new GridBagConstraints();
+//            gbc.gridx = 0;
+//            gbc.gridy = 1;
+//            gbc.gridwidth = 2;
+//            gbc.anchor = GridBagConstraints.WEST;
+//            //valueBreedingLabel = new JLabel("Breeding Probability:");
+//            currentStatSliderContainer.add(valueBreedingLabel, gbc);
+//
+//            // 2: Breeding Probability DEFAULT
+//            gbc = new GridBagConstraints();
+//            gbc.gridx = 2;
+//            gbc.gridy = 2;
+//            gbc.fill = GridBagConstraints.HORIZONTAL;
+//            valueBreedingDefaultButton = new JButton(restoreIcon);
+//            valueBreedingDefaultButton.setPreferredSize(SMALL_BUTTON_SIZE);
+//            currentStatSliderContainer.add(valueBreedingDefaultButton, gbc);
+//
+//            valueBreedingDefaultButton.addActionListener(e -> {
+//                double defaultBreedProb = stat.getDefaults().getBreedingProbability();
+//
+//                breedingSlider.setValue((int)(defaultBreedProb * 100));
+//                valueBreedingLabel.setText("Breeding Probability: " + defaultBreedProb);
+//                stat.setBreedingProbability(defaultBreedProb);
+//            });
 
-                stat.setBreedingProbability(currentBreedProb);
-                valueBreedingLabel.setText("Breeding Probability: " + currentBreedProb);
-            });
+            createSlider(currentStatSliderContainer, 1, "Breeding Prob", EntityStats.BREEDINGPROBABILITY_MAX, 0.01, stat::getBreedingProbability, stat::setBreedingProbability, stat.getDefaults()::getBreedingProbability);
 
-            // Breeding PROBABILITY LABEL
-            gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 1;
-            gbc.gridwidth = 2;
-            gbc.anchor = GridBagConstraints.WEST;
-            //valueBreedingLabel = new JLabel("Breeding Probability:");
-            currentStatSliderContainer.add(valueBreedingLabel, gbc);
-
-            // 2: Breeding Probability DEFAULT
-            gbc = new GridBagConstraints();
-            gbc.gridx = 2;
-            gbc.gridy = 2;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            valueBreedingDefaultButton = new JButton(restoreIcon);
-            valueBreedingDefaultButton.setPreferredSize(SMALL_BUTTON_SIZE);
-            currentStatSliderContainer.add(valueBreedingDefaultButton, gbc);
-
-            valueBreedingDefaultButton.addActionListener(e -> {
-                double defaultBreedProb = stat.getDefaults().getBreedingProbability();
-
-                breedingSlider.setValue((int)(defaultBreedProb * 100));
-                valueBreedingLabel.setText("Breeding Probability: " + defaultBreedProb);
-                stat.setBreedingProbability(defaultBreedProb);
-            });
 
             // IF ANIMAL
-            if (stat.getEntityType() != EntityStats.EntityType.PLANT){
+            if (!stat.getEntityType().equals(EntityStats.EntityType.PLANT)){
                 AnimalStats animalStat = (AnimalStats)stat;
 
-                createValeditSpinner(currentStatSliderContainer, 3, "Breeding Age", animalStat::getBreedingAge, animalStat::setBreedingAge, animalStat.getDefaults()::getBreedingAge);
-                createValeditSpinner(currentStatSliderContainer, 4, "Max Age", animalStat::getMaxAge, animalStat::setMaxAge, animalStat.getDefaults()::getMaxAge);
-                createValeditSpinner(currentStatSliderContainer, 5, "Max Litter Size", animalStat::getMaxLitterSize, animalStat::setMaxLitterSize, animalStat.getDefaults()::getMaxLitterSize);
-                createValeditSpinner(currentStatSliderContainer, 6, "Hunger Value", animalStat::getHungerValue, animalStat::setHungerValue, animalStat.getDefaults()::getHungerValue);
-                gbc.gridy = 7;
+                // isNocturnal
+                gbc = new GridBagConstraints();
+                gbc.gridx = 0;
+                gbc.gridy = 3;
+                gbc.insets = new Insets(3,0,3,0);
+                JCheckBox nocturnalBox = new JCheckBox("Nocturnal", animalStat.isNocturnal());
+                currentStatSliderContainer.add(nocturnalBox, gbc);
+
+                // DEFAULT BUTTON
+                gbc.gridx = 2;
+                JButton defaultButton = new JButton(restoreIcon);
+                defaultButton.setPreferredSize(new Dimension(23, 23));
+                currentStatSliderContainer.add(defaultButton, gbc);
+
+                nocturnalBox.addItemListener(e -> {
+                    animalStat.setNocturnal(nocturnalBox.isSelected());
+                    });
+
+                defaultButton.addActionListener(e -> {
+                    boolean defaultValue = animalStat.getDefaults().isNocturnal();
+
+                    nocturnalBox.setSelected(defaultValue);
+                    animalStat.setNocturnal(defaultValue);
+                });
+
+                createSlider(currentStatSliderContainer, 4, "Breeding Age",AnimalStats.BREEDINGAGE_MAX, animalStat::getBreedingAge, animalStat::setBreedingAge, animalStat.getDefaults()::getBreedingAge);
+                createSlider(currentStatSliderContainer, 6, "Max Age", AnimalStats.MAXAGE_MAX, animalStat::getMaxAge, animalStat::setMaxAge, animalStat.getDefaults()::getMaxAge);
+                createSlider(currentStatSliderContainer, 8, "Max Litter Size", AnimalStats.MAXLITTERSIZE_MAX, animalStat::getMaxLitterSize, animalStat::setMaxLitterSize, animalStat.getDefaults()::getMaxLitterSize);
+                createSlider(currentStatSliderContainer, 10, "Hunger Value", AnimalStats.HUNGERVALUE_MAX, animalStat::getHungerValue, animalStat::setHungerValue, animalStat.getDefaults()::getHungerValue);
+                gbc.gridy = 11;
             }
             else{ // IF PLANT
                 PlantStats plantStat = (PlantStats)stat;
 
-                createValeditSpinner(currentStatSliderContainer, 3, "Food Value", plantStat::getFoodValue, plantStat::setFoodValue, plantStat.getDefaults()::getFoodValue);
-                createValeditSpinner(currentStatSliderContainer, 4, "Max Level", plantStat::getMaxLevel, plantStat::setMaxLevel, plantStat.getDefaults()::getMaxLevel);
-                gbc.gridy = 5;
+                createSlider(currentStatSliderContainer, 3, "Food Value", PlantStats.FOODVALUE_MAX, plantStat::getFoodValue, plantStat::setFoodValue, plantStat.getDefaults()::getFoodValue);
+                createSlider(currentStatSliderContainer, 5, "Max Level", PlantStats.MAXLEVEL_MAX, plantStat::getMaxLevel, plantStat::setMaxLevel, plantStat.getDefaults()::getMaxLevel);
+                gbc.gridy = 6;
             }
 
             gbc.gridx = 0;
@@ -801,6 +905,8 @@ public class SimulatorView extends JFrame
         addent_Container = new JPanel(new BorderLayout());
 
         newEntity = new EntityStats();
+        AnimalStats newAnimal = new AnimalStats();
+        PlantStats newPlant = new PlantStats();
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -813,6 +919,13 @@ public class SimulatorView extends JFrame
         typeComboBox.addItemListener(e -> {
             EntityStats.EntityType type =  (EntityStats.EntityType) typeComboBox.getSelectedItem();
 
+            newEntity = new EntityStats();
+            if (type.equals(EntityStats.EntityType.PLANT)){
+                newEntity = newPlant;
+            }
+            else {
+                newEntity = newAnimal;
+            }
             newEntity.setEntityType(type);
 
             addent_Container.removeAll();
@@ -820,18 +933,15 @@ public class SimulatorView extends JFrame
             addent_Container.updateUI();
         });
 
-
-
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 1;
+        gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         JComboBox<Color> colorComboBox  = new JComboBox<>(COLORS.toArray(new Color[0]));
         ComboBoxRenderer renderer = new ComboBoxRenderer(colorComboBox, entityColor);
-        colorComboBox.setPreferredSize(new Dimension(43, 23));
         colorComboBox.setRenderer(renderer);
-//        colorComboBox.setBackground(newEntity.getColor());
         nameAndTypesPanel.add(colorComboBox, gbc);
 
         colorComboBox.addActionListener(e -> {
@@ -851,15 +961,7 @@ public class SimulatorView extends JFrame
         tabmenu_TabbedPane.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                if (tabmenu_TabbedPane.getSelectedIndex() == 2){
-//                    for (Color color : entityColor.keySet()){
-//                        if (entityColor.get(color) == null){
-//                            newEntity.setColor(color);
-//                            break;
-//                        }
-//                    }
-                }
-                else{
+                if (tabmenu_TabbedPane.getSelectedIndex() != 2){
                     newEntity.setColor(null);
                     colorComboBox.setBackground(null);
                 }
@@ -901,14 +1003,37 @@ public class SimulatorView extends JFrame
         // Panel with input boxes
         JPanel inputBoxesPanel = new JPanel(new GridBagLayout());
 
-        AnimalStats newAnimal = new AnimalStats();
+        //AnimalStats newAnimal = new AnimalStats();
         newEntity = newAnimal;
-        createAddSpinnerComponentDouble(inputBoxesPanel, 0, "Breeding Prob", 20, 0.1, newAnimal::getBreedingProbability, newAnimal::setBreedingProbability);
-        createAddSpinnerComponentDouble(inputBoxesPanel, 1, "Creation Prob", 0.2, 0.01, newAnimal::getCreationProbability, newAnimal::setCreationProbability);
-        createAddSpinnerComponentInteger(inputBoxesPanel, 2, "Breeding Age", 20,1, newAnimal::getBreedingAge, newAnimal::setBreedingAge);
-        createAddSpinnerComponentInteger(inputBoxesPanel, 3, "Max Age", 100,1, newAnimal::getMaxAge, newAnimal::setMaxAge);
-        createAddSpinnerComponentInteger(inputBoxesPanel, 4, "Max Litter Size", 8,1, newAnimal::getMaxLitterSize, newAnimal::setMaxLitterSize);
-        createAddSpinnerComponentInteger(inputBoxesPanel, 5, "Hunger Value", 50,1, newAnimal::getHungerValue, newAnimal::setHungerValue);
+
+        createSlider(inputBoxesPanel, 0, "Creation Prob", EntityStats.CREATIONPROBABILITY_MAX, 0.1, newAnimal::getCreationProbability, newAnimal::setCreationProbability);
+        createSlider(inputBoxesPanel, 2, "Breeding Prob", EntityStats.BREEDINGPROBABILITY_MAX, 0.01, newAnimal::getBreedingProbability, newAnimal::setBreedingProbability);
+
+//        createAddSliderComponentDouble(inputBoxesPanel, 0, "Creation Prob", EntityStats.CREATIONPROBABILITY_MAX, 0.1, newAnimal::getCreationProbability, newAnimal::setCreationProbability);
+//        createAddSliderComponentDouble(inputBoxesPanel, 2, "Breeding Prob", EntityStats.BREEDINGPROBABILITY_MAX, 0.01, newAnimal::getBreedingProbability, newAnimal::setBreedingProbability);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        JCheckBox nocturnalBox = new JCheckBox("Nocturnal", false);
+        inputBoxesPanel.add(nocturnalBox, gbc);
+
+        nocturnalBox.addItemListener(e -> {
+            newAnimal.setNocturnal(nocturnalBox.isSelected());
+            });
+
+        createSlider(inputBoxesPanel, 5, "Breeding Age", AnimalStats.BREEDINGAGE_MAX, newAnimal::getBreedingAge, newAnimal::setBreedingAge);
+        createSlider(inputBoxesPanel, 7, "Max Age", AnimalStats.MAXAGE_MAX, newAnimal::getMaxAge, newAnimal::setMaxAge);
+        createSlider(inputBoxesPanel, 9, "Max Litter Size", AnimalStats.MAXLITTERSIZE_MAX, newAnimal::getMaxLitterSize, newAnimal::setMaxLitterSize);
+        createSlider(inputBoxesPanel, 11, "Hunger Value", AnimalStats.HUNGERVALUE_MAX, newAnimal::getHungerValue, newAnimal::setHungerValue);
+
+//
+//        createAddSliderComponentInt(inputBoxesPanel, 5, "Breeding Age", AnimalStats.BREEDINGAGE_MAX, newAnimal::getBreedingAge, newAnimal::setBreedingAge);
+//        createAddSliderComponentInt(inputBoxesPanel, 7, "Max Age", AnimalStats.MAXAGE_MAX, newAnimal::getMaxAge, newAnimal::setMaxAge);
+//        createAddSliderComponentInt(inputBoxesPanel, 9, "Max Litter Size", AnimalStats.MAXLITTERSIZE_MAX, newAnimal::getMaxLitterSize, newAnimal::setMaxLitterSize);
+//        createAddSliderComponentInt(inputBoxesPanel, 11, "Hunger Value", AnimalStats.HUNGERVALUE_MAX, newAnimal::getHungerValue, newAnimal::setHungerValue);
 
         typePanel = new HashMap<>();
         typePanel.put(EntityStats.EntityType.PREY, inputBoxesPanel);
@@ -916,11 +1041,13 @@ public class SimulatorView extends JFrame
 
         inputBoxesPanel = new JPanel(new GridBagLayout());
 
-        PlantStats newPlant = new PlantStats();
-        createAddSpinnerComponentDouble(inputBoxesPanel, 0, "Breeding Prob", 20,0.1, newPlant::getBreedingProbability, newPlant::setBreedingProbability);
-        createAddSpinnerComponentDouble(inputBoxesPanel, 1, "Creation Prob", 0.2,0.01, newPlant::getCreationProbability, newPlant::setCreationProbability);
-        createAddSpinnerComponentInteger(inputBoxesPanel, 2, "Food Value", 30,1, newPlant::getFoodValue, newPlant::setFoodValue);
-        createAddSpinnerComponentInteger(inputBoxesPanel, 3, "Max Level", 10,1, newPlant::getMaxLevel, newPlant::setMaxLevel);
+        //PlantStats newPlant = new PlantStats();
+        //newEntity = newPlant;
+
+        createSlider(inputBoxesPanel, 0, "Creation Prob", EntityStats.CREATIONPROBABILITY_MAX,0.1, newPlant::getCreationProbability, newPlant::setCreationProbability);
+        createSlider(inputBoxesPanel, 2, "Breeding Prob", EntityStats.BREEDINGPROBABILITY_MAX,0.01, newPlant::getBreedingProbability, newPlant::setBreedingProbability);
+        createSlider(inputBoxesPanel, 4, "Food Value", PlantStats.FOODVALUE_MAX, newPlant::getFoodValue, newPlant::setFoodValue);
+        createSlider(inputBoxesPanel, 6, "Max Level", PlantStats.MAXLEVEL_MAX, newPlant::getMaxLevel, newPlant::setMaxLevel);
 
         typePanel.put(EntityStats.EntityType.PLANT, inputBoxesPanel);
 
@@ -975,6 +1102,7 @@ public class SimulatorView extends JFrame
         addAndClearButtonsPanel.add(clearButton, gbc);
 
         clearButton.addActionListener(e -> {
+            newEntity = new EntityStats();
             newEntity.resetToDefault();
 
             panel.removeAll();
@@ -996,8 +1124,8 @@ public class SimulatorView extends JFrame
     private void drawTab4Drawent(JPanel panel, String layout){
         panel.removeAll();
 
-        JButton drawent_EnableDisableButton = new JButton();
-        panel.add(drawent_EnableDisableButton, BorderLayout.NORTH);
+        drawent_EnableButton = new JButton();
+        panel.add(drawent_EnableButton, BorderLayout.NORTH);
 
         JPanel drawent_OptionsPanel = new JPanel(new GridBagLayout());
         panel.add(drawent_OptionsPanel, layout);
@@ -1138,7 +1266,7 @@ public class SimulatorView extends JFrame
 
         Runnable setDisabled = () -> {
             drawmodeEnabled = false;
-            drawent_EnableDisableButton.setText("Enable Draw Mode");
+            drawent_EnableButton.setText("Enable Draw Mode");
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             for (Component component : drawent_OptionsPanel.getComponents()){
                 component.setEnabled(false);
@@ -1146,13 +1274,17 @@ public class SimulatorView extends JFrame
         };
         setDisabled.run();
 
-        drawent_EnableDisableButton.addActionListener(e -> {
+        drawent_EnableButton.addActionListener(e -> {
             if (!drawmodeEnabled) {
                 drawmodeEnabled = true;
-                drawent_EnableDisableButton.setText("Disable Draw Mode");
+                fullResetButton.setEnabled(false);
+                drawent_EnableButton.setText("Disable Draw Mode");
                 setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
                 for (Component component : drawent_OptionsPanel.getComponents()){
                     component.setEnabled(true);
+                }
+                for (Component component : playpause_Panel.getComponents()){
+                    component.setEnabled(false);
                 }
                 tabmenu_TabbedPane.setEnabledAt(0, false);
                 tabmenu_TabbedPane.setEnabledAt(1, false);
@@ -1160,7 +1292,11 @@ public class SimulatorView extends JFrame
 
             }
             else{
+                fullResetButton.setEnabled(true);
                 setDisabled.run();
+                for (Component component : playpause_Panel.getComponents()){
+                    component.setEnabled(true);
+                }
                 tabmenu_TabbedPane.setEnabledAt(0, true);
                 tabmenu_TabbedPane.setEnabledAt(1, true);
                 tabmenu_TabbedPane.setEnabledAt(2, true);
@@ -1172,83 +1308,150 @@ public class SimulatorView extends JFrame
         panel.updateUI();
     }
 
-    private void createAddSpinnerComponentDouble(JPanel panel, int position, String label, double max, double step, DoubleSupplier getMethod, DoubleConsumer setMethod) {
+    private void createAddSliderComponentDouble(JPanel panel, int position, String label, double max, double step, DoubleSupplier getMethod, DoubleConsumer setMethod) {
+        String stepString = Double.toString(Math.abs(step));
+        int decimalPlace = stepString.length() - stepString.indexOf(".") - 1;
+        int multiplier = (int)Math.pow(10, decimalPlace);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = position;
         gbc.anchor = GridBagConstraints.WEST;
-        JLabel inputLabel = new JLabel(label + ":");
+        JLabel inputLabel = new JLabel(label + ": " + getMethod.getAsDouble());
         panel.add(inputLabel, gbc);
 
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = position;
+        gbc.gridx = 0;
+        gbc.gridy = position + 1;
         gbc.weightx = 1.0;
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        JSpinner inputSpinner = new JSpinner(new SpinnerNumberModel(0, 0, max, step));
-        //inputSpinner.setValue(getMethod.getAsDouble());
 
-        //CREDIT https://stackoverflow.com/a/6449462/11245518
-        JFormattedTextField txt = ((JSpinner.NumberEditor) inputSpinner.getEditor()).getTextField();
-        ((NumberFormatter) txt.getFormatter()).setAllowsInvalid(false);
-        NumberFormatter numberFormatter = (NumberFormatter) txt.getFormatter();
-        DecimalFormat decimalFormat = new DecimalFormat("0.0");
-        numberFormatter.setFormat(decimalFormat);
-        numberFormatter.setAllowsInvalid(false);
+        JSlider inputSlider = new JSlider(0, (int)(max * multiplier), (int)(getMethod.getAsDouble() * multiplier));
+        inputSlider.setPaintTicks(true);
+        inputSlider.setMinorTickSpacing(multiplier);
+        inputSlider.setMajorTickSpacing(10 * multiplier);
+        panel.add(inputSlider, gbc);
 
-        panel.add(inputSpinner, gbc);
-
-        //CREDIT TO https://stackoverflow.com/a/7587253/11245518
-        JComponent comp = inputSpinner.getEditor();
-        JFormattedTextField field = (JFormattedTextField) comp.getComponent(0);
-        DefaultFormatter formatter = (DefaultFormatter) field.getFormatter();
-        formatter.setCommitsOnValidEdit(true);
-        inputSpinner.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                try {inputSpinner.commitEdit();}
-                catch ( java.text.ParseException ignored) {}
-
-                setMethod.accept((Double)inputSpinner.getValue());
-            }
+        inputSlider.addChangeListener(e -> {
+            setMethod.accept((double)inputSlider.getValue()/multiplier);
+            inputLabel.setText(label + ": " + getMethod.getAsDouble());
         });
     }
 
-    private void createAddSpinnerComponentInteger(JPanel panel, int position, String label, int max, int step, IntSupplier getMethod, IntConsumer setMethod) {
+    private void createAddSliderComponentInt(JPanel panel, int position, String label, int max, IntSupplier getMethod, IntConsumer setMethod) {
 
         GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(3,0,3,0);
         gbc.gridx = 0;
         gbc.gridy = position;
         gbc.anchor = GridBagConstraints.WEST;
-        JLabel inputLabel = new JLabel(label + ":");
+        JLabel inputLabel = new JLabel(label + ": " + getMethod.getAsInt());
         panel.add(inputLabel, gbc);
 
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = position;
-        gbc.weightx = 1.0;
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridx = 0;
+        gbc.gridy = position + 1;
+        //gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        JSpinner inputSpinner = new JSpinner(new SpinnerNumberModel(0.0, 0, max, step));
-        //inputSpinner.setValue(getMethod.getAsDouble());
-        panel.add(inputSpinner, gbc);
+        JSlider inputSlider = new JSlider(0, max, getMethod.getAsInt());
+        inputSlider.setPaintTicks(true);
+        inputSlider.setMinorTickSpacing(1);
+        inputSlider.setMajorTickSpacing(10);
+        panel.add(inputSlider, gbc);
 
-        //CREDIT TO https://stackoverflow.com/a/7587253/11245518
-        JComponent comp = inputSpinner.getEditor();
-        JFormattedTextField field = (JFormattedTextField) comp.getComponent(0);
-        DefaultFormatter formatter = (DefaultFormatter) field.getFormatter();
-        formatter.setCommitsOnValidEdit(true);
-        inputSpinner.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                try {inputSpinner.commitEdit();}
-                catch ( java.text.ParseException ignored) {}
-
-                setMethod.accept((Integer)inputSpinner.getValue());
-            }
+        inputSlider.addChangeListener(e -> {
+            setMethod.accept(inputSlider.getValue());
+            inputLabel.setText(label + ": " + getMethod.getAsInt());
         });
+
+    }
+
+    private void createSlider(JPanel panel, int position, String label, double max, double step, DoubleSupplier getMethod, DoubleConsumer setMethod, DoubleSupplier getDefaultMethod) {
+        int multiplier;
+        if (step == 1.0){
+            multiplier = 1;
+        }
+        else {
+            String stepString = Double.toString(Math.abs(step));
+            int decimalPlace = stepString.length() - stepString.indexOf(".") - 1;
+            multiplier = (int) Math.pow(10, decimalPlace);
+        }
+
+        // Label
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(3,0,3,0);
+        gbc.gridx = 0;
+        gbc.gridy = position;
+        gbc.anchor = GridBagConstraints.WEST;
+        JLabel inputLabel = new JLabel(label + ": " + removeTrailingZero(String.valueOf(getMethod.getAsDouble())));
+        panel.add(inputLabel, gbc);
+
+        // Slider
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = position + 1;
+        //gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JSlider inputSlider = new JSlider(1, (int)(max * multiplier), (int)(getMethod.getAsDouble() * multiplier));
+        inputSlider.setPaintTicks(true);
+        inputSlider.setMinorTickSpacing(multiplier);
+        inputSlider.setMajorTickSpacing(10 * multiplier);
+        panel.add(inputSlider, gbc);
+
+        inputSlider.addChangeListener(e -> {
+            setMethod.accept((double) inputSlider.getValue() / multiplier);
+            inputLabel.setText(label + ": " + removeTrailingZero(String.valueOf(getMethod.getAsDouble())));
+        });
+
+        if (getDefaultMethod != null){
+            // Restore to Defaults Button
+            gbc.gridx = 2;
+            JButton defaultButton = new JButton(restoreIcon);
+            defaultButton.setPreferredSize(SMALL_BUTTON_SIZE);
+            panel.add(defaultButton, gbc);
+
+            defaultButton.addActionListener(e -> {
+                double defaultValue = getDefaultMethod.getAsDouble();
+
+                inputSlider.setValue((int)((defaultValue) * multiplier));
+                setMethod.accept(defaultValue);
+            });
+        }
+
+    }
+
+    private void createSlider(JPanel panel, int position, String label, double max, double step, DoubleSupplier getMethod, DoubleConsumer setMethod) {
+        createSlider(panel, position, label, max, step, getMethod, setMethod, null);
+    }
+
+    private void createSlider(JPanel panel, int position, String label, int max, IntSupplier getMethod, IntConsumer setMethod, IntSupplier getDefaultMethod) {
+        if (getDefaultMethod == null)
+            createSlider(panel, position, label, max, 1.0, convert(getMethod), convert(setMethod), null);
+        else
+            createSlider(panel, position, label, max, 1.0, convert(getMethod), convert(setMethod), convert(getDefaultMethod));
+    }
+
+    private void createSlider(JPanel panel, int position, String label, int max, IntSupplier getMethod, IntConsumer setMethod) {
+        createSlider(panel, position, label, max, getMethod, setMethod, null);
+    }
+
+    private DoubleSupplier convert(IntSupplier consumer) {
+        return () -> consumer.getAsInt();
+    }
+
+    private DoubleConsumer convert(IntConsumer consumer) {
+        return i -> consumer.accept((int)i);
+    }
+
+    private String removeTrailingZero(String string){
+        if (string.endsWith(".0")){
+            string = string.substring(0, string.length() - 2);
+        }
+        return string;
     }
 
     /**
@@ -1260,22 +1463,34 @@ public class SimulatorView extends JFrame
      * @param setMethod The setMethod for the attribute.
      * @param getDefaultMethod The getMethod for the default attribute.
      */
-    private void createValeditSpinner(JPanel panel, int position, String label, IntSupplier getMethod, IntConsumer setMethod, IntSupplier getDefaultMethod){
-        // LABEL
+    private void createValeditSpinner(JPanel panel, int position, String label, int max, IntSupplier getMethod, IntConsumer setMethod, IntSupplier getDefaultMethod){
+
+                // LABEL
         GridBagConstraints gbc;
         gbc = new GridBagConstraints();
         gbc.insets = new Insets(3,0,3,0);
         gbc.gridx = 0;
         gbc.gridy = position;
         gbc.anchor = GridBagConstraints.WEST;
-        panel.add(new Label(label + ":"), gbc);
+        JLabel inputLabel = new JLabel(label + ": " + getMethod.getAsInt());
+        panel.add(inputLabel, gbc);
 
-        // SPINNER
-        gbc.gridx = 1;
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = position + 1;
+        //gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        JSpinner spinner = new JSpinner();
-        spinner.setValue(getMethod.getAsInt());
-        panel.add(spinner, gbc);
+        JSlider inputSlider = new JSlider(0, max, getMethod.getAsInt());
+        inputSlider.setPaintTicks(true);
+        inputSlider.setMinorTickSpacing(1);
+        inputSlider.setMajorTickSpacing(10);
+        panel.add(inputSlider, gbc);
+
+        inputSlider.addChangeListener(e -> {
+            setMethod.accept(inputSlider.getValue());
+            inputLabel.setText(label + ": " + getMethod.getAsInt());
+        });
 
         // DEFAULT BUTTON
         gbc.gridx = 2;
@@ -1283,28 +1498,57 @@ public class SimulatorView extends JFrame
         defaultButton.setPreferredSize(new Dimension(23, 23));
         panel.add(defaultButton, gbc);
 
-        //CREDIT TO https://stackoverflow.com/a/7587253/11245518
-        //Lets an event be called from any change of value. Before it was only if button or enter was pressed.
-        JComponent comp = spinner.getEditor();
-        JFormattedTextField field = (JFormattedTextField) comp.getComponent(0);
-        DefaultFormatter formatter = (DefaultFormatter) field.getFormatter();
-        formatter.setCommitsOnValidEdit(true);
-        spinner.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                try {spinner.commitEdit();}
-                catch ( java.text.ParseException ignored) {}
-
-                setMethod.accept((Integer) spinner.getValue());
-            }
-        });
-
         defaultButton.addActionListener(e -> {
-            int defaultBreedingAge = getDefaultMethod.getAsInt();
+            int defaultValue = getDefaultMethod.getAsInt();
 
-            spinner.setValue(defaultBreedingAge);
-            setMethod.accept(defaultBreedingAge);
+            inputSlider.setValue(defaultValue);
+            setMethod.accept(defaultValue);
         });
+
+        //        // LABEL
+//        GridBagConstraints gbc;
+//        gbc = new GridBagConstraints();
+//        gbc.insets = new Insets(3,0,3,0);
+//        gbc.gridx = 0;
+//        gbc.gridy = position;
+//        gbc.anchor = GridBagConstraints.WEST;
+//        panel.add(new Label(label + ":"), gbc);
+//
+//        // SPINNER
+//        gbc.gridx = 1;
+//        gbc.fill = GridBagConstraints.HORIZONTAL;
+//        JSpinner spinner = new JSpinner();
+//        spinner.setValue(getMethod.getAsInt());
+//        panel.add(spinner, gbc);
+//
+//        // DEFAULT BUTTON
+//        gbc.gridx = 2;
+//        JButton defaultButton = new JButton(restoreIcon);
+//        defaultButton.setPreferredSize(new Dimension(23, 23));
+//        panel.add(defaultButton, gbc);
+//
+//        //CREDIT TO https://stackoverflow.com/a/7587253/11245518
+//        //Lets an event be called from any change of value. Before it was only if button or enter was pressed.
+//        JComponent comp = spinner.getEditor();
+//        JFormattedTextField field = (JFormattedTextField) comp.getComponent(0);
+//        DefaultFormatter formatter = (DefaultFormatter) field.getFormatter();
+//        formatter.setCommitsOnValidEdit(true);
+//        spinner.addChangeListener(new ChangeListener() {
+//            @Override
+//            public void stateChanged(ChangeEvent e) {
+//                try {spinner.commitEdit();}
+//                catch ( java.text.ParseException ignored) {}
+//
+//                setMethod.accept((Integer) spinner.getValue());
+//            }
+//        });
+//
+//        defaultButton.addActionListener(e -> {
+//            int defaultValue = getDefaultMethod.getAsInt();
+//
+//            spinner.setValue(defaultValue);
+//            setMethod.accept(defaultValue);
+//        });
     }
 
     /**
@@ -1570,7 +1814,6 @@ public class SimulatorView extends JFrame
 
 
 // CREDIT TO https://stackoverflow.com/q/10951449/11245518
-
 /**
  * This class is responsible for displaying and manipulating the colour of the organism
  * @author Cosmo
@@ -1598,22 +1841,49 @@ class ComboBoxRenderer extends JPanel implements ListCellRenderer {
     @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
-        text.setBackground((Color)value);
-        text.setHorizontalAlignment(JLabel.CENTER);
-        text.setText(" ");
-        list.setSelectionBackground((Color) value);
+//        if (value == null) {
+//            text.setText("Pick a colour!");
+//            return text;
+//        }
+//        else {
+            text.setBackground((Color) value);
+            text.setHorizontalAlignment(JLabel.CENTER);
+            text.setText(" ");
+            list.setSelectionBackground((Color) value);
 
-        if (isSelected) {
-            text.setBackground(((Color) value).darker());
-        }
-        else {
-            text.setBackground((Color)value);
-        }
+            if (isColorDark((Color) value)) {
+                text.setForeground(Color.WHITE);
+            } else {
+                text.setForeground(Color.BLACK);
+            }
 
-        if(hashmap.get((Color)value) != null) {
-            text.setBackground(((Color) value).darker());
-            text.setText(hashmap.get((Color)value).toString());
+
+            if (isSelected) {
+                text.setBackground(((Color) value).darker());
+            } else {
+                text.setBackground((Color) value);
+            }
+
+            if (hashmap.get((Color) value) != null) {
+                text.setBackground(((Color) value).darker());
+                text.setText(hashmap.get((Color) value).toString());
+            }
+            return text;
+//        }
+    }
+
+    /**
+     * Determines if a colour would be considered "Dark"
+     * @author Credit to https://stackoverflow.com/a/24261119/11245518
+     * @param color the colour to be tested
+     * @return True if dark
+     */
+    public static boolean isColorDark(Color color){
+        double darkness = 1 - (0.299 * color.getRed()+ 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
+        if(darkness<0.5){
+            return false;
+        }else{
+            return true;
         }
-        return text;
     }
 }

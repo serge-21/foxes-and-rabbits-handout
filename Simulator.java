@@ -72,15 +72,15 @@ public class Simulator
         }
 
         possibleEntities = new ArrayList<>();
-        AnimalStats predator1 = new AnimalStats("Predator1", EntityStats.EntityType.PREDATOR, Color.RED, 0.37, 1.0, 15, 130, 2, 20);
+        AnimalStats predator1 = new AnimalStats("Wolf", EntityStats.EntityType.PREDATOR, Color.RED,  1.0,0.37, true, 15, 130, 2, 20);
         possibleEntities.add(predator1);
-        AnimalStats predator2 = new AnimalStats("Predator2", EntityStats.EntityType.PREDATOR, Color.BLUE, 0.28, 4.0, 16, 150, 2, 16);
+        AnimalStats predator2 = new AnimalStats("Eagle", EntityStats.EntityType.PREDATOR, Color.BLUE,  4.0,0.28, false,16, 150, 2, 16);
         possibleEntities.add(predator2);
-        AnimalStats prey1 = new AnimalStats("Prey1", EntityStats.EntityType.PREY, Color.MAGENTA, 0.07, 3.0, 5, 50, 3, 40);
+        AnimalStats prey1 = new AnimalStats("Mouse", EntityStats.EntityType.PREY, Color.MAGENTA,  3.0,0.07, true, 5, 50, 3, 40);
         possibleEntities.add(prey1);
-        AnimalStats prey2 = new AnimalStats("Prey2", EntityStats.EntityType.PREY, Color.ORANGE, 0.12, 1.0, 6, 40, 4, 40);
+        AnimalStats prey2 = new AnimalStats("Deer", EntityStats.EntityType.PREY, Color.ORANGE,  1.0,0.12,false,  6, 40, 4, 40);
         possibleEntities.add(prey2);
-        PlantStats plant1 = new PlantStats("Plant1", EntityStats.EntityType.PLANT, Color.GREEN, 0.01, 1.0, 14, 5);
+        PlantStats plant1 = new PlantStats("Grapes", EntityStats.EntityType.PLANT, Color.GREEN,  1.0,0.01, 14, 5);
         possibleEntities.add(plant1);                                                // PLANT BREEDING MEANT TO BE 0.001
 
         DEFAULT_ENTITIES = new ArrayList<>();

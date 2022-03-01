@@ -52,10 +52,12 @@ public class Plant extends Organism{
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
 
         panel.add(new JLabel(this.getStats().getName()), gbc);
 
+        gbc.gridwidth = 1;
         gbc.gridy++;
         for (int index = 0; index < labelItems.size(); index += 2){
             gbc.anchor = GridBagConstraints.WEST;

@@ -19,8 +19,11 @@ public class EntityStats implements Cloneable{
     private EntityType entityType;                  // The type of the entity
     private Color color;                            // The colour of the entity
     private boolean isEnabled;                      // The what exactly is this ?
-    private double breedingProbability;             // The breeding probability i.e. how likely it is that this entity will breed
     private double creationProbability;             // The creation probability i.e. how likely it is that this entity will get created in the first place
+    private double breedingProbability;             // The breeding probability i.e. how likely it is that this entity will breed
+
+    public static final double CREATIONPROBABILITY_MAX = 20.0;
+    public static final double BREEDINGPROBABILITY_MAX = 1.0;
 
     private final EntityStats DEFAULT_STATS;
 
@@ -29,15 +32,15 @@ public class EntityStats implements Cloneable{
      * @param name The name of the entity.
      * @param entityType The type of the entity. Should be declared as an EntityType Enum
      * @param color The colour of the entity.
-     * @param breedingProbability The probability that the entity will breed.
      * @param creationProbability The probability that the entity is places on the field.
+     * @param breedingProbability The probability that the entity will breed.
      */
-    public EntityStats(String name, EntityType entityType, Color color, double breedingProbability, double creationProbability){
+    public EntityStats(String name, EntityType entityType, Color color, double creationProbability, double breedingProbability){
         this.name = name;
         this.entityType = entityType;
         this.color = color;
-        this.breedingProbability = breedingProbability;
-        this.creationProbability = creationProbability;
+        this.creationProbability = Math.min(creationProbability, CREATIONPROBABILITY_MAX);
+        this.breedingProbability = Math.min(breedingProbability, BREEDINGPROBABILITY_MAX);
         this.isEnabled = true;                              // Enabled by default
         DEFAULT_STATS = new EntityStats(this);
     }
@@ -65,8 +68,8 @@ public class EntityStats implements Cloneable{
         this.name = "SampleName";
         this.entityType = EntityType.PREY;
         this.color = null;
-        this.breedingProbability = 0.0;
-        this.creationProbability = 0.0;
+        this.creationProbability = 0.1;
+        this.breedingProbability = 0.01;
         this.isEnabled = true; // Enabled by default
 
         DEFAULT_STATS = new EntityStats(this);
