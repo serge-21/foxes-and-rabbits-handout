@@ -40,6 +40,10 @@ public abstract class Organism extends Entity {
         this.diseases.add(disease);
     }
 
+    public ArrayList<Disease> getDiseases(){
+        return diseases;
+    }
+
     /**
      * A simple getter method that return isInfected field
      *

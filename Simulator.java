@@ -8,17 +8,16 @@ import java.awt.Color;
  * @author David J. Barnes and Michael Kölling
  * @version 2016.02.29 (2)
  */
-public class Simulator
-{
+public class Simulator {
     // Constants representing configuration information for the simulation.
     // The default width for the grid.
     private static final int DEFAULT_WIDTH = 200;
     // The default depth of the grid.
     private static final int DEFAULT_DEPTH = 120;
 
-    private static final ArrayList<Integer> speeds = new ArrayList<Integer>(Arrays.asList(100, 200, 400, 800));
+    private static final ArrayList<Integer> speeds = new ArrayList<>(Arrays.asList(100, 200, 400, 800));
     private static int currentSpeed;
-    private static final ArrayList<String> speedSymbols = new ArrayList<String>(Arrays.asList("1", "2", "4", "8"));
+    private static final ArrayList<String> speedSymbols = new ArrayList<>(Arrays.asList("1", "2", "4", "8"));
     private static String currentSpeedSymbol;
 
     public static final int STEP_PER_DAY = 24;
@@ -31,18 +30,18 @@ public class Simulator
     private int step;
     private boolean isDay = true;
     private String daytime = "day";
-    private int daycount = 0;
+    private int dayCount = 0;
     private int time;
 
     // the current weather
-    private Weather weather;
+    private final Weather weather;
     // A graphical view of the simulation.
     private final SimulatorView view;
 
     // if the simulator is currently running
     private static boolean isRunning;
 
-    private Randomizer rand = new Randomizer();
+    private final Randomizer rand = new Randomizer();
 
     private final ArrayList<EntityStats> DEFAULT_ENTITIES;
     private ArrayList<EntityStats> possibleEntities;
@@ -150,8 +149,7 @@ public class Simulator
      * Stop before the given number of steps if it ceases to be viable.
      * @param numSteps The number of steps to run for.
      */
-    public void simulate(int numSteps)
-    {
+    public void simulate(int numSteps) {
         for(int step = 1; step <= numSteps && view.isViable(field); step++) {
             simulateOneStep();
             // delay(60);   // uncomment this to run more slowly
@@ -172,7 +170,7 @@ public class Simulator
 
         if(time == 0) {
             // do all changes
-            daycount += 1;
+            dayCount += 1;
             pickWeather();
         }
     }
@@ -190,8 +188,7 @@ public class Simulator
      * Iterate over the whole field updating the state of each
      * fox and rabbit.
      */
-    public void simulateOneStep()
-    {
+    public void simulateOneStep() {
         step++;
         // first calculate if it is day or night
         checkForDayChange();
@@ -204,6 +201,11 @@ public class Simulator
             entity.act(newOrganisms, isDay, this.weather);
             if (!entity.getIsAlive()){ // || !possibleEntities.contains(entity.getStats())) {
                 it.remove();
+            }else{
+                // disease is insanely rare because otherwise balance is going to be impossible
+                if(new Random().nextDouble() < 0.3){
+                    entity.addDisease(new Disease(0.1, 0.2 , entity));
+                }
             }
         }
 
@@ -213,12 +215,11 @@ public class Simulator
     }
 
     public void removeFromOrganisms(EntityStats entityStats){
-        // || !possibleEntities.contains(entity.getStats())) {
         organisms.removeIf(entity -> entity.getStats().equals(entityStats));
     }
 
     public void showStatus(){
-        view.showStatus(step, field, daytime, daycount, updateTime(), this.weather);
+        view.showStatus(step, field, daytime, dayCount, updateTime(), this.weather);
     }
 
     /**
@@ -230,7 +231,7 @@ public class Simulator
 
         step = 0;
         time = 0;
-        daycount = 0;
+        dayCount = 0;
         organisms.clear();
         populate();
         this.weather.resetWeather();
@@ -281,7 +282,7 @@ public class Simulator
     }
 
     /**
-     * If the total spawnrate exeedes 100, this returns to larger value. Prevents some entities from never being spawned if too many at high percentage.
+     * If the total spawn rate exceeds 100, this returns to larger value. Prevents some entities from never being spawned if too many at high percentage.
      * @return If the total probability exceeds 100, then the total, otherwise 100
      */
     private int getChanceLimit(){
@@ -299,8 +300,8 @@ public class Simulator
     }
 
     /**
-     * Returns a random possible entitiy.
-     * @param limit the max of the field of random numbers. The larger the more likely of empty fields.
+     * Returns a random possible entity.
+     * @param limit the max of the field of random numbers. The larger, the more likely of empty fields.
      * @return Returns a random possible entity.
      */
     private EntityStats getRandomEntity(int limit){
@@ -348,27 +349,15 @@ public class Simulator
         currentSpeedSymbol = speedSymbols.get(index);
     }
 
-    public static void decSpeed(){
-        int index = speeds.indexOf(currentSpeed) - 1;
-        if (!(index < 0)){
-            index = speeds.get(speeds.size() - 1);
-        }
-        currentSpeed = speeds.get(index);
-        currentSpeedSymbol = speedSymbols.get(index);
-    }
-
     public static void main(String[] args) {
         Simulator simulator = new Simulator();
         simulator.reset();
         isRunning = true;
-        //for(int i = 0; i< 1000; i++){
         while (true){
-
             // In case the simulation is paused.
             while (!isRunning){
                 simulator.delay(200);
             }
-
             simulator.simulateOneStep();
             simulator.delay(currentSpeed);
         }

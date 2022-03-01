@@ -20,6 +20,8 @@ import java.util.function.*;
  */
 public class SimulatorView extends JFrame {
     private static final Color EMPTY_COLOR = Color.white;               // Colors used for empty locations.
+    private static final Color UNKNOWN = Color.gray;               // Colors used for empty locations.
+
 
     private final Color SUCCESS_COLOR = new Color(27, 157, 21);
     private final Color FAIL_COLOR = new Color(207, 39, 39);
@@ -1338,7 +1340,7 @@ public class SimulatorView extends JFrame {
 
         for(int row = 0; row < field.getDepth(); row++) {
             for(int col = 0; col < field.getWidth(); col++) {
-                Entity animal = (Entity)field.getObjectAt(row, col);
+                Entity animal = (Entity) field.getObjectAt(row, col);
                 if(animal != null) {
                     int index = simulator.getPossibleEntities().indexOf(animal.getStats());
 //                    int currentCount = popStats_EntityCount.get(index);

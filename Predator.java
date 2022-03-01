@@ -20,7 +20,7 @@ public class Predator extends Animal {
      * @param initLocation The location within the field.
      */
     public Predator(AnimalStats stats, boolean randomAge, Field field, Location initLocation) {
-        super(stats, randomAge, field, initLocation, true, stats.getHungerValue(), stats.getMaxAge());
+        super(stats, randomAge, field, initLocation, stats.getHungerValue(), stats.getMaxAge());
         animalStats = stats;
         setPrey();          // add all prey that this animal will be feeding on
     }
@@ -44,7 +44,7 @@ public class Predator extends Animal {
     public void act(List<Organism> newPredator, boolean isDay, Weather currentWeather) {
         incrementAge();     // age is unique and can't be updated with other stats.
         if(determineDay(isDay)){
-            updateStatsOfAnimal();
+            updateStatsOfAnimal(currentWeather);
             if(getIsAlive()) {
                 if(getBreedCounter() <= 0){
                     giveBirth(newPredator);

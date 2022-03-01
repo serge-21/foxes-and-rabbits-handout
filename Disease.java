@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 /**
  * The disease class which is responsible for infecting the animals and potentially killing them
@@ -7,25 +8,24 @@ import java.util.List;
  * @author Syraj Alkhalil and Cosmo Colman
  * @version 2022.02.27 (2)
  */
-public class Disease extends Entity {
+public class Disease {
     private final double spreadRate;                                // the spread rate of the disease
     private final double deadliness;                                // how deadly the disease is
+    private int infectionPeriod = 2;                                // how long the disease will last
+    private final Entity mainHost;                                  // the main host of the disease
     private final HashMap<Organism, Integer> numOfInteractions;     // the number of infections per animal type this helps in mutations
 
     /**
      * make a disease that infects a certain type of animal
      *
-     * @param temp The stats of the disease
-     * @param field The field currently occupied.
-     * @param initLocation The location within the field.
      * @param spreadRate The spread rate (how contagious the disease is).
      * @param deadliness How deadly the disease is
      * @param mainHost the main type of host that this disease will infect
      */
-    public Disease(AnimalStats temp, Field field, Location initLocation, double spreadRate, double deadliness, Organism mainHost) {
-        super(temp, field, initLocation);
+    public Disease(double spreadRate, double deadliness, Organism mainHost) {
         this.spreadRate = spreadRate;
         this.deadliness = deadliness;
+        this.mainHost = mainHost;
         numOfInteractions = new HashMap<>();
         numOfInteractions.put(mainHost, 10);
     }
@@ -36,14 +36,17 @@ public class Disease extends Entity {
      * if the disease comes in contact with
      */
     public void updateInteractions() {
-        Field field = getField();
-        List<Location> potentialVictim  = field.getNotNullAdjacentLocations(getLocation());
-        for(Location victim : potentialVictim){
-            Organism organism = (Organism) field.getObjectAt(victim);
-            if(numOfInteractions.get(organism) == null){
-                numOfInteractions.put(organism, 0);
-            }else{
-                numOfInteractions.put(organism, numOfInteractions.get(organism) +1 );
+        Field field = mainHost.getField();
+        if(field != null){
+            List<Location> potentialVictim  = field.getNotNullAdjacentLocations(mainHost.getLocation());
+            for(Location victim : potentialVictim){
+                Organism organism = (Organism) field.getObjectAt(victim);
+                if(numOfInteractions.get(organism) == null){
+                    numOfInteractions.put(organism, 0);
+                }else{
+                    numOfInteractions.put(organism, numOfInteractions.get(organism) +1 );
+                }
+
             }
         }
     }
@@ -51,26 +54,28 @@ public class Disease extends Entity {
     /**
      * This is essentially the act method for the disease.
      * the disease will look for not null locations around it and will try to infect these organisms
-     * TODO make it affected by the weather
+     * The disease is also affected by the weather.
      *
      * @param currentWeather the current weather
      */
     public void infect(Weather currentWeather) {
         updateInteractions();
-        if(getRand().nextDouble() < spreadRate){
+        if((new Random().nextDouble() < (spreadRate - (currentWeather.getActualDownfall()*0.04))) && infectionPeriod > 0){
             // infect neighbouring squares with a fixed probability.
-            Field field = getField();
-            List<Location> adjacent = field.getNotNullAdjacentLocations(getLocation());
+            Field field = mainHost.getField();
+            List<Location> adjacent = field.getNotNullAdjacentLocations(mainHost.getLocation());
             for(Location where : adjacent){
                 Organism organism = (Organism) field.getObjectAt(where);
-                if(canInfect(organism) && !organism.getIsInfected()){
-                    if(getRand().nextDouble() < spreadRate){
+                if(canInfect(organism) && !(organism).getIsInfected()){
+                    if(new Random().nextDouble() < spreadRate){
                         organism.setInfected(true);
                         organism.addDisease(this);
+                        organism.dieDueToInfection();
                     }
                 }
             }
         }
+        infectionPeriod--;
     }
 
     /**
