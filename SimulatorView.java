@@ -1,12 +1,8 @@
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.DefaultFormatter;
 import java.awt.event.*;
-import java.text.DecimalFormat;
 import java.util.*;
 import java.awt.Dimension;
 import java.util.function.*;
@@ -22,67 +18,31 @@ import java.util.function.*;
  * @author David J. Barnes and Michael Kölling
  * @version 2016.02.29
  */
-public class SimulatorView extends JFrame
-{
-    private static Color EMPTY_COLOR = Color.white;               // Colors used for empty locations.
-    private static Color EMPTY_COLOR_DARK = EMPTY_COLOR.darker();
-    private static final Color UNKNOWN_COLOR = Color.gray;              // Color used for objects that have no defined color.
+public class SimulatorView extends JFrame {
+    private static final Color EMPTY_COLOR = Color.white;               // Colors used for empty locations.
 
     private final Color SUCCESS_COLOR = new Color(27, 157, 21);
     private final Color FAIL_COLOR = new Color(207, 39, 39);
 
-    // Constants or MAIN -> NORTH Simulation Stats Panel (simstats)
+    // Constants or MAIN -> NORTH Simulation Stats Panel (sim stats)
     private final String SIMSTATS_STEP_PREFIX = "Step: ";
     private final String SIMSTATS_TIME_PREFIX = "Time: ";
     private final String SIMSTATS_DAYTIME_PREFIX = "Daytime: ";
     private final String SIMSTATS_DAYCOUNT_PREFIX = "Number of days: ";
 
-    // Constants for MAIN -> SOUTH Population Stats Panel (popstats)
-    private final String POPSTATS_TOTAL_PREFIX = "Total Population: ";
-
-    // Constants for MAIN -> EAST -> CENTRE TabbedPane (tabmenu)
-    private final String TAB1_NAME = "SpawnRate";
-    private final String TAB1_TOOLTIP = "Control the spawnrate of an entity on simulation restart";
-    private final String TAB2_NAME = "Values";
-    private final String TAB2_TOOLTIP = "Change the constants that define an entity";
-    private final String TAB3_NAME = "Add";
-    private final String TAB3_TOOLTIP = "Add your own custom entities";
-    private final String TAB4_NAME = "Draw";
-    private final String TAB4_TOOLTIP = "Draw entities on the simulation";
-
-    private final String PLAYPAUSE_TOOLTIP = "Play or pause the simulation";
-    private final String SPEED_TOOLTIP = "Toggle simulator speeds";
-    private final String STEP_TOOLTIP = "Step the simulation once";
-    private final String RESET_TOOLTIP = "Reset the simulation";
-
-
-
-    private final String FULL_RESET = "Full Reset";
-
-    // The anchor for the JLabel for North and South of mainPanel
-    private final int SIMSTATS_LABEL_LAYOUT = JLabel.CENTER;
-    private final int POPSTATS_LABEL_LAYOUT = SIMSTATS_LABEL_LAYOUT;
-
     // The spacing for the JLabel for North and South of mainPanel
     private final int LABEL_SPACING_HGAP = 20;
     private final int LABEL_SPACING_VGAP = 5;
-
-    // The spacing for the PlayPause Buttons
-    private final int PLAYPAUSE_BUTTON_SPACING_HGAP = 5;
-    private final int PLAYPAUSE_BUTTON_SPACING_VGAP = 5;
 
     private final Dimension PLAYPAUSE_BUTTON_SIZE = new Dimension(40, 40);
     private final Dimension SMALL_BUTTON_SIZE = new Dimension(23, 23);
     private final Dimension TEXTFIELD_SIZE = new Dimension(100, 25);
 
-    // TAB 1 SPAWNRATE
+    // TAB 1 SPAWN RATE
     private final Insets SPAWNRATE_INSETS = new Insets(1 ,1 ,1 ,5);
 
     // The Main Panel of the whole Window
     Container mainPanel;
-
-    // Components for MAIN -> NORTH Simulation Stats Panel (sim stats)
-    private JPanel simstats_Panel;
     private JLabel simStats_StepLabel, simStats_TimeLabel, simStats_DaytimeLabel, simStats_DayCountLabel;
 
     // Components for MAIN -> SOUTH Population Stats Panel (pop stats)
@@ -91,8 +51,6 @@ public class SimulatorView extends JFrame
     private ArrayList<Integer> popStats_EntityCount;
     private ArrayList<JLabel> popStats_EntityLabels;
 
-    // Components for MAIN -> EAST Options Panel (options)
-    private JPanel options_Panel;
     // Components for MAIN -> EAST -> NORTH Control Buttons (playpause)
     private JPanel playpause_Panel;
     private JButton playpause_playpauseButton, playpause_speedButton, playpause_stepButton, playpause_resetButton;
@@ -125,47 +83,37 @@ public class SimulatorView extends JFrame
     private JButton drawent_EnableButton;
     private boolean drawmodeEnabled = false;
 
-    // Components for MAIN -> EAST -> SOUTH Extras panel (extras)
-    private JPanel extras_Panel;
-
     // Components for MAIN -> EAST -> SOUTH -> NORTH details Label
     private JLabel detailsLabel;        // For telling the user important details
 
-    // Components for MAIN -> EAST -> SOUTH -> CENTRE Environment View (enview)
-    private JPanel enview_Panel;        // For telling the user important details
     private JLabel weather;
     private ArrayList<ImageIcon> enview_clockFaces;
     private JLabel enview_clock;
 
-
-
-
     private JButton fullResetButton;
-    private ImageIcon playIcon, pauseIcon, stepIcon, resetIcon, restoreIcon, deleteIcon;
+    private final ImageIcon playIcon, pauseIcon, stepIcon, resetIcon, restoreIcon, deleteIcon;
 
     private final static ArrayList<Color> COLORS = new ArrayList<>(Arrays.asList(Color.RED,Color.BLUE,Color.MAGENTA,Color.ORANGE,Color.GREEN, Color.CYAN, Color.BLACK, Color.DARK_GRAY, Color.LIGHT_GRAY, Color.PINK));
     private HashMap<Color, EntityStats> entityColor;
 
     private final int MAX_ENTITIES = COLORS.size();
 
-    private FieldView fieldView;
-    private Histogram histogram;
-    private PieChart pieChart;
-
+    private final FieldView fieldView;
     // A statistics object computing and storing simulation information
-    private FieldStats stats;
+    private final FieldStats stats;
     private final Simulator simulator;
 
-    private int height, width;
-    private Field field;
+    private final int height, width;
+    private final Field field;
 
     /**
      * Create a view of the given width and height.
      * @param height The simulation's height.
      * @param width  The simulation's width.
+     * @param simulator The current simulation
+     * @param field The field on which the simulation is taking place // maybe remove so that the access is better
      */
-    public SimulatorView(int height, int width, Simulator simulator, Field field)
-    {
+    public SimulatorView(int height, int width, Simulator simulator, Field field) {
         this.height = height;
         this.width = width;
         this.simulator = simulator;
@@ -215,12 +163,13 @@ public class SimulatorView extends JFrame
             }
         });
 
-        playIcon = new ImageIcon("resources/play.png");
-        pauseIcon = new ImageIcon("resources/pause.png");
-        stepIcon = new ImageIcon("resources/step.png");
-        resetIcon = new ImageIcon("resources/reset.png");
-        restoreIcon = new ImageIcon("resources/restore.png");
-        deleteIcon = new ImageIcon("resources/delete.png");
+        // this.getClass().getClassLoader().getResource() had to be used so that icons work in .jar files.
+        playIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/play.png"));
+        pauseIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/pause.png"));
+        stepIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/step.png"));
+        resetIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/reset.png"));
+        restoreIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/restore.png"));
+        deleteIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/delete.png"));
 
         setupTab1();
 
@@ -229,22 +178,22 @@ public class SimulatorView extends JFrame
         initialisePopStatsPanel(mainPanel, BorderLayout.SOUTH);     // SOUTH Population Stats Panel
         initialiseOptionsPanel(mainPanel, BorderLayout.EAST);       // EAST Options Stats Panel
 
-        // extra methods for diagrams and buttons
+        // setting the title, packing and showing the simulation
         setTitle("Predator vs Prey (and some plants) Simulation");
-        setLocation(100, 50);
-        setPreferredSize(new Dimension(1492,821));
-
         pack();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
     }
 
+    /**
+     * This method will help in setting up tab1 so that not everything is
+     * initialised everytime the tab is being drawn
+     */
     private void setupTab1() {
         spawnrate_seedTextField = new JTextField(Randomizer.getSeed() + "");
         spawnrate_seedResetButton = new JButton(restoreIcon);
         spawnrate_seedResetButton.setPreferredSize(SMALL_BUTTON_SIZE);
     }
-
 
     /**
      * Initialises the Simulator Statistic panel located at the North of the main frame.
@@ -252,7 +201,10 @@ public class SimulatorView extends JFrame
      * @param layout The position to assign the components.
      */
     private void initialiseSimStatsPanel(Container container, String layout){
-        simstats_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, LABEL_SPACING_HGAP, LABEL_SPACING_VGAP));
+        // Components for MAIN -> NORTH Simulation Stats Panel (sim stats)
+        JPanel simstats_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, LABEL_SPACING_HGAP, LABEL_SPACING_VGAP));
+        // The anchor for the JLabel for North and South of mainPanel
+        int SIMSTATS_LABEL_LAYOUT = JLabel.CENTER;
         simStats_StepLabel = new JLabel(SIMSTATS_STEP_PREFIX, SIMSTATS_LABEL_LAYOUT);
         simStats_TimeLabel = new JLabel(SIMSTATS_TIME_PREFIX, SIMSTATS_LABEL_LAYOUT);
         simStats_DaytimeLabel = new JLabel(SIMSTATS_DAYTIME_PREFIX, SIMSTATS_LABEL_LAYOUT);
@@ -291,13 +243,13 @@ public class SimulatorView extends JFrame
      * @param layout The position to assign the components.
      */
     private void initialiseOptionsPanel(Container container, String layout){
-        options_Panel = new JPanel(new BorderLayout());
+        // Components for MAIN -> EAST Options Panel (options)
+        JPanel options_Panel = new JPanel(new BorderLayout());
         container.add(options_Panel, layout);
 
         initialisePlaypauseButtons(options_Panel, BorderLayout.NORTH);
         initialiseTabbedMenu(options_Panel, BorderLayout.CENTER);
         initialiseExtrasPanel(options_Panel, BorderLayout.SOUTH);
-
     }
 
     /**
@@ -306,7 +258,8 @@ public class SimulatorView extends JFrame
      * @param layout The position to assign the components.
      */
     private void initialiseExtrasPanel(JPanel panel, String layout){
-        extras_Panel = new JPanel(new BorderLayout());
+        // Components for MAIN -> EAST -> SOUTH Extras panel (extras)
+        JPanel extras_Panel = new JPanel(new BorderLayout());
         panel.add(extras_Panel, layout);
 
         //North
@@ -319,6 +272,7 @@ public class SimulatorView extends JFrame
         initialiseEnvViewPanel(extras_Panel, BorderLayout.CENTER);
 
         // South
+        String FULL_RESET = "Full Reset";
         fullResetButton = new JButton(FULL_RESET);
         fullResetButton.setEnabled(simulator.isRunning());
         extras_Panel.add(fullResetButton, BorderLayout.SOUTH);
@@ -326,11 +280,9 @@ public class SimulatorView extends JFrame
         fullResetButton.addActionListener(e -> {
             simulator.resetEntities();
             Randomizer.restoreDefaultSeed();
-
             refreshPanels();
+            playpause_resetButton.doClick();
         });
-
-
     }
 
     /**
@@ -339,15 +291,15 @@ public class SimulatorView extends JFrame
      * @param layout The position to assign the components.
      */
     private void initialiseEnvViewPanel(JPanel panel, String layout){
-        enview_Panel = new JPanel(new BorderLayout());
+        // Components for MAIN -> EAST -> SOUTH -> CENTRE Environment View (enview)
+        // For telling the user important details
+        JPanel enview_Panel = new JPanel(new BorderLayout());
         panel.add(enview_Panel, layout);
-
 
         // Weather text
         weather = new JLabel("", JLabel.CENTER);
         enview_Panel.add(weather, BorderLayout.CENTER);
         enview_Panel.setPreferredSize(new Dimension(200,200));
-
 
         // Time Clock
         JPanel clockPanel = new JPanel(new BorderLayout());
@@ -361,21 +313,21 @@ public class SimulatorView extends JFrame
             else
                 stage = index + "";
 
-            ImageIcon clockIcon = new ImageIcon(String.format("resources/clock/clock_%s.png", stage));
+            ImageIcon clockIcon = new ImageIcon(this.getClass().getClassLoader().getResource(String.format("resources/clock/clock_%s.png", stage)));
             clockIcon = new ImageIcon(clockIcon.getImage().getScaledInstance(120,120, Image.SCALE_FAST));
             enview_clockFaces.add(clockIcon);
         }
         enview_clock = new JLabel(enview_clockFaces.get(0));
-        //enview_clock.setOpaque(true);
-        //enview_clock.setBackground(new Color(0,0,0,0));     // Makes the clock background same as panel.
         clockPanel.add(enview_clock,BorderLayout.CENTER);
-
     }
 
-    private void setDetailText(String text){
-        setDetailText(text, Color.BLACK);
-    }
-
+    /**
+     * This method is responsible for setting and displaying the text in
+     * a particular colour
+     *
+     * @param text The string of text being edited
+     * @param color the colour we wish to display the text in
+     */
     private void setDetailText(String text, Color color){
         detailsLabel.setForeground(color);
         detailsLabel.setText("<html><p style=\"width:" + 160 + "px\">"+text+"</p></html>");
@@ -383,29 +335,17 @@ public class SimulatorView extends JFrame
     }
 
     /**
-     * Refreshes the content of tab1 and tab2.
+     * Refreshes the content of all tabs.
      */
     private void refreshPanels(){
-        //spawnrate_Panel.removeAll();
-//        valedit_Panel.removeAll();
-//        addent_Panel.removeAll();
-//        drawent_Panel.removeAll();
-
-        //popStats_Panel.removeAll();
         initialisePopStatsPanel(mainPanel, BorderLayout.SOUTH);
-        //popStats_Panel.updateUI();
 
-        drawTab1Spawnrate(spawnrate_Panel, BorderLayout.CENTER);
+        drawTab1SpawnRate(spawnrate_Panel, BorderLayout.CENTER);
         drawTab2Validate(valedit_Panel, BorderLayout.CENTER);
-        drawTab3Addent(addent_Panel, BorderLayout.CENTER);
-        drawTab4Drawent(drawent_Panel, BorderLayout. CENTER);
+        drawTab3Addend(addent_Panel, BorderLayout.CENTER);
+        drawTab4Drawer(drawent_Panel, BorderLayout. CENTER);
 
         simulator.showStatus();
-
-        //spawnrate_Panel.updateUI();
-//        valedit_Panel.updateUI();
-//        addent_Panel.updateUI();
-//        drawent_Panel.updateUI();
     }
 
     /**
@@ -414,14 +354,21 @@ public class SimulatorView extends JFrame
      * @param layout The position to assign the components.
      */
     private void initialisePlaypauseButtons(JPanel panel, String layout){
+        // The spacing for the PlayPause Buttons
+        int PLAYPAUSE_BUTTON_SPACING_HGAP = 5;
+        int PLAYPAUSE_BUTTON_SPACING_VGAP = 5;
         playpause_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, PLAYPAUSE_BUTTON_SPACING_HGAP, PLAYPAUSE_BUTTON_SPACING_VGAP));
         playpause_playpauseButton = new JButton(pauseIcon);
+        String PLAYPAUSE_TOOLTIP = "Play or pause the simulation";
         playpause_playpauseButton.setToolTipText(PLAYPAUSE_TOOLTIP);
         playpause_speedButton = new JButton(simulator.getSpeedSymbol());
+        String SPEED_TOOLTIP = "Toggle simulator speeds";
         playpause_speedButton.setToolTipText(SPEED_TOOLTIP);
         playpause_stepButton = new JButton(stepIcon);
+        String STEP_TOOLTIP = "Step the simulation once";
         playpause_stepButton.setToolTipText(STEP_TOOLTIP);
         playpause_resetButton = new JButton(resetIcon);
+        String RESET_TOOLTIP = "Reset the simulation";
         playpause_resetButton.setToolTipText(RESET_TOOLTIP);
         setSizeForAll(PLAYPAUSE_BUTTON_SIZE, playpause_playpauseButton, playpause_speedButton, playpause_stepButton, playpause_resetButton);
         addAll(playpause_Panel, playpause_playpauseButton, playpause_speedButton, playpause_stepButton, playpause_resetButton);
@@ -509,44 +456,50 @@ public class SimulatorView extends JFrame
 
         // Tab 1
         spawnrate_Panel = new JPanel(new BorderLayout());
-        drawTab1Spawnrate(spawnrate_Panel, BorderLayout.CENTER);
+        drawTab1SpawnRate(spawnrate_Panel, BorderLayout.CENTER);
+        // Constants for MAIN -> EAST -> CENTRE TabbedPane (tab menu)
+        String TAB1_NAME = "SpawnRate";
         tabmenu_TabbedPane.addTab(TAB1_NAME, spawnrate_Panel);
+        String TAB1_TOOLTIP = "Control the spawn rate of an entity on simulation restart";
         tabmenu_TabbedPane.setToolTipTextAt(0, TAB1_TOOLTIP);
 
         // Tab 2
         valedit_Panel = new JPanel(new BorderLayout());
         drawTab2Validate(valedit_Panel, BorderLayout.CENTER);
+        String TAB2_NAME = "Values";
         tabmenu_TabbedPane.addTab(TAB2_NAME, valedit_Panel);
+        String TAB2_TOOLTIP = "Change the constants that define an entity";
         tabmenu_TabbedPane.setToolTipTextAt(1, TAB2_TOOLTIP);
 
         // Tab 3
         addent_Panel = new JPanel(new BorderLayout());
-        drawTab3Addent(addent_Panel, BorderLayout.CENTER);
+        drawTab3Addend(addent_Panel, BorderLayout.CENTER);
+        String TAB3_NAME = "Add";
         tabmenu_TabbedPane.addTab(TAB3_NAME, addent_Panel);
+        String TAB3_TOOLTIP = "Add your own custom entities";
         tabmenu_TabbedPane.setToolTipTextAt(2, TAB3_TOOLTIP);
 
         // Tab 4
         drawent_Panel = new JPanel(new BorderLayout());
-        drawTab4Drawent(drawent_Panel, BorderLayout.CENTER);
+        drawTab4Drawer(drawent_Panel, BorderLayout.CENTER);
+        String TAB4_NAME = "Draw";
         tabmenu_TabbedPane.addTab(TAB4_NAME, drawent_Panel);
+        String TAB4_TOOLTIP = "Draw entities on the simulation";
         tabmenu_TabbedPane.setToolTipTextAt(3, TAB4_TOOLTIP);
 
-        setTabsEnabled(simulator.isRunning());          // SHOULDN'T THIS BE !simulator.isRunning() ERM????
+        setTabsEnabled(simulator.isRunning());
         panel.add(tabmenu_TabbedPane, layout);
     }
 
     /**
-     * Initialises the first tab of the TabbedPane, the Spawnrate tab.
-     * This tab lets you change the spawnrate, remove, or disable an entity on reset.
+     * Initialises the first tab of the TabbedPane, the Spawn rate tab.
+     * This tab lets you change the spawn rate, remove, or disable an entity on reset.
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
-    private void drawTab1Spawnrate(JPanel panel, String layout){
+    private void drawTab1SpawnRate(JPanel panel, String layout){
         panel.removeAll();
 
-        spawnrate_seedTextField = new JTextField(Randomizer.getSeed() + "");
-        spawnrate_seedResetButton = new JButton(restoreIcon);
-        spawnrate_seedResetButton.setPreferredSize(SMALL_BUTTON_SIZE);
         spawnrate_Slider = new ArrayList<>();
         spawnrate_CheckBox = new ArrayList<>();
         spawnrate_DeleteButton = new ArrayList<>();
@@ -662,16 +615,13 @@ public class SimulatorView extends JFrame
                         simulator.removeEntity(entity);
                         setDetailText("Successfully removed the " + entity.getName() + " entity!", SUCCESS_COLOR);
 
-
                         simulator.removeFromOrganisms(entity);
                         field.removeAllObjectsOf(entity);
                         simulator.removeEntity(entity);
 
-
                         simulator.showStatus();
                         refreshPanels();
                     }
-
             });
 
             currentDefaultsButton.addActionListener(e -> {
@@ -682,7 +632,6 @@ public class SimulatorView extends JFrame
                 entity.setCreationProbability(defaultSpawnProb);
             });
         }
-
         panel.updateUI();
     }
 
@@ -700,8 +649,7 @@ public class SimulatorView extends JFrame
 
         valedit_Container = new JPanel(new BorderLayout()); // THIS METHOD ISN'T GREAT BUT ROLL WITH IT
         panel.add(valedit_Container, BorderLayout.CENTER);
-
-
+        
         entityColor = new HashMap<>();
         for (Color color : COLORS){
             entityColor.put(color, null);
@@ -714,8 +662,7 @@ public class SimulatorView extends JFrame
             GridBagConstraints gbc = new GridBagConstraints();
 
             createSlider(currentStatSliderContainer, 1, "Breeding Prob", EntityStats.BREEDINGPROBABILITY_MAX, 0.01, stat::getBreedingProbability, stat::setBreedingProbability, stat.getDefaults()::getBreedingProbability);
-
-
+            
             // IF ANIMAL
             if (!stat.getEntityType().equals(EntityStats.EntityType.PLANT)){
                 AnimalStats animalStat = (AnimalStats)stat;
@@ -793,8 +740,7 @@ public class SimulatorView extends JFrame
             gbc.gridy = 0;
             gbc.gridwidth = 3;
             currentStatSliderContainer.add(new Label(stat.getEntityType().toString()), gbc);
-
-
+            
             // Adds Panel to ArrayList
             valedit_TypeContainerPanels.add(currentStatSliderContainer);
         }
@@ -809,21 +755,19 @@ public class SimulatorView extends JFrame
         });
 
         panel.add(valedit_Container, BorderLayout.CENTER);
-
         panel.updateUI();
     }
 
     /**
      * Initialises the third tab of the TabbedPane, the Add Entity tab.
-     * This tab lets you add a custom entity to the simulaton.
+     * This tab lets you add a custom entity to the simulation.
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
-    private void drawTab3Addent(JPanel panel, String layout){
+    private void drawTab3Addend(JPanel panel, String layout){
         panel.removeAll();
 
         JPanel nameAndTypesPanel = new JPanel(new GridBagLayout());
-
         addent_Container = new JPanel(new BorderLayout());
 
         newEntity = new EntityStats();
@@ -841,7 +785,6 @@ public class SimulatorView extends JFrame
         typeComboBox.addItemListener(e -> {
             EntityStats.EntityType type =  (EntityStats.EntityType) typeComboBox.getSelectedItem();
 
-            newEntity = new EntityStats();
             if (type.equals(EntityStats.EntityType.PLANT)){
                 newEntity = newPlant;
             }
@@ -869,24 +812,15 @@ public class SimulatorView extends JFrame
         colorComboBox.addActionListener(e -> {
             Color selectedColor = (Color) colorComboBox.getSelectedItem();
             if (entityColor.get(selectedColor) == null){
-//                entityColor.replace(newEntity.getColor(), null);
-//                entityColor.replace(selectedColor, newEntity);
                 newEntity.setColor(selectedColor);
                 colorComboBox.setBackground(selectedColor);
-                //setDetailText("Changed colour of " + stat.getName() + "." , SUCCESS_COLOR);
-            }
-            else{
-                //setDetailText("Colour already taken by " + entityColor.get(selectedColor).getName() + "!", FAIL_COLOR);
             }
         });
 
-        tabmenu_TabbedPane.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                if (tabmenu_TabbedPane.getSelectedIndex() != 2){
-                    newEntity.setColor(null);
-                    colorComboBox.setBackground(null);
-                }
+        tabmenu_TabbedPane.addChangeListener(e -> {
+            if (tabmenu_TabbedPane.getSelectedIndex() != 2){
+                newEntity.setColor(null);
+                colorComboBox.setBackground(null);
             }
         });
 
@@ -901,7 +835,7 @@ public class SimulatorView extends JFrame
         nameAndTypesPanel.add(nameTextField, gbc);
 
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
-            Runnable setNameAction = () -> {newEntity.setName(nameTextField.getText());};
+            final Runnable setNameAction = () -> {newEntity.setName(nameTextField.getText());};
 
             @Override
             public void changedUpdate(DocumentEvent e) {
@@ -917,15 +851,12 @@ public class SimulatorView extends JFrame
             public void removeUpdate(DocumentEvent e) {
                 setNameAction.run();
             }
-
         });
 
         panel.add(nameAndTypesPanel, BorderLayout.NORTH);
 
         // Panel with input boxes
         JPanel inputBoxesPanel = new JPanel(new GridBagLayout());
-
-        //AnimalStats newAnimal = new AnimalStats();
         newEntity = newAnimal;
 
         createSlider(inputBoxesPanel, 0, "Creation Prob", EntityStats.CREATIONPROBABILITY_MAX, 0.1, newAnimal::getCreationProbability, newAnimal::setCreationProbability);
@@ -939,9 +870,7 @@ public class SimulatorView extends JFrame
         JCheckBox nocturnalBox = new JCheckBox("Nocturnal", false);
         inputBoxesPanel.add(nocturnalBox, gbc);
 
-        nocturnalBox.addItemListener(e -> {
-            newAnimal.setNocturnal(nocturnalBox.isSelected());
-            });
+        nocturnalBox.addItemListener(e -> newAnimal.setNocturnal(nocturnalBox.isSelected()));
 
         createSlider(inputBoxesPanel, 5, "Breeding Age", AnimalStats.BREEDINGAGE_MAX, newAnimal::getBreedingAge, newAnimal::setBreedingAge);
         createSlider(inputBoxesPanel, 7, "Max Age", AnimalStats.MAXAGE_MAX, newAnimal::getMaxAge, newAnimal::setMaxAge);
@@ -953,9 +882,6 @@ public class SimulatorView extends JFrame
         typePanel.put(EntityStats.EntityType.PREDATOR, inputBoxesPanel);
 
         inputBoxesPanel = new JPanel(new GridBagLayout());
-
-        //PlantStats newPlant = new PlantStats();
-        //newEntity = newPlant;
 
         createSlider(inputBoxesPanel, 0, "Creation Prob", EntityStats.CREATIONPROBABILITY_MAX,0.1, newPlant::getCreationProbability, newPlant::setCreationProbability);
         createSlider(inputBoxesPanel, 2, "Breeding Prob", EntityStats.BREEDINGPROBABILITY_MAX,0.01, newPlant::getBreedingProbability, newPlant::setBreedingProbability);
@@ -1019,7 +945,7 @@ public class SimulatorView extends JFrame
             newEntity.resetToDefault();
 
             panel.removeAll();
-            drawTab3Addent(panel, layout);
+            drawTab3Addend(panel, layout);
             panel.updateUI();
         });
 
@@ -1030,11 +956,12 @@ public class SimulatorView extends JFrame
 
     /**
      * Initialises the fourth tab of the TabbedPane, the Draw Entity tab.
-     * This tab lets you draw entities whereever you want on the field.
+     * This tab lets you draw entities wherever you want on the field.
+     *
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
-    private void drawTab4Drawent(JPanel panel, String layout){
+    private void drawTab4Drawer(JPanel panel, String layout){
         panel.removeAll();
 
         drawent_EnableButton = new JButton();
@@ -1214,10 +1141,7 @@ public class SimulatorView extends JFrame
                 tabmenu_TabbedPane.setEnabledAt(1, true);
                 tabmenu_TabbedPane.setEnabledAt(2, true);
             }
-
-
         });
-
         panel.updateUI();
     }
 
@@ -1302,7 +1226,6 @@ public class SimulatorView extends JFrame
         createSlider(panel, position, label, max, step, getMethod, setMethod, null);
     }
 
-
     /**
      * Creates a selection of components and event listeners and adds them to a panel.
      * @param panel panel to add the components to.
@@ -1339,7 +1262,7 @@ public class SimulatorView extends JFrame
      * @return The DoubleSupplier
      */
     private DoubleSupplier convert(IntSupplier supplier) {
-        return () -> supplier.getAsInt();
+        return supplier::getAsInt;
     }
 
     /**
@@ -1353,7 +1276,7 @@ public class SimulatorView extends JFrame
 
     /**
      * Remove the ".0" from a string if one exists
-     * @param string Strng to remove .0 from
+     * @param string String to remove .0 from
      * @return String without a .0
      */
     private String removeTrailingZero(String string){
@@ -1390,7 +1313,7 @@ public class SimulatorView extends JFrame
      * @param step Which iteration step it is.
      * @param field The field whose status is to be displayed.
      */
-    public void showStatus(int step, Field field, String daytime, int daycount, String time, Weather currentWeather){
+    public void showStatus(int step, Field field, String daytime, int dayCount, String time, Weather currentWeather){
         if(!isVisible()) {
             setVisible(true);
         }
@@ -1398,7 +1321,7 @@ public class SimulatorView extends JFrame
         simStats_StepLabel.setText(SIMSTATS_STEP_PREFIX + step);
         simStats_TimeLabel.setText(SIMSTATS_TIME_PREFIX + time);
         simStats_DaytimeLabel.setText(SIMSTATS_DAYTIME_PREFIX + daytime);
-        simStats_DayCountLabel.setText(SIMSTATS_DAYCOUNT_PREFIX + daycount);
+        simStats_DayCountLabel.setText(SIMSTATS_DAYCOUNT_PREFIX + dayCount);
         weather.setText("<html>"+ currentWeather.toString() +"</html>");
         stats.reset();
 
@@ -1417,10 +1340,12 @@ public class SimulatorView extends JFrame
             for(int col = 0; col < field.getWidth(); col++) {
                 Entity animal = (Entity)field.getObjectAt(row, col);
                 if(animal != null) {
-//                    int index = simulator.getPossibleEntities().indexOf(animal.getStats());
+                    int index = simulator.getPossibleEntities().indexOf(animal.getStats());
 //                    int currentCount = popStats_EntityCount.get(index);
 //                    popStats_EntityCount.set(index, ++currentCount);
-                    //popStats_EntityCount.set(simulator.getPossibleEntities().indexOf(animal.getStats()), popStats_EntityCount.get(index) + 1);
+                    if(index >= 0){
+                        popStats_EntityCount.set(simulator.getPossibleEntities().indexOf(animal.getStats()), popStats_EntityCount.get(index) + 1);
+                    }
 
                     stats.incrementCount(animal.getClass());
                     fieldView.drawMark(col, row, animal.getStats().getColor());
@@ -1432,6 +1357,8 @@ public class SimulatorView extends JFrame
         }
         stats.countFinished();
 
+        // Constants for MAIN -> SOUTH Population Stats Panel (pop stats)
+        String POPSTATS_TOTAL_PREFIX = "Total Population: ";
         popStats_TotalLabel.setText(POPSTATS_TOTAL_PREFIX + stats.getTotalCount(field));
         popStats_TypeLabel.setText(stats.getPopulationDetails(field));
         for (EntityStats entity : simulator.getPossibleEntities()){
@@ -1440,7 +1367,6 @@ public class SimulatorView extends JFrame
         }
         fieldView.repaint();
     }
-
 
     /**
      *
