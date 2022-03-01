@@ -31,11 +31,6 @@ public class SimulatorView extends JFrame
     private final Color SUCCESS_COLOR = new Color(27, 157, 21);
     private final Color FAIL_COLOR = new Color(207, 39, 39);
 
-    private final Color DAY_COLOR = new Color(78, 206, 243);
-    private final Color SUNRISE_COLOR = new Color(255, 167, 0);
-    private final Color SUNSET_COLOR = new Color(75, 119,201);
-    private final Color NIGHT_COLOR = new Color(36, 36, 113);
-
     // Constants or MAIN -> NORTH Simulation Stats Panel (simstats)
     private final String SIMSTATS_STEP_PREFIX = "Step: ";
     private final String SIMSTATS_TIME_PREFIX = "Time: ";
@@ -235,10 +230,7 @@ public class SimulatorView extends JFrame
         initialiseOptionsPanel(mainPanel, BorderLayout.EAST);       // EAST Options Stats Panel
 
         // extra methods for diagrams and buttons
-        setTitle("Fox and Rabbit Simulation");
-        //makePieChart(height, width);
-        //makeHistogram(height, width);
-        //makeDiagramsVisible();
+        setTitle("Predator vs Prey (and some plants) Simulation");
         setLocation(100, 50);
         setPreferredSize(new Dimension(1492,821));
 
@@ -375,27 +367,8 @@ public class SimulatorView extends JFrame
         }
         enview_clock = new JLabel(enview_clockFaces.get(0));
         //enview_clock.setOpaque(true);
-        enview_clock.setBackground(new Color(0,0,0,0));     // Makes the clock background same as panel.
+        //enview_clock.setBackground(new Color(0,0,0,0));     // Makes the clock background same as panel.
         clockPanel.add(enview_clock,BorderLayout.CENTER);
-
-        // Pie Chart
-//        JFrame lol = new JFrame("ok");
-//        //Container stupidcontainer = lol.getContentPane();
-//
-//        JPanel pieChartPanel = new JPanel(new BorderLayout());
-//
-//        lol.add(pieChartPanel, BorderLayout.CENTER);
-//
-//        //enview_Panel.add(pieChartPanel, BorderLayout.EAST);
-//        this.pieChart = new PieChart();
-//        pieChartPanel.add(pieChart, BorderLayout.CENTER);
-//        this.pieChart.setSize(120, 120);
-//        this.pieChart.stats(popStats_EntityCount, simulator.getPossibleEntities());
-//        this.pieChart.repaint();
-//
-//        lol.setSize(500,500);
-//        lol.pack();
-//        lol.setVisible(true);
 
     }
 
@@ -740,57 +713,6 @@ public class SimulatorView extends JFrame
 
             GridBagConstraints gbc = new GridBagConstraints();
 
-//            JSlider breedingSlider;
-//            JLabel valueBreedingLabel = new JLabel("Breeding Probability: " + stat.getBreedingProbability());
-//            JButton valueBreedingDefaultButton;
-
-//            // Breeding Probability SLIDER
-//            gbc = new GridBagConstraints();
-//            gbc.gridx = 0;
-//            gbc.gridy = 2;
-//            gbc.gridwidth = 2;
-//            gbc.anchor = GridBagConstraints.WEST;
-//            gbc.fill = GridBagConstraints.HORIZONTAL;
-//            breedingSlider = new JSlider(0, 40, (int) (stat.getBreedingProbability() * 100));
-//            breedingSlider.setPaintTicks(true);
-//            breedingSlider.setSnapToTicks(true);
-//            breedingSlider.setMinorTickSpacing(1);
-//            breedingSlider.setMajorTickSpacing(5);
-//            currentStatSliderContainer.add(breedingSlider, gbc);
-//
-//            breedingSlider.addChangeListener(e -> {
-//                double currentBreedProb = (double)breedingSlider.getValue()/100;
-//
-//                stat.setBreedingProbability(currentBreedProb);
-//                valueBreedingLabel.setText("Breeding Probability: " + currentBreedProb);
-//            });
-
-//            // Breeding PROBABILITY LABEL
-//            gbc = new GridBagConstraints();
-//            gbc.gridx = 0;
-//            gbc.gridy = 1;
-//            gbc.gridwidth = 2;
-//            gbc.anchor = GridBagConstraints.WEST;
-//            //valueBreedingLabel = new JLabel("Breeding Probability:");
-//            currentStatSliderContainer.add(valueBreedingLabel, gbc);
-//
-//            // 2: Breeding Probability DEFAULT
-//            gbc = new GridBagConstraints();
-//            gbc.gridx = 2;
-//            gbc.gridy = 2;
-//            gbc.fill = GridBagConstraints.HORIZONTAL;
-//            valueBreedingDefaultButton = new JButton(restoreIcon);
-//            valueBreedingDefaultButton.setPreferredSize(SMALL_BUTTON_SIZE);
-//            currentStatSliderContainer.add(valueBreedingDefaultButton, gbc);
-//
-//            valueBreedingDefaultButton.addActionListener(e -> {
-//                double defaultBreedProb = stat.getDefaults().getBreedingProbability();
-//
-//                breedingSlider.setValue((int)(defaultBreedProb * 100));
-//                valueBreedingLabel.setText("Breeding Probability: " + defaultBreedProb);
-//                stat.setBreedingProbability(defaultBreedProb);
-//            });
-
             createSlider(currentStatSliderContainer, 1, "Breeding Prob", EntityStats.BREEDINGPROBABILITY_MAX, 0.01, stat::getBreedingProbability, stat::setBreedingProbability, stat.getDefaults()::getBreedingProbability);
 
 
@@ -1009,9 +931,6 @@ public class SimulatorView extends JFrame
         createSlider(inputBoxesPanel, 0, "Creation Prob", EntityStats.CREATIONPROBABILITY_MAX, 0.1, newAnimal::getCreationProbability, newAnimal::setCreationProbability);
         createSlider(inputBoxesPanel, 2, "Breeding Prob", EntityStats.BREEDINGPROBABILITY_MAX, 0.01, newAnimal::getBreedingProbability, newAnimal::setBreedingProbability);
 
-//        createAddSliderComponentDouble(inputBoxesPanel, 0, "Creation Prob", EntityStats.CREATIONPROBABILITY_MAX, 0.1, newAnimal::getCreationProbability, newAnimal::setCreationProbability);
-//        createAddSliderComponentDouble(inputBoxesPanel, 2, "Breeding Prob", EntityStats.BREEDINGPROBABILITY_MAX, 0.01, newAnimal::getBreedingProbability, newAnimal::setBreedingProbability);
-
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 4;
@@ -1028,12 +947,6 @@ public class SimulatorView extends JFrame
         createSlider(inputBoxesPanel, 7, "Max Age", AnimalStats.MAXAGE_MAX, newAnimal::getMaxAge, newAnimal::setMaxAge);
         createSlider(inputBoxesPanel, 9, "Max Litter Size", AnimalStats.MAXLITTERSIZE_MAX, newAnimal::getMaxLitterSize, newAnimal::setMaxLitterSize);
         createSlider(inputBoxesPanel, 11, "Hunger Value", AnimalStats.HUNGERVALUE_MAX, newAnimal::getHungerValue, newAnimal::setHungerValue);
-
-//
-//        createAddSliderComponentInt(inputBoxesPanel, 5, "Breeding Age", AnimalStats.BREEDINGAGE_MAX, newAnimal::getBreedingAge, newAnimal::setBreedingAge);
-//        createAddSliderComponentInt(inputBoxesPanel, 7, "Max Age", AnimalStats.MAXAGE_MAX, newAnimal::getMaxAge, newAnimal::setMaxAge);
-//        createAddSliderComponentInt(inputBoxesPanel, 9, "Max Litter Size", AnimalStats.MAXLITTERSIZE_MAX, newAnimal::getMaxLitterSize, newAnimal::setMaxLitterSize);
-//        createAddSliderComponentInt(inputBoxesPanel, 11, "Hunger Value", AnimalStats.HUNGERVALUE_MAX, newAnimal::getHungerValue, newAnimal::setHungerValue);
 
         typePanel = new HashMap<>();
         typePanel.put(EntityStats.EntityType.PREY, inputBoxesPanel);
@@ -1308,66 +1221,17 @@ public class SimulatorView extends JFrame
         panel.updateUI();
     }
 
-    private void createAddSliderComponentDouble(JPanel panel, int position, String label, double max, double step, DoubleSupplier getMethod, DoubleConsumer setMethod) {
-        String stepString = Double.toString(Math.abs(step));
-        int decimalPlace = stepString.length() - stepString.indexOf(".") - 1;
-        int multiplier = (int)Math.pow(10, decimalPlace);
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = position;
-        gbc.anchor = GridBagConstraints.WEST;
-        JLabel inputLabel = new JLabel(label + ": " + getMethod.getAsDouble());
-        panel.add(inputLabel, gbc);
-
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = position + 1;
-        gbc.weightx = 1.0;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        JSlider inputSlider = new JSlider(0, (int)(max * multiplier), (int)(getMethod.getAsDouble() * multiplier));
-        inputSlider.setPaintTicks(true);
-        inputSlider.setMinorTickSpacing(multiplier);
-        inputSlider.setMajorTickSpacing(10 * multiplier);
-        panel.add(inputSlider, gbc);
-
-        inputSlider.addChangeListener(e -> {
-            setMethod.accept((double)inputSlider.getValue()/multiplier);
-            inputLabel.setText(label + ": " + getMethod.getAsDouble());
-        });
-    }
-
-    private void createAddSliderComponentInt(JPanel panel, int position, String label, int max, IntSupplier getMethod, IntConsumer setMethod) {
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(3,0,3,0);
-        gbc.gridx = 0;
-        gbc.gridy = position;
-        gbc.anchor = GridBagConstraints.WEST;
-        JLabel inputLabel = new JLabel(label + ": " + getMethod.getAsInt());
-        panel.add(inputLabel, gbc);
-
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = position + 1;
-        //gbc.weightx = 1.0;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        JSlider inputSlider = new JSlider(0, max, getMethod.getAsInt());
-        inputSlider.setPaintTicks(true);
-        inputSlider.setMinorTickSpacing(1);
-        inputSlider.setMajorTickSpacing(10);
-        panel.add(inputSlider, gbc);
-
-        inputSlider.addChangeListener(e -> {
-            setMethod.accept(inputSlider.getValue());
-            inputLabel.setText(label + ": " + getMethod.getAsInt());
-        });
-
-    }
-
+    /**
+     * Creates a selection of components and event listeners and adds them to a panel.
+     * @param panel panel to add the components to.
+     * @param position The horizontal location the component should be placed in.
+     * @param label The label for the method.
+     * @param max The max value for the slider
+     * @param step The step increment of the slider.
+     * @param getMethod The getMethod for the attribute.
+     * @param setMethod The setMethod for the attribute.
+     * @param getDefaultMethod The getMethod for the default attribute.
+     */
     private void createSlider(JPanel panel, int position, String label, double max, double step, DoubleSupplier getMethod, DoubleConsumer setMethod, DoubleSupplier getDefaultMethod) {
         int multiplier;
         if (step == 1.0){
@@ -1424,10 +1288,31 @@ public class SimulatorView extends JFrame
 
     }
 
+    /**
+     * Creates a selection of components and event listeners and adds them to a panel.
+     * @param panel panel to add the components to.
+     * @param position The horizontal location the component should be placed in.
+     * @param label The label for the method.
+     * @param max The max value for the slider
+     * @param step The step increment of the slider.
+     * @param getMethod The getMethod for the attribute.
+     * @param setMethod The setMethod for the attribute.
+     */
     private void createSlider(JPanel panel, int position, String label, double max, double step, DoubleSupplier getMethod, DoubleConsumer setMethod) {
         createSlider(panel, position, label, max, step, getMethod, setMethod, null);
     }
 
+
+    /**
+     * Creates a selection of components and event listeners and adds them to a panel.
+     * @param panel panel to add the components to.
+     * @param position The horizontal location the component should be placed in.
+     * @param label The label for the method.
+     * @param max The max value for the slider
+     * @param getMethod The getMethod for the attribute.
+     * @param setMethod The setMethod for the attribute.
+     * @param getDefaultMethod The getMethod for the default attribute.
+     */
     private void createSlider(JPanel panel, int position, String label, int max, IntSupplier getMethod, IntConsumer setMethod, IntSupplier getDefaultMethod) {
         if (getDefaultMethod == null)
             createSlider(panel, position, label, max, 1.0, convert(getMethod), convert(setMethod), null);
@@ -1435,120 +1320,47 @@ public class SimulatorView extends JFrame
             createSlider(panel, position, label, max, 1.0, convert(getMethod), convert(setMethod), convert(getDefaultMethod));
     }
 
+    /**
+     * Creates a selection of components and event listeners and adds them to a panel.
+     * @param panel panel to add the components to.
+     * @param position The horizontal location the component should be placed in.
+     * @param label The label for the method.
+     * @param max The max value for the slider
+     * @param getMethod The getMethod for the attribute.
+     * @param setMethod The setMethod for the attribute.
+     */
     private void createSlider(JPanel panel, int position, String label, int max, IntSupplier getMethod, IntConsumer setMethod) {
         createSlider(panel, position, label, max, getMethod, setMethod, null);
     }
 
-    private DoubleSupplier convert(IntSupplier consumer) {
-        return () -> consumer.getAsInt();
+    /**
+     * Converts an IntSupplier to a DoubleSupplier
+     * @param supplier The IntSupplier
+     * @return The DoubleSupplier
+     */
+    private DoubleSupplier convert(IntSupplier supplier) {
+        return () -> supplier.getAsInt();
     }
 
+    /**
+     * Converts an IntConsumer to a DoubleConsumer
+     * @param consumer The IntConsumer
+     * @return The DoubleConsumer
+     */
     private DoubleConsumer convert(IntConsumer consumer) {
         return i -> consumer.accept((int)i);
     }
 
+    /**
+     * Remove the ".0" from a string if one exists
+     * @param string Strng to remove .0 from
+     * @return String without a .0
+     */
     private String removeTrailingZero(String string){
         if (string.endsWith(".0")){
             string = string.substring(0, string.length() - 2);
         }
         return string;
-    }
-
-    /**
-     * Creates a selection of components and event listeners and adds them to a panel.
-     * @param panel The panel to add the components to.
-     * @param position The horizontal location the component should be placed in.
-     * @param label The label for the method.
-     * @param getMethod The getMethod for the attribute.
-     * @param setMethod The setMethod for the attribute.
-     * @param getDefaultMethod The getMethod for the default attribute.
-     */
-    private void createValeditSpinner(JPanel panel, int position, String label, int max, IntSupplier getMethod, IntConsumer setMethod, IntSupplier getDefaultMethod){
-
-                // LABEL
-        GridBagConstraints gbc;
-        gbc = new GridBagConstraints();
-        gbc.insets = new Insets(3,0,3,0);
-        gbc.gridx = 0;
-        gbc.gridy = position;
-        gbc.anchor = GridBagConstraints.WEST;
-        JLabel inputLabel = new JLabel(label + ": " + getMethod.getAsInt());
-        panel.add(inputLabel, gbc);
-
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = position + 1;
-        //gbc.weightx = 1.0;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        JSlider inputSlider = new JSlider(0, max, getMethod.getAsInt());
-        inputSlider.setPaintTicks(true);
-        inputSlider.setMinorTickSpacing(1);
-        inputSlider.setMajorTickSpacing(10);
-        panel.add(inputSlider, gbc);
-
-        inputSlider.addChangeListener(e -> {
-            setMethod.accept(inputSlider.getValue());
-            inputLabel.setText(label + ": " + getMethod.getAsInt());
-        });
-
-        // DEFAULT BUTTON
-        gbc.gridx = 2;
-        JButton defaultButton = new JButton(restoreIcon);
-        defaultButton.setPreferredSize(new Dimension(23, 23));
-        panel.add(defaultButton, gbc);
-
-        defaultButton.addActionListener(e -> {
-            int defaultValue = getDefaultMethod.getAsInt();
-
-            inputSlider.setValue(defaultValue);
-            setMethod.accept(defaultValue);
-        });
-
-        //        // LABEL
-//        GridBagConstraints gbc;
-//        gbc = new GridBagConstraints();
-//        gbc.insets = new Insets(3,0,3,0);
-//        gbc.gridx = 0;
-//        gbc.gridy = position;
-//        gbc.anchor = GridBagConstraints.WEST;
-//        panel.add(new Label(label + ":"), gbc);
-//
-//        // SPINNER
-//        gbc.gridx = 1;
-//        gbc.fill = GridBagConstraints.HORIZONTAL;
-//        JSpinner spinner = new JSpinner();
-//        spinner.setValue(getMethod.getAsInt());
-//        panel.add(spinner, gbc);
-//
-//        // DEFAULT BUTTON
-//        gbc.gridx = 2;
-//        JButton defaultButton = new JButton(restoreIcon);
-//        defaultButton.setPreferredSize(new Dimension(23, 23));
-//        panel.add(defaultButton, gbc);
-//
-//        //CREDIT TO https://stackoverflow.com/a/7587253/11245518
-//        //Lets an event be called from any change of value. Before it was only if button or enter was pressed.
-//        JComponent comp = spinner.getEditor();
-//        JFormattedTextField field = (JFormattedTextField) comp.getComponent(0);
-//        DefaultFormatter formatter = (DefaultFormatter) field.getFormatter();
-//        formatter.setCommitsOnValidEdit(true);
-//        spinner.addChangeListener(new ChangeListener() {
-//            @Override
-//            public void stateChanged(ChangeEvent e) {
-//                try {spinner.commitEdit();}
-//                catch ( java.text.ParseException ignored) {}
-//
-//                setMethod.accept((Integer) spinner.getValue());
-//            }
-//        });
-//
-//        defaultButton.addActionListener(e -> {
-//            int defaultValue = getDefaultMethod.getAsInt();
-//
-//            spinner.setValue(defaultValue);
-//            setMethod.accept(defaultValue);
-//        });
     }
 
     /**
@@ -1573,39 +1385,6 @@ public class SimulatorView extends JFrame
         }
     }
 
-    private void makeDiagramsVisible(){
-        JFrame diagrams = new JFrame("Histogram and PieChart");
-        diagrams.setSize(1150, 550);
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-        panel.add(this.histogram);
-        panel.add(this.pieChart);
-        diagrams.add(panel);
-        diagrams.setVisible(true);
-    }
-
-
-    private void makePieChart(int height, int width) {
-        this.pieChart = new PieChart();
-        this.pieChart.setSize(height * 4, width * 2);
-        //this.pieChart.stats(this.getPopulationDetails());
-        this.pieChart.repaint();
-    }
-
-    private void makeHistogram(int height, int width) {
-        this.histogram = new Histogram();
-        this.histogram.setSize(height * 2, width * 2);
-        //this.histogram.stats(this.getPopulationDetails());
-        this.histogram.repaint();
-    }
-
-    private void updateWeather(Weather currentWeather){
-        weather.setText("<html>"+ currentWeather.toString() +"</html>");
-        //enview_Panel.add(weather, BorderLayout.CENTER);
-        //enview_Panel.setPreferredSize(new Dimension(200,200));
-        //extras_Panel.add(enview_Panel, BorderLayout.CENTER);
-    }
-
     /**
      * Show the current status of the field.
      * @param step Which iteration step it is.
@@ -1616,14 +1395,16 @@ public class SimulatorView extends JFrame
             setVisible(true);
         }
 
-        paintEnviewPanel(step);
-
         simStats_StepLabel.setText(SIMSTATS_STEP_PREFIX + step);
         simStats_TimeLabel.setText(SIMSTATS_TIME_PREFIX + time);
         simStats_DaytimeLabel.setText(SIMSTATS_DAYTIME_PREFIX + daytime);
         simStats_DayCountLabel.setText(SIMSTATS_DAYCOUNT_PREFIX + daycount);
-        updateWeather(currentWeather);
+        weather.setText("<html>"+ currentWeather.toString() +"</html>");
         stats.reset();
+
+        enview_clock.setIcon(enview_clockFaces.get(step % Simulator.STEP_PER_DAY));
+        enview_clock.repaint();
+        enview_clock.revalidate();
 
         fieldView.preparePaint();
 
@@ -1650,10 +1431,6 @@ public class SimulatorView extends JFrame
             }
         }
         stats.countFinished();
-        //this.histogram.stats(this.getPopulationDetails());
-        //this.histogram.repaint();
-//        this.pieChart.stats(popStats_EntityCount, simulator.getPossibleEntities());
-//        this.pieChart.repaint();
 
         popStats_TotalLabel.setText(POPSTATS_TOTAL_PREFIX + stats.getTotalCount(field));
         popStats_TypeLabel.setText(stats.getPopulationDetails(field));
@@ -1664,45 +1441,6 @@ public class SimulatorView extends JFrame
         fieldView.repaint();
     }
 
-    /**
-     * Paints the contents of Environment View panel with new stats
-     * @param step The current step of the simulation.
-     */
-    private void paintEnviewPanel(int step){
-//        double doubleStep = step;
-//        double partOfDay = (doubleStep % Simulator.STEP_PER_DAY)/Simulator.STEP_PER_DAY;
-//        double partOfSection;
-//        Color oldColor, newColor;
-//        if (partOfDay >= 0 && partOfDay < 0.25){
-//            oldColor = NIGHT_COLOR;
-//            newColor = SUNRISE_COLOR;
-//            partOfSection = partOfDay/0.25;
-//        }
-//        else if (partOfDay >= 0.25 && partOfDay < 0.5){
-//            oldColor = SUNRISE_COLOR;
-//            newColor = DAY_COLOR;
-//
-//            partOfSection = (partOfDay - 0.25)/0.25;
-//        }
-//        else if (partOfDay >= 0.25 && partOfDay < 0.75){
-//            oldColor = DAY_COLOR;
-//            newColor = SUNSET_COLOR;
-//
-//            partOfSection = (partOfDay - 0.5)/0.25;
-//        }
-//        else{// if (partOfDay >= 0.75 && partOfDay < 1){
-//            oldColor = SUNSET_COLOR;
-//            newColor = NIGHT_COLOR;
-//
-//            partOfSection = (partOfDay - 0.75)/0.25;
-//        }
-//
-//        enview_Panel.setBackground(new Color(getColorChangeValue(oldColor.getRed(), newColor.getRed(), partOfSection), getColorChangeValue(oldColor.getGreen(), newColor.getGreen(), partOfSection), getColorChangeValue(oldColor.getBlue(), newColor.getBlue(), partOfSection)));
-
-        enview_clock.setIcon(enview_clockFaces.get(step % Simulator.STEP_PER_DAY));
-        enview_clock.repaint();
-        enview_clock.revalidate();
-    }
 
     /**
      *
