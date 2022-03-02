@@ -15,9 +15,9 @@ public class Simulator {
     // The default depth of the grid.
     private static final int DEFAULT_DEPTH = 120;
 
-    private static final ArrayList<Integer> speeds = new ArrayList<>(Arrays.asList(100, 200, 400, 800));
+    private static final ArrayList<Integer> speeds = new ArrayList<>(Arrays.asList(100, 50, 25, 800, 400, 200));
     private static int currentSpeed;
-    private static final ArrayList<String> speedSymbols = new ArrayList<>(Arrays.asList("1", "2", "4", "8"));
+    private static final ArrayList<String> speedSymbols = new ArrayList<>(Arrays.asList("3","2","1","6","5","4"));
     private static String currentSpeedSymbol;
 
     public static final int STEP_PER_DAY = 24;
@@ -71,13 +71,13 @@ public class Simulator {
         }
 
         possibleEntities = new ArrayList<>();
-        AnimalStats predator1 = new AnimalStats("Wolf", EntityStats.EntityType.PREDATOR, Color.RED,  7.6,0.37, true, 15, 130, 2, 20);
+        AnimalStats predator1 = new AnimalStats("Wolf", EntityStats.EntityType.PREDATOR, Color.RED,  1.0,0.37, true, 15, 130, 2, 20);
         possibleEntities.add(predator1);
-        AnimalStats predator2 = new AnimalStats("Eagle", EntityStats.EntityType.PREDATOR, Color.BLUE,  8.0,0.28, true,16, 150, 2, 16);
+        AnimalStats predator2 = new AnimalStats("Eagle", EntityStats.EntityType.PREDATOR, Color.BLUE,  1.4,0.28, true,16, 150, 2, 16);
         possibleEntities.add(predator2);
-        AnimalStats prey1 = new AnimalStats("Mouse", EntityStats.EntityType.PREY, Color.MAGENTA,  3.0,1.0, false, 1, 200, 59, 200);
+        AnimalStats prey1 = new AnimalStats("Mouse", EntityStats.EntityType.PREY, Color.MAGENTA,  20.0,1.0, false, 1, 200, 59, 200);
         possibleEntities.add(prey1);
-        AnimalStats prey2 = new AnimalStats("Deer", EntityStats.EntityType.PREY, Color.ORANGE,  1.0,1.0,false,  1, 200, 58, 200);
+        AnimalStats prey2 = new AnimalStats("Deer", EntityStats.EntityType.PREY, Color.ORANGE,  20.0,1.0,false,  1, 200, 58, 200);
         possibleEntities.add(prey2);
         PlantStats plant1 = new PlantStats("Grapes", EntityStats.EntityType.PLANT, Color.GREEN,  1.0,0.01, 14, 5);
         possibleEntities.add(plant1);
