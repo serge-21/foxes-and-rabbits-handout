@@ -135,27 +135,6 @@ public class Simulator {
         this.weather.generateVisibilityAndDownfall();
     }
 
-    /**
-     * Run the simulation from its current state for a reasonably long period,
-     * (4000 steps).
-     */
-    public void runLongSimulation()
-    {
-        simulate(4000);
-    }
-
-    /**
-     * Run the simulation from its current state for the given number of steps.
-     * Stop before the given number of steps if it ceases to be viable.
-     * @param numSteps The number of steps to run for.
-     */
-    public void simulate(int numSteps) {
-        for(int step = 1; step <= numSteps && view.isViable(field); step++) {
-            simulateOneStep();
-            // delay(60);   // uncomment this to run more slowly
-        }
-    }
-
     private void checkForDayChange(){
         // from 16 to 5 is night.
         time = step % STEP_PER_DAY;
@@ -199,10 +178,9 @@ public class Simulator {
         for (Iterator<Organism> it = organisms.iterator(); it.hasNext(); ) {
             Organism entity = it.next();
             entity.act(newOrganisms, isDay, this.weather);
-            if (!entity.getIsAlive()){ // || !possibleEntities.contains(entity.getStats())) {
+            if (!entity.getIsAlive()){
                 it.remove();
             }else{
-                // disease is insanely rare because otherwise balance is going to be impossible
                 if(new Random().nextDouble() < 0.3){
                     entity.addDisease(new Disease(0.1, 0.2 , entity));
                 }
@@ -264,11 +242,11 @@ public class Simulator {
 
     public void addEntityToSimulator(EntityStats entity, boolean randomAge, Field field, Location location){
         if (entity.getEntityType() == AnimalStats.EntityType.PREDATOR){
-            Predator predator = new Predator((AnimalStats) entity, true, field, location);
+            Predator predator = new Predator((AnimalStats) entity, randomAge, field, location);
             organisms.add(predator);
         }
         else if (entity.getEntityType() == AnimalStats.EntityType.PREY){
-            Prey prey = new Prey((AnimalStats) entity, true, field, location);
+            Prey prey = new Prey((AnimalStats) entity, randomAge, field, location);
             organisms.add(prey);
         }
         else if (entity.getEntityType() == AnimalStats.EntityType.PLANT) {
@@ -291,12 +269,7 @@ public class Simulator {
         for (EntityStats entity : possibleEntities){
             total += entity.getCreationProbability();
         }
-        if (total > limit){
-            return total;
-        }
-        else {
-            return limit;
-        }
+        return Math.max(total, limit);
     }
 
     /**
@@ -318,12 +291,12 @@ public class Simulator {
 
     /**
      * Pause for a given time.
-     * @param millisec  The time to pause for, in milliseconds
+     * @param millisecond  The time to pause for, in milliseconds
      */
-    private void delay(int millisec)
+    private void delay(int millisecond)
     {
         try {
-            Thread.sleep(millisec);
+            Thread.sleep(millisecond);
         }
         catch (InterruptedException ie) {
             // wake up

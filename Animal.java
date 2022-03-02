@@ -227,6 +227,7 @@ public abstract class Animal extends Organism{
      */
     private void setWaterLevel(double waterLevel) {
         this.waterLevel += waterLevel;
+        this.waterLevel = Math.min(this.waterLevel, 1000);
     }
 
     /**
