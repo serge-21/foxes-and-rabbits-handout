@@ -11,14 +11,14 @@ public class EntityStats implements Cloneable{
     /**
      * this is the main enum that distinguishes the type of animals
      */
-    public enum EntityType{
+    public enum EntityType {
         PREY, PREDATOR, PLANT
     }
 
     private String name;                            // The name of the entity
     private EntityType entityType;                  // The type of the entity
     private Color color;                            // The colour of the entity
-    private boolean isEnabled;                      // The what exactly is this ?
+    private boolean isEnabled;                      // Allowing the Entity to spawn on the field in the first place
     private double creationProbability;             // The creation probability i.e. how likely it is that this entity will get created in the first place
     private double breedingProbability;             // The breeding probability i.e. how likely it is that this entity will breed
 
@@ -55,9 +55,9 @@ public class EntityStats implements Cloneable{
         this.color = clone.color;
         this.breedingProbability = clone.breedingProbability;
         this.creationProbability = clone.creationProbability;
-        this.isEnabled = clone.isEnabled; // USELESS CODE CAUSE ITS ALWAYS TRUE BY DEFAULT BUT UHH
+        this.isEnabled = clone.isEnabled;
 
-        // PREVENTS INFINITE LOOP (I THINK LOL)
+        // PREVENTS INFINITE LOOP
         DEFAULT_STATS = this;
     }
 
@@ -84,11 +84,6 @@ public class EntityStats implements Cloneable{
         return (EntityStats) super.clone();
     }
 
-    // FIXES JCOMBOBOX DISPLAY ERROR, FIX DUPE LATER
-    // BASCALLY WHEN YOU PUT OBJECTS IN A JCOMBOBOX (WHICH IS A COLLECTION) IT DISPLAYS
-    // WHATEVER VALUE IS RETURNED WHEN toString() IS CALLED. SO I ADDED IT BELOW TO FIX
-    // THAT. WE CAN REMOVE getName AND REPLACE INSTANCES OF IT USED WITH toString TO EASILY
-    // FIX THiS DUPE METHOD.
     /**
      * Returns the name of the Entity
      * @return Name of the Entity
@@ -150,9 +145,9 @@ public class EntityStats implements Cloneable{
     }
 
     /**
-     * no clue what this does ask cosmo
+     * A simple getter method to return the value of isEnabled
      *
-     * @return
+     * @return the boolean value of isEnabled
      */
     public boolean isEnabled() {
         return isEnabled;

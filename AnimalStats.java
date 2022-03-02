@@ -8,11 +8,11 @@ import java.awt.*;
  */
 public class AnimalStats extends EntityStats {
     // Characteristics shared by all Animals
-    private int breedingAge;                 // The age at which a predator1 can start to breed.
-    private int maxAge;                      // The age to which a predator1 can live.
+    private int breedingAge;                 // The age at which an animal can start to breed.
+    private int maxAge;                      // The age to which an animal can live.
     private int maxLitterSize;               // The maximum number of births.
-    private int hungerValue;                 // The food value of a single prey1. In effect, this is the
-    private boolean isNocturnal;
+    private int hungerValue;                 // The food value of a single animal.
+    private boolean isNocturnal;             // Determines if the animal is nocturnal
 
     public static final int BREEDINGAGE_MAX = 200;
     public static final int MAXAGE_MAX = 200;

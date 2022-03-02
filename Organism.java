@@ -47,7 +47,7 @@ public abstract class Organism extends Entity {
     /**
      * A simple getter method that return isInfected field
      *
-     * @return is this organism ifected
+     * @return is this organism infected
      */
     public boolean getIsInfected() {
         return isInfected;

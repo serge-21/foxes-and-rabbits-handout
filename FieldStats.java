@@ -136,8 +136,4 @@ public class FieldStats {
         }
         countsValid = true;
     }
-
-    public HashMap<Class, Counter> getPopulation() {
-        return this.counters;
-    }
 }

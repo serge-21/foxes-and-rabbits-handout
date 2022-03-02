@@ -7,18 +7,14 @@ import java.util.Random;
  * Represent a rectangular grid of field positions.
  * Each position is able to store a single animal.
  *
- * @author David J. Barnes and Michael Kölling
- * @version 2016.02.29
+ * @author David J. Barnes and Michael Kölling, Syraj Alkhalil and Cosmo Colman
+ * @version 2022.02.27 (2)
  */
-public class Field
-{
-    // A random number generator for providing random locations.
-    private static final Random rand = Randomizer.getRandom();
+public class Field {
+    private static final Random rand = Randomizer.getRandom();      // A random number generator for providing random locations.
+    private final int depth, width;                                 // The depth and width of the field.
+    private final Object[][] field;                                 // Storage for the animals.
 
-    // The depth and width of the field.
-    private final int depth, width;
-    // Storage for the animals.
-    private final Object[][] field;
 
     /**
      * Represent a field of the given dimensions.

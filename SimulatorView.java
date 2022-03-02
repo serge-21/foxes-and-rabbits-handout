@@ -8,19 +8,17 @@ import java.awt.Dimension;
 import java.util.function.*;
 
 /**
- * A graphical view of the simulation grid.
+ * A graphical view of all the gui. This includes the tabs, the main grid,
+ * the number of animals present, the clock, the weather, etc...
  * The view displays a colored rectangle for each location
  * representing its contents. It uses a default background color.
- * Colors for each type of species can be defined using the
- * setColor method.
- * setColor method.
+ * Colors for each type of species can be defined and changed during the simulation
  *
- * @author David J. Barnes and Michael Kölling
- * @version 2016.02.29
+ * @author Syraj Alkhalil and Cosmo Colman
+ * @version 2022.02.27 (2)
  */
 public class SimulatorView extends JFrame {
     private static final Color EMPTY_COLOR = Color.white;               // Colors used for empty locations.
-    private static final Color UNKNOWN = Color.gray;               // Colors used for empty locations.
 
     private final Color SUCCESS_COLOR = new Color(27, 157, 21);
     private final Color FAIL_COLOR = new Color(207, 39, 39);
@@ -47,42 +45,37 @@ public class SimulatorView extends JFrame {
     private JLabel simStats_StepLabel, simStats_TimeLabel, simStats_DaytimeLabel, simStats_DayCountLabel;
 
     // Components for MAIN -> SOUTH Population Stats Panel (pop stats)
-    private JPanel popStats_Panel;
     private JLabel popStats_TotalLabel, popStats_TypeLabel;
     private ArrayList<Integer> popStats_EntityCount;
     private ArrayList<JLabel> popStats_EntityLabels;
 
-    // Components for MAIN -> EAST -> NORTH Control Buttons (playpause)
-    private JPanel playpause_Panel;
-    private JButton playpause_playpauseButton, playpause_speedButton, playpause_stepButton, playpause_resetButton;
+    // Components for MAIN -> EAST -> NORTH Control Buttons (play pause)
+    private JPanel playPause_Panel;
+    private JButton playPause_playPauseButton, playPause_speedButton, playPause_stepButton, playPause_resetButton;
 
-    // Components for MAIN -> EAST -> CENTRE Tab Meny components (tabmenu)
-    private JTabbedPane tabmenu_TabbedPane;
+    // Components for MAIN -> EAST -> CENTRE Tab Many components (tab menu)
+    private JTabbedPane tabMenu_TabbedPane;
 
-    // Components for MAIN -> EAST -> CENTRE -> TAB1 Spawnrate Panel (spawnrate)
-    private JPanel spawnrate_Panel;
-    private JTextField spawnrate_seedTextField;
-    private JButton spawnrate_seedResetButton;
-    private ArrayList<JSlider> spawnrate_Slider;
-    private ArrayList<JCheckBox> spawnrate_CheckBox;
-    private ArrayList<JButton> spawnrate_DeleteButton;
-    private ArrayList<JButton> spawnrate_RestoreDefaultButton;
+    // Components for MAIN -> EAST -> CENTRE -> TAB1 Spawn rate Panel (spawn rate)
+    private JPanel spawnRate_Panel;
+    private JTextField spawnRate_seedTextField;
+    private JButton spawnRate_seedResetButton;
 
-    // Components for MAIN -> EAST -> CENTRE -> TAB2 Value Editor Panel (valedit)
-    private JPanel valedit_Panel;
-    private JPanel valedit_Container;
-    private ArrayList<JPanel> valedit_TypeContainerPanels;
+    // Components for MAIN -> EAST -> CENTRE -> TAB2 Value Editor Panel (valEdit)
+    private JPanel valEdit_Panel;
+    private JPanel valEdit_Container;
+    private ArrayList<JPanel> valEdit_TypeContainerPanels;
 
-    // Components for MAIN -> EAST -> CENTRE -> TAB3 Add Entity Panel (addent)
-    private JPanel addent_Panel;
-    private JPanel addent_Container;
+    // Components for MAIN -> EAST -> CENTRE -> TAB3 Add Entity Panel (addend)
+    private JPanel addend_Panel;
+    private JPanel addend_Container;
     private HashMap<Enum<EntityStats.EntityType>, JPanel> typePanel;
     private EntityStats newEntity;
 
-    // Components for MAIN -> EAST -> CENTRE -> TAB4 Draw Entity Panel (drawent)
-    private JPanel drawent_Panel;
-    private JButton drawent_EnableButton;
-    private boolean drawmodeEnabled = false;
+    // Components for MAIN -> EAST -> CENTRE -> TAB4 Draw Entity Panel (drawer)
+    private JPanel drawer_Panel;
+    private JButton drawer_EnableButton;
+    private boolean drawModeEnabled = false;
 
     // Components for MAIN -> EAST -> SOUTH -> NORTH details Label
     private JLabel detailsLabel;        // For telling the user important details
@@ -91,24 +84,25 @@ public class SimulatorView extends JFrame {
     private ArrayList<ImageIcon> enview_clockFaces;
     private JLabel enview_clock;
 
+    // A list of all the icons/images + the full reset button
     private JButton fullResetButton;
     private final ImageIcon playIcon, pauseIcon, stepIcon, resetIcon, restoreIcon, deleteIcon;
 
     private final static ArrayList<Color> COLORS = new ArrayList<>(Arrays.asList(Color.RED,Color.BLUE,Color.MAGENTA,Color.ORANGE,Color.GREEN, Color.CYAN, Color.BLACK, Color.DARK_GRAY, Color.LIGHT_GRAY, Color.PINK));
     private HashMap<Color, EntityStats> entityColor;
-
     private final int MAX_ENTITIES = COLORS.size();
 
-    private final FieldView fieldView;
     // A statistics object computing and storing simulation information
+    private final FieldView fieldView;
     private final FieldStats stats;
     private final Simulator simulator;
+    private final Field field;
 
     private final int height, width;
-    private final Field field;
 
     /**
      * Create a view of the given width and height.
+     *
      * @param height The simulation's height.
      * @param width  The simulation's width.
      * @param simulator The current simulation
@@ -125,7 +119,7 @@ public class SimulatorView extends JFrame {
 
         setupInspector();
 
-        // this.getClass().getClassLoader().getResource() had to be used so that icons work in .jar files.
+        // getting the icons had to be done this way so that icons work in .jar files.
         playIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/play.png"));
         pauseIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/pause.png"));
         stepIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/step.png"));
@@ -153,9 +147,9 @@ public class SimulatorView extends JFrame {
      * initialised everytime the tab is being drawn
      */
     private void setupTab1() {
-        spawnrate_seedTextField = new JTextField(Randomizer.getSeed() + "");
-        spawnrate_seedResetButton = new JButton(restoreIcon);
-        spawnrate_seedResetButton.setPreferredSize(SMALL_BUTTON_SIZE);
+        spawnRate_seedTextField = new JTextField(Randomizer.getSeed() + "");
+        spawnRate_seedResetButton = new JButton(restoreIcon);
+        spawnRate_seedResetButton.setPreferredSize(SMALL_BUTTON_SIZE);
     }
 
     /**
@@ -207,29 +201,31 @@ public class SimulatorView extends JFrame {
 
     /**
      * Initialises the Simulator Statistic panel located at the North of the main frame.
+     *
      * @param container The container you want to initialise components to.
      * @param layout The position to assign the components.
      */
     private void initialiseSimStatsPanel(Container container, String layout){
         // Components for MAIN -> NORTH Simulation Stats Panel (sim stats)
-        JPanel simstats_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, LABEL_SPACING_HGAP, LABEL_SPACING_VGAP));
+        JPanel simStats_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, LABEL_SPACING_HGAP, LABEL_SPACING_VGAP));
         // The anchor for the JLabel for North and South of mainPanel
         int SIMSTATS_LABEL_LAYOUT = JLabel.CENTER;
         simStats_StepLabel = new JLabel(SIMSTATS_STEP_PREFIX, SIMSTATS_LABEL_LAYOUT);
         simStats_TimeLabel = new JLabel(SIMSTATS_TIME_PREFIX, SIMSTATS_LABEL_LAYOUT);
         simStats_DaytimeLabel = new JLabel(SIMSTATS_DAYTIME_PREFIX, SIMSTATS_LABEL_LAYOUT);
         simStats_DayCountLabel = new JLabel(SIMSTATS_DAYCOUNT_PREFIX, SIMSTATS_LABEL_LAYOUT);
-        addAll(simstats_Panel, simStats_StepLabel, simStats_TimeLabel, simStats_DaytimeLabel, simStats_DayCountLabel);
-        container.add(simstats_Panel, layout);
+        addAll(simStats_Panel, simStats_StepLabel, simStats_TimeLabel, simStats_DaytimeLabel, simStats_DayCountLabel);
+        container.add(simStats_Panel, layout);
     }
 
     /**
      * Initialises the Population Statistic panel located at the South of the main frame.
+     *
      * @param container The container you want to initialise components to.
      * @param layout The position to assign the components.
      */
     private void initialisePopStatsPanel(Container container, String layout){
-        popStats_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, LABEL_SPACING_HGAP , LABEL_SPACING_VGAP));
+        JPanel popStats_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, LABEL_SPACING_HGAP, LABEL_SPACING_VGAP));
         popStats_TotalLabel = new JLabel();
         popStats_TypeLabel = new JLabel();
         addAll(popStats_Panel, popStats_TotalLabel, new JLabel("     ", JLabel.CENTER), popStats_TypeLabel, new JLabel("     ", JLabel.CENTER));
@@ -257,13 +253,13 @@ public class SimulatorView extends JFrame {
         JPanel options_Panel = new JPanel(new BorderLayout());
         container.add(options_Panel, layout);
 
-        initialisePlaypauseButtons(options_Panel, BorderLayout.NORTH);
+        initialisePlayPauseButtons(options_Panel, BorderLayout.NORTH);
         initialiseTabbedMenu(options_Panel, BorderLayout.CENTER);
         initialiseExtrasPanel(options_Panel, BorderLayout.SOUTH);
     }
 
     /**
-     * Initlialise the extras panel located South of tabs
+     * Initialise the extra panels located South of tabs
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
@@ -291,7 +287,7 @@ public class SimulatorView extends JFrame {
             simulator.resetEntities();
             Randomizer.restoreDefaultSeed();
             refreshPanels();
-            playpause_resetButton.doClick();
+            playPause_resetButton.doClick();
         });
     }
 
@@ -350,78 +346,79 @@ public class SimulatorView extends JFrame {
     private void refreshPanels(){
         initialisePopStatsPanel(mainPanel, BorderLayout.SOUTH);
 
-        drawTab1SpawnRate(spawnrate_Panel, BorderLayout.CENTER);
-        drawTab2Validate(valedit_Panel, BorderLayout.CENTER);
-        drawTab3Addend(addent_Panel, BorderLayout.CENTER);
-        drawTab4Drawer(drawent_Panel, BorderLayout. CENTER);
+        drawTab1SpawnRate(spawnRate_Panel, BorderLayout.CENTER);
+        drawTab2Validate(valEdit_Panel, BorderLayout.CENTER);
+        drawTab3Addend(addend_Panel, BorderLayout.CENTER);
+        drawTab4Drawer(drawer_Panel, BorderLayout. CENTER);
 
         simulator.showStatus();
     }
 
     /**
      * Initialises the Control Buttons located North of the Options frame.
+     *
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
-    private void initialisePlaypauseButtons(JPanel panel, String layout){
+    private void initialisePlayPauseButtons(JPanel panel, String layout){
         // The spacing for the PlayPause Buttons
         int PLAYPAUSE_BUTTON_SPACING_HGAP = 5;
         int PLAYPAUSE_BUTTON_SPACING_VGAP = 5;
-        playpause_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, PLAYPAUSE_BUTTON_SPACING_HGAP, PLAYPAUSE_BUTTON_SPACING_VGAP));
-        playpause_playpauseButton = new JButton(pauseIcon);
+        playPause_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER, PLAYPAUSE_BUTTON_SPACING_HGAP, PLAYPAUSE_BUTTON_SPACING_VGAP));
+        playPause_playPauseButton = new JButton(pauseIcon);
         String PLAYPAUSE_TOOLTIP = "Play or pause the simulation";
-        playpause_playpauseButton.setToolTipText(PLAYPAUSE_TOOLTIP);
-        playpause_speedButton = new JButton(simulator.getSpeedSymbol());
+        playPause_playPauseButton.setToolTipText(PLAYPAUSE_TOOLTIP);
+        playPause_speedButton = new JButton(simulator.getSpeedSymbol());
         String SPEED_TOOLTIP = "Toggle simulator speeds";
-        playpause_speedButton.setToolTipText(SPEED_TOOLTIP);
-        playpause_stepButton = new JButton(stepIcon);
+        playPause_speedButton.setToolTipText(SPEED_TOOLTIP);
+        playPause_stepButton = new JButton(stepIcon);
         String STEP_TOOLTIP = "Step the simulation once";
-        playpause_stepButton.setToolTipText(STEP_TOOLTIP);
-        playpause_resetButton = new JButton(resetIcon);
+        playPause_stepButton.setToolTipText(STEP_TOOLTIP);
+        playPause_resetButton = new JButton(resetIcon);
         String RESET_TOOLTIP = "Reset the simulation";
-        playpause_resetButton.setToolTipText(RESET_TOOLTIP);
-        setSizeForAll(PLAYPAUSE_BUTTON_SIZE, playpause_playpauseButton, playpause_speedButton, playpause_stepButton, playpause_resetButton);
-        addAll(playpause_Panel, playpause_playpauseButton, playpause_speedButton, playpause_stepButton, playpause_resetButton);
-        panel.add(playpause_Panel, layout);
+        playPause_resetButton.setToolTipText(RESET_TOOLTIP);
+        setSizeForAll(PLAYPAUSE_BUTTON_SIZE, playPause_playPauseButton, playPause_speedButton, playPause_stepButton, playPause_resetButton);
+        addAll(playPause_Panel, playPause_playPauseButton, playPause_speedButton, playPause_stepButton, playPause_resetButton);
+        panel.add(playPause_Panel, layout);
 
-        playpause_speedButton.setEnabled(simulator.isRunning());
-        playpause_stepButton.setEnabled(simulator.isRunning());
-        playpause_resetButton.setEnabled(simulator.isRunning());
+        playPause_speedButton.setEnabled(simulator.isRunning());
+        playPause_stepButton.setEnabled(simulator.isRunning());
+        playPause_resetButton.setEnabled(simulator.isRunning());
 
         // Button Events
         // Stops and Starts the simulation
-        playpause_playpauseButton.addActionListener(e -> {
+        playPause_playPauseButton.addActionListener(e -> {
             simulator.toggleRunning();
             if(!simulator.isRunning()){
-                playpause_playpauseButton.setIcon(playIcon);
+                playPause_playPauseButton.setIcon(playIcon);
 
-                playpause_speedButton.setEnabled(true);
-                playpause_stepButton.setEnabled(true);
-                playpause_resetButton.setEnabled(true);
+                playPause_speedButton.setEnabled(true);
+                playPause_stepButton.setEnabled(true);
+                playPause_resetButton.setEnabled(true);
 
                 fullResetButton.setEnabled(true);
                 setTabsEnabled(true);
             }
             else{
-                playpause_playpauseButton.setIcon(pauseIcon);
+                playPause_playPauseButton.setIcon(pauseIcon);
 
-                playpause_speedButton.setEnabled(false);
-                playpause_stepButton.setEnabled(false);
-                playpause_resetButton.setEnabled(false);
+                playPause_speedButton.setEnabled(false);
+                playPause_stepButton.setEnabled(false);
+                playPause_resetButton.setEnabled(false);
 
                 fullResetButton.setEnabled(false);
                 setTabsEnabled(false);
             }
         });
         // Toggles the speed at which the simulator runs
-        playpause_speedButton.addActionListener(e -> {
+        playPause_speedButton.addActionListener(e -> {
             simulator.incSpeed();
-            playpause_speedButton.setText(simulator.getSpeedSymbol());
+            playPause_speedButton.setText(simulator.getSpeedSymbol());
         });
         // Steps the simulation forward by one
-        playpause_stepButton.addActionListener(e -> simulator.simulateOneStep());
+        playPause_stepButton.addActionListener(e -> simulator.simulateOneStep());
         // Resets the simulation to default
-        playpause_resetButton.addActionListener(e -> simulator.reset());
+        playPause_resetButton.addActionListener(e -> simulator.reset());
     }
 
     /**
@@ -429,14 +426,14 @@ public class SimulatorView extends JFrame {
      * @param isEnabled The state you want to set the tabs
      */
     void setTabsEnabled(boolean isEnabled){
-        tabmenu_TabbedPane.setEnabledAt(1, isEnabled);
-        setPanelEnabled((JPanel) tabmenu_TabbedPane.getComponentAt(1), isEnabled);
+        tabMenu_TabbedPane.setEnabledAt(1, isEnabled);
+        setPanelEnabled((JPanel) tabMenu_TabbedPane.getComponentAt(1), isEnabled);
 
-        tabmenu_TabbedPane.setEnabledAt(2, isEnabled);
-        setPanelEnabled((JPanel) tabmenu_TabbedPane.getComponentAt(2), isEnabled);
+        tabMenu_TabbedPane.setEnabledAt(2, isEnabled);
+        setPanelEnabled((JPanel) tabMenu_TabbedPane.getComponentAt(2), isEnabled);
 
-        tabmenu_TabbedPane.setEnabledAt(3, isEnabled);
-        drawent_EnableButton.setEnabled(isEnabled);
+        tabMenu_TabbedPane.setEnabledAt(3, isEnabled);
+        drawer_EnableButton.setEnabled(isEnabled);
     }
 
     /**
@@ -458,62 +455,64 @@ public class SimulatorView extends JFrame {
 
     /**
      * Initialises the TabPane located Centre of the Options frame.
+     *
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
     private void initialiseTabbedMenu(JPanel panel, String layout){
-        tabmenu_TabbedPane = new JTabbedPane();
+        tabMenu_TabbedPane = new JTabbedPane();
 
         // Tab 1
-        spawnrate_Panel = new JPanel(new BorderLayout());
-        drawTab1SpawnRate(spawnrate_Panel, BorderLayout.CENTER);
+        spawnRate_Panel = new JPanel(new BorderLayout());
+        drawTab1SpawnRate(spawnRate_Panel, BorderLayout.CENTER);
         // Constants for MAIN -> EAST -> CENTRE TabbedPane (tab menu)
         String TAB1_NAME = "SpawnRate";
-        tabmenu_TabbedPane.addTab(TAB1_NAME, spawnrate_Panel);
+        tabMenu_TabbedPane.addTab(TAB1_NAME, spawnRate_Panel);
         String TAB1_TOOLTIP = "Control the spawn rate of an entity on simulation restart";
-        tabmenu_TabbedPane.setToolTipTextAt(0, TAB1_TOOLTIP);
+        tabMenu_TabbedPane.setToolTipTextAt(0, TAB1_TOOLTIP);
 
         // Tab 2
-        valedit_Panel = new JPanel(new BorderLayout());
-        drawTab2Validate(valedit_Panel, BorderLayout.CENTER);
+        valEdit_Panel = new JPanel(new BorderLayout());
+        drawTab2Validate(valEdit_Panel, BorderLayout.CENTER);
         String TAB2_NAME = "Values";
-        tabmenu_TabbedPane.addTab(TAB2_NAME, valedit_Panel);
+        tabMenu_TabbedPane.addTab(TAB2_NAME, valEdit_Panel);
         String TAB2_TOOLTIP = "Change the constants that define an entity";
-        tabmenu_TabbedPane.setToolTipTextAt(1, TAB2_TOOLTIP);
+        tabMenu_TabbedPane.setToolTipTextAt(1, TAB2_TOOLTIP);
 
         // Tab 3
-        addent_Panel = new JPanel(new BorderLayout());
-        drawTab3Addend(addent_Panel, BorderLayout.CENTER);
+        addend_Panel = new JPanel(new BorderLayout());
+        drawTab3Addend(addend_Panel, BorderLayout.CENTER);
         String TAB3_NAME = "Add";
-        tabmenu_TabbedPane.addTab(TAB3_NAME, addent_Panel);
+        tabMenu_TabbedPane.addTab(TAB3_NAME, addend_Panel);
         String TAB3_TOOLTIP = "Add your own custom entities";
-        tabmenu_TabbedPane.setToolTipTextAt(2, TAB3_TOOLTIP);
+        tabMenu_TabbedPane.setToolTipTextAt(2, TAB3_TOOLTIP);
 
         // Tab 4
-        drawent_Panel = new JPanel(new BorderLayout());
-        drawTab4Drawer(drawent_Panel, BorderLayout.CENTER);
+        drawer_Panel = new JPanel(new BorderLayout());
+        drawTab4Drawer(drawer_Panel, BorderLayout.CENTER);
         String TAB4_NAME = "Draw";
-        tabmenu_TabbedPane.addTab(TAB4_NAME, drawent_Panel);
+        tabMenu_TabbedPane.addTab(TAB4_NAME, drawer_Panel);
         String TAB4_TOOLTIP = "Draw entities on the simulation";
-        tabmenu_TabbedPane.setToolTipTextAt(3, TAB4_TOOLTIP);
+        tabMenu_TabbedPane.setToolTipTextAt(3, TAB4_TOOLTIP);
 
         setTabsEnabled(simulator.isRunning());
-        panel.add(tabmenu_TabbedPane, layout);
+        panel.add(tabMenu_TabbedPane, layout);
     }
 
     /**
      * Initialises the first tab of the TabbedPane, the Spawn rate tab.
      * This tab lets you change the spawn rate, remove, or disable an entity on reset.
+     *
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
     private void drawTab1SpawnRate(JPanel panel, String layout){
         panel.removeAll();
 
-        spawnrate_Slider = new ArrayList<>();
-        spawnrate_CheckBox = new ArrayList<>();
-        spawnrate_DeleteButton = new ArrayList<>();
-        spawnrate_RestoreDefaultButton = new ArrayList<>();
+        ArrayList<JSlider> spawnRate_Slider = new ArrayList<>();
+        ArrayList<JCheckBox> spawnRate_CheckBox = new ArrayList<>();
+        ArrayList<JButton> spawnRate_DeleteButton = new ArrayList<>();
+        ArrayList<JButton> spawnRate_RestoreDefaultButton = new ArrayList<>();
 
         JPanel holder = new JPanel(new GridBagLayout());
 
@@ -525,14 +524,14 @@ public class SimulatorView extends JFrame {
             gbc.gridx = 0;
             gbc.gridy++;
             JCheckBox checkBox = new JCheckBox(stat.getName() + ": " + stat.getCreationProbability() + "%", true);
-            spawnrate_CheckBox.add(checkBox);
+            spawnRate_CheckBox.add(checkBox);
             holder.add(checkBox, gbc);
 
             gbc.anchor = GridBagConstraints.SOUTH;
             gbc.gridx = -1;
             JButton deleteButton = new JButton(deleteIcon);
             deleteButton.setPreferredSize(SMALL_BUTTON_SIZE);
-            spawnrate_DeleteButton.add(deleteButton);
+            spawnRate_DeleteButton.add(deleteButton);
             holder.add(deleteButton, gbc);
 
             gbc.anchor = GridBagConstraints.CENTER;
@@ -542,14 +541,14 @@ public class SimulatorView extends JFrame {
             slider.setPaintTicks(true);
             slider.setMinorTickSpacing(10);
             slider.setMajorTickSpacing(50);
-            spawnrate_Slider.add(slider);
+            spawnRate_Slider.add(slider);
             holder.add(slider, gbc);
 
             gbc.anchor = GridBagConstraints.NORTH;
             gbc.gridx = -1;
             JButton defaultsButton = new JButton(restoreIcon);
             defaultsButton.setPreferredSize(SMALL_BUTTON_SIZE);
-            spawnrate_RestoreDefaultButton.add(defaultsButton);
+            spawnRate_RestoreDefaultButton.add(defaultsButton);
             holder.add(defaultsButton, gbc);
         }
 
@@ -565,42 +564,42 @@ public class SimulatorView extends JFrame {
         scrollPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPanel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        spawnrate_seedTextField.setPreferredSize(TEXTFIELD_SIZE);
+        spawnRate_seedTextField.setPreferredSize(TEXTFIELD_SIZE);
         JPanel seedPanel = new JPanel(new FlowLayout());
         seedPanel.add(new JLabel("Seed: "));
-        seedPanel.add(spawnrate_seedTextField);
-        seedPanel.add(spawnrate_seedResetButton);
+        seedPanel.add(spawnRate_seedTextField);
+        seedPanel.add(spawnRate_seedResetButton);
         scrollPanel.setColumnHeaderView(seedPanel);
 
         panel.add(scrollPanel, layout);
 
         // Event Listeners
         // Accepts input for Seed Box. Changes the seed of the Randomizer
-        spawnrate_seedTextField.addKeyListener(new KeyAdapter() {
+        spawnRate_seedTextField.addKeyListener(new KeyAdapter() {
             // BETTER WAYS TO DO THIS BUT A BIT COMPLICATED (KeyListener bad)
             // ALSO WEIRD PROBLEM WITH STRING INPUT, LIKE INITIALLY 1111 AND 11111 ARE THE SAME
             public void keyTyped(KeyEvent e) {
                 char character = e.getKeyChar();
-                if ((((character < '0') || (character > '9')) && (character != KeyEvent.VK_BACK_SPACE)) || (spawnrate_seedTextField.getText().length() > 8)) {
+                if ((((character < '0') || (character > '9')) && (character != KeyEvent.VK_BACK_SPACE)) || (spawnRate_seedTextField.getText().length() > 8)) {
                     e.consume();
                 }
-                Randomizer.setSeed(Integer.parseInt(spawnrate_seedTextField.getText()));
+                Randomizer.setSeed(Integer.parseInt(spawnRate_seedTextField.getText()));
             }
         });
 
         // Resets the field
-        spawnrate_seedResetButton.addActionListener(e -> {
+        spawnRate_seedResetButton.addActionListener(e -> {
             Randomizer.restoreDefaultSeed();
-            spawnrate_seedTextField.setText(Randomizer.getSeed() + "");
+            spawnRate_seedTextField.setText(Randomizer.getSeed() + "");
         });
 
         //Creates listener for each existing entity in the simulation
         for (EntityStats entity : simulator.getPossibleEntities()){
             int index = simulator.getPossibleEntities().indexOf(entity);
-            JSlider currentSlider = spawnrate_Slider.get(index);
-            JCheckBox currentCheckBox = spawnrate_CheckBox.get(index);
-            JButton currentDeleteButton = spawnrate_DeleteButton.get(index);
-            JButton currentDefaultsButton = spawnrate_RestoreDefaultButton.get(index);
+            JSlider currentSlider = spawnRate_Slider.get(index);
+            JCheckBox currentCheckBox = spawnRate_CheckBox.get(index);
+            JButton currentDeleteButton = spawnRate_DeleteButton.get(index);
+            JButton currentDefaultsButton = spawnRate_RestoreDefaultButton.get(index);
 
             currentSlider.addChangeListener(e -> {
                 double currentSpawnProb = (double) currentSlider.getValue() / 10;
@@ -648,6 +647,7 @@ public class SimulatorView extends JFrame {
     /**
      * Initialises the second tab of the TabbedPane, the Value Editor tab.
      * This tab lets you live edit an entities properties in the simulation.
+     *
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
@@ -657,15 +657,15 @@ public class SimulatorView extends JFrame {
         JComboBox<EntityStats> valuesComboBox = new JComboBox<>(simulator.getPossibleEntities().toArray(new EntityStats[0]));
         panel.add(valuesComboBox, BorderLayout.NORTH);
 
-        valedit_Container = new JPanel(new BorderLayout()); // THIS METHOD ISN'T GREAT BUT ROLL WITH IT
-        panel.add(valedit_Container, BorderLayout.CENTER);
+        valEdit_Container = new JPanel(new BorderLayout()); // THIS METHOD ISN'T GREAT BUT ROLL WITH IT
+        panel.add(valEdit_Container, BorderLayout.CENTER);
         
         entityColor = new HashMap<>();
         for (Color color : COLORS){
             entityColor.put(color, null);
         }
 
-        valedit_TypeContainerPanels = new ArrayList<>();
+        valEdit_TypeContainerPanels = new ArrayList<>();
         for (EntityStats stat : simulator.getPossibleEntities()){
             JPanel currentStatSliderContainer = new JPanel(new GridBagLayout());
 
@@ -691,9 +691,7 @@ public class SimulatorView extends JFrame {
                 defaultButton.setPreferredSize(new Dimension(23, 23));
                 currentStatSliderContainer.add(defaultButton, gbc);
 
-                nocturnalBox.addItemListener(e -> {
-                    animalStat.setNocturnal(nocturnalBox.isSelected());
-                    });
+                nocturnalBox.addItemListener(e -> animalStat.setNocturnal(nocturnalBox.isSelected()));
 
                 defaultButton.addActionListener(e -> {
                     boolean defaultValue = animalStat.getDefaults().isNocturnal();
@@ -718,6 +716,7 @@ public class SimulatorView extends JFrame {
 
             gbc.gridx = 0;
             gbc.gridwidth = 2;
+            gbc.gridy ++;
             gbc.anchor = GridBagConstraints.WEST;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             JComboBox<Color> colorComboBox = new JComboBox<>(COLORS.toArray(new Color[0]));
@@ -752,25 +751,26 @@ public class SimulatorView extends JFrame {
             currentStatSliderContainer.add(new Label(stat.getEntityType().toString()), gbc);
             
             // Adds Panel to ArrayList
-            valedit_TypeContainerPanels.add(currentStatSliderContainer);
+            valEdit_TypeContainerPanels.add(currentStatSliderContainer);
         }
 
-        valedit_Container.add(valedit_TypeContainerPanels.get(0), BorderLayout.CENTER);
+        valEdit_Container.add(valEdit_TypeContainerPanels.get(0), BorderLayout.CENTER);
 
         valuesComboBox.addActionListener(e -> {
             int index = valuesComboBox.getSelectedIndex();
-            valedit_Container.removeAll();
-            valedit_Container.add(valedit_TypeContainerPanels.get(index), BorderLayout.CENTER);
-            valedit_Container.updateUI();
+            valEdit_Container.removeAll();
+            valEdit_Container.add(valEdit_TypeContainerPanels.get(index), BorderLayout.CENTER);
+            valEdit_Container.updateUI();
         });
 
-        panel.add(valedit_Container, BorderLayout.CENTER);
+        panel.add(valEdit_Container, BorderLayout.CENTER);
         panel.updateUI();
     }
 
     /**
      * Initialises the third tab of the TabbedPane, the Add Entity tab.
      * This tab lets you add a custom entity to the simulation.
+     *
      * @param panel The panel you want to initialise components to.
      * @param layout The position to assign the components.
      */
@@ -778,7 +778,7 @@ public class SimulatorView extends JFrame {
         panel.removeAll();
 
         JPanel nameAndTypesPanel = new JPanel(new GridBagLayout());
-        addent_Container = new JPanel(new BorderLayout());
+        addend_Container = new JPanel(new BorderLayout());
 
         newEntity = new EntityStats();
         AnimalStats newAnimal = new AnimalStats();
@@ -803,9 +803,9 @@ public class SimulatorView extends JFrame {
             }
             newEntity.setEntityType(type);
 
-            addent_Container.removeAll();
-            addent_Container.add(typePanel.get(type),BorderLayout.CENTER);
-            addent_Container.updateUI();
+            addend_Container.removeAll();
+            addend_Container.add(typePanel.get(type),BorderLayout.CENTER);
+            addend_Container.updateUI();
         });
 
         gbc = new GridBagConstraints();
@@ -827,8 +827,8 @@ public class SimulatorView extends JFrame {
             }
         });
 
-        tabmenu_TabbedPane.addChangeListener(e -> {
-            if (tabmenu_TabbedPane.getSelectedIndex() != 2){
+        tabMenu_TabbedPane.addChangeListener(e -> {
+            if (tabMenu_TabbedPane.getSelectedIndex() != 2){
                 newEntity.setColor(null);
                 colorComboBox.setBackground(null);
             }
@@ -900,8 +900,8 @@ public class SimulatorView extends JFrame {
 
         typePanel.put(EntityStats.EntityType.PLANT, inputBoxesPanel);
 
-        addent_Container.add(typePanel.get(EntityStats.EntityType.PREY), BorderLayout.CENTER);
-        panel.add(addent_Container, layout);
+        addend_Container.add(typePanel.get(EntityStats.EntityType.PREY), BorderLayout.CENTER);
+        panel.add(addend_Container, layout);
 
         // Buttons
         JPanel addAndClearButtonsPanel = new JPanel(new GridBagLayout());
@@ -975,11 +975,11 @@ public class SimulatorView extends JFrame {
     private void drawTab4Drawer(JPanel panel, String layout){
         panel.removeAll();
 
-        drawent_EnableButton = new JButton();
-        panel.add(drawent_EnableButton, BorderLayout.NORTH);
+        drawer_EnableButton = new JButton();
+        panel.add(drawer_EnableButton, BorderLayout.NORTH);
 
-        JPanel drawent_OptionsPanel = new JPanel(new GridBagLayout());
-        panel.add(drawent_OptionsPanel, layout);
+        JPanel drawer_OptionsPanel = new JPanel(new GridBagLayout());
+        panel.add(drawer_OptionsPanel, layout);
 
         ButtonGroup buttonGroup = new ButtonGroup();
 
@@ -990,50 +990,50 @@ public class SimulatorView extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         JComboBox<EntityStats> entityComboBox = new JComboBox<>(simulator.getPossibleEntities().toArray(new EntityStats[0]));
-        drawent_OptionsPanel.add(entityComboBox, gbc);
+        drawer_OptionsPanel.add(entityComboBox, gbc);
 
         gbc.gridwidth = 1;
         gbc.gridy = 1;
         gbc.fill = GridBagConstraints.NONE;
-        drawent_OptionsPanel.add(new JLabel("Brush Size: "), gbc);
+        drawer_OptionsPanel.add(new JLabel("Brush Size: "), gbc);
 
         gbc.gridx = 1;
         JRadioButton smallBrush = new JRadioButton("Small", true);
-        drawent_OptionsPanel.add(smallBrush, gbc);
+        drawer_OptionsPanel.add(smallBrush, gbc);
         buttonGroup.add(smallBrush);
 
         gbc.gridy++;
         JRadioButton mediumBrush = new JRadioButton("Medium");
-        drawent_OptionsPanel.add(mediumBrush, gbc);
+        drawer_OptionsPanel.add(mediumBrush, gbc);
         buttonGroup.add(mediumBrush);
 
         gbc.gridy++;
         JRadioButton largeBrush = new JRadioButton("Large");
-        drawent_OptionsPanel.add(largeBrush, gbc);
+        drawer_OptionsPanel.add(largeBrush, gbc);
         buttonGroup.add(largeBrush);
 
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.gridwidth = 2;
-        drawent_OptionsPanel.add(new JLabel(" "), gbc);
+        drawer_OptionsPanel.add(new JLabel(" "), gbc);
 
         gbc.gridwidth = 1;
         gbc.gridy++;
-        drawent_OptionsPanel.add(new JLabel("Eraser Size: "), gbc);
+        drawer_OptionsPanel.add(new JLabel("Eraser Size: "), gbc);
 
         gbc.gridx = 1;
         JRadioButton smallEraser = new JRadioButton("Small");
-        drawent_OptionsPanel.add(smallEraser, gbc);
+        drawer_OptionsPanel.add(smallEraser, gbc);
         buttonGroup.add(smallEraser);
 
         gbc.gridy++;
         JRadioButton mediumEraser = new JRadioButton("Medium");
-        drawent_OptionsPanel.add(mediumEraser, gbc);
+        drawer_OptionsPanel.add(mediumEraser, gbc);
         buttonGroup.add(mediumEraser);
 
         gbc.gridy++;
         JRadioButton largeEraser = new JRadioButton("Large");
-        drawent_OptionsPanel.add(largeEraser, gbc);
+        drawer_OptionsPanel.add(largeEraser, gbc);
         buttonGroup.add(largeEraser);
 
         gbc.gridx = 0;
@@ -1041,7 +1041,7 @@ public class SimulatorView extends JFrame {
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         JButton clearFieldButton = new JButton("Clear Field");
-        drawent_OptionsPanel.add(clearFieldButton, gbc);
+        drawer_OptionsPanel.add(clearFieldButton, gbc);
 
         clearFieldButton.addActionListener(e -> {
             simulator.clearScreen();
@@ -1084,7 +1084,7 @@ public class SimulatorView extends JFrame {
                 action = (location) -> {simulator.addEntityToSimulator((EntityStats)entityComboBox.getSelectedItem(), true, field, location);};
             }
             else{ // if(smallEraser.isSelected() || mediumEraser.isSelected() || largeEraser.isSelected()){
-                action = (location) -> {simulator.removeEntityInSimulator(field, location);};
+                action = (location) -> simulator.removeEntityInSimulator(field, location);
             }
 
             for (int[] coordinate : translations) {
@@ -1109,7 +1109,7 @@ public class SimulatorView extends JFrame {
         MouseListener drawClickLocationAction = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (drawmodeEnabled) {
+                if (drawModeEnabled) {
                     draw.accept(e);
                 }
             }
@@ -1118,7 +1118,7 @@ public class SimulatorView extends JFrame {
 
         MouseAdapter drawDragLocationAction = new MouseAdapter() {
             public void mouseDragged(MouseEvent e) {
-                if (drawmodeEnabled) {
+                if (drawModeEnabled) {
                     draw.accept(e);
                 }
             }
@@ -1126,40 +1126,40 @@ public class SimulatorView extends JFrame {
         fieldView.addMouseMotionListener(drawDragLocationAction);
 
         Runnable setDisabled = () -> {
-            drawmodeEnabled = false;
-            drawent_EnableButton.setText("Enable Draw Mode");
+            drawModeEnabled = false;
+            drawer_EnableButton.setText("Enable Draw Mode");
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            for (Component component : drawent_OptionsPanel.getComponents()) {
+            for (Component component : drawer_OptionsPanel.getComponents()) {
                 component.setEnabled(false);
             }
         };
         setDisabled.run();
 
-        drawent_EnableButton.addActionListener(e -> {
-            if (!drawmodeEnabled) {
-                drawmodeEnabled = true;
+        drawer_EnableButton.addActionListener(e -> {
+            if (!drawModeEnabled) {
+                drawModeEnabled = true;
                 fullResetButton.setEnabled(false);
-                drawent_EnableButton.setText("Disable Draw Mode");
+                drawer_EnableButton.setText("Disable Draw Mode");
                 setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-                for (Component component : drawent_OptionsPanel.getComponents()) {
+                for (Component component : drawer_OptionsPanel.getComponents()) {
                     component.setEnabled(true);
                 }
-                for (Component component : playpause_Panel.getComponents()) {
+                for (Component component : playPause_Panel.getComponents()) {
                     component.setEnabled(false);
                 }
-                tabmenu_TabbedPane.setEnabledAt(0, false);
-                tabmenu_TabbedPane.setEnabledAt(1, false);
-                tabmenu_TabbedPane.setEnabledAt(2, false);
+                tabMenu_TabbedPane.setEnabledAt(0, false);
+                tabMenu_TabbedPane.setEnabledAt(1, false);
+                tabMenu_TabbedPane.setEnabledAt(2, false);
 
             } else {
                 fullResetButton.setEnabled(true);
                 setDisabled.run();
-                for (Component component : playpause_Panel.getComponents()) {
+                for (Component component : playPause_Panel.getComponents()) {
                     component.setEnabled(true);
                 }
-                tabmenu_TabbedPane.setEnabledAt(0, true);
-                tabmenu_TabbedPane.setEnabledAt(1, true);
-                tabmenu_TabbedPane.setEnabledAt(2, true);
+                tabMenu_TabbedPane.setEnabledAt(0, true);
+                tabMenu_TabbedPane.setEnabledAt(1, true);
+                tabMenu_TabbedPane.setEnabledAt(2, true);
             }
         });
 
@@ -1201,7 +1201,6 @@ public class SimulatorView extends JFrame {
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = position + 1;
-        //gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
@@ -1364,8 +1363,6 @@ public class SimulatorView extends JFrame {
                 Entity animal = (Entity) field.getObjectAt(row, col);
                 if(animal != null) {
                     int index = simulator.getPossibleEntities().indexOf(animal.getStats());
-//                    int currentCount = popStats_EntityCount.get(index);
-//                    popStats_EntityCount.set(index, ++currentCount);
                     if(index >= 0){
                         popStats_EntityCount.set(simulator.getPossibleEntities().indexOf(animal.getStats()), popStats_EntityCount.get(index) + 1);
                     }
@@ -1394,26 +1391,6 @@ public class SimulatorView extends JFrame {
     }
 
     /**
-     *
-     * @param oldValue
-     * @param newValue
-     * @param position The double position through thr number (0 to 1). For exmaple 0.5 will set the number halfway between the two values.
-     * @return
-     */
-    private int getColorChangeValue(int oldValue, int newValue, double position){
-        return (int)(oldValue + ((newValue-oldValue)*(position)));
-    }
-
-    /**
-     * Determine whether the simulation should continue to run.
-     * @return true If there is more than one species alive.
-     */
-    public boolean isViable(Field field)
-    {
-        return stats.isViable(field);
-    }
-
-    /**
      * Provide a graphical view of a rectangular field. This is
      * a nested class (a class defined inside a class) which
      * defines a custom component for the user interface. This
@@ -1425,7 +1402,7 @@ public class SimulatorView extends JFrame {
     {
         private final int GRID_VIEW_SCALING_FACTOR = 6;
 
-        private int gridWidth, gridHeight;
+        private final int gridWidth, gridHeight;
         private int xScale, yScale;
         Dimension size;
         private Graphics g;
@@ -1509,15 +1486,13 @@ public class SimulatorView extends JFrame {
  */
 class ComboBoxRenderer extends JPanel implements ListCellRenderer {
     private static final long serialVersionUID = -1L;
-    private Color[] colors;
-    private String[] strings;
 
     JPanel textPanel;
     JLabel text;
 
     HashMap<Color,EntityStats>  hashmap;
 
-    // TRIED TO MAKE IT ACCEPT <Color, Object> BUT IT WASNT LIKING IT LIKE BRUH
+    // TRIED TO MAKE IT ACCEPT <Color, Object> BUT IT WASN'T LIKING IT
     public ComboBoxRenderer(JComboBox comboBox, HashMap<Color,EntityStats>  hashmap){
         this.hashmap = hashmap;
         textPanel = new JPanel();
@@ -1529,36 +1504,29 @@ class ComboBoxRenderer extends JPanel implements ListCellRenderer {
     }
     @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        text.setBackground((Color) value);
+        text.setHorizontalAlignment(JLabel.CENTER);
+        text.setText(" ");
+        list.setSelectionBackground((Color) value);
 
-//        if (value == null) {
-//            text.setText("Pick a colour!");
-//            return text;
-//        }
-//        else {
+        if (isColorDark((Color) value)) {
+            text.setForeground(Color.WHITE);
+        } else {
+            text.setForeground(Color.BLACK);
+        }
+
+
+        if (isSelected) {
+            text.setBackground(((Color) value).darker());
+        } else {
             text.setBackground((Color) value);
-            text.setHorizontalAlignment(JLabel.CENTER);
-            text.setText(" ");
-            list.setSelectionBackground((Color) value);
+        }
 
-            if (isColorDark((Color) value)) {
-                text.setForeground(Color.WHITE);
-            } else {
-                text.setForeground(Color.BLACK);
-            }
-
-
-            if (isSelected) {
-                text.setBackground(((Color) value).darker());
-            } else {
-                text.setBackground((Color) value);
-            }
-
-            if (hashmap.get((Color) value) != null) {
-                text.setBackground(((Color) value).darker());
-                text.setText(hashmap.get((Color) value).toString());
-            }
-            return text;
-//        }
+        if (hashmap.get((Color) value) != null) {
+            text.setBackground(((Color) value).darker());
+            text.setText(hashmap.get((Color) value).toString());
+        }
+        return text;
     }
 
     /**
@@ -1569,10 +1537,6 @@ class ComboBoxRenderer extends JPanel implements ListCellRenderer {
      */
     public static boolean isColorDark(Color color){
         double darkness = 1 - (0.299 * color.getRed()+ 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
-        if(darkness<0.5){
-            return false;
-        }else{
-            return true;
-        }
+        return !(darkness < 0.5);
     }
 }

@@ -1,11 +1,10 @@
 /**
  * Represent a location in a rectangular grid.
- * 
- * @author David J. Barnes and Michael Kölling
- * @version 2016.02.29
+ *
+ * @author David J. Barnes, Michael Kölling, Syraj Alkhalil and Cosmo Colman
+ * @version 2022.02.27 (2)
  */
-public class Location
-{
+public class Location {
     // Row and column positions.
     private int row;
     private int col;
@@ -15,8 +14,7 @@ public class Location
      * @param row The row.
      * @param col The column.
      */
-    public Location(int row, int col)
-    {
+    public Location(int row, int col) {
         this.row = row;
         this.col = col;
     }
@@ -24,8 +22,7 @@ public class Location
     /**
      * Implement content equality.
      */
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if(obj instanceof Location) {
             Location other = (Location) obj;
             return row == other.getRow() && col == other.getCol();
@@ -37,11 +34,12 @@ public class Location
 
     /**
      * Checks if the location is within a passed bound.
+     *
      * @param rowBounds the max row value.
      * @param colBounds the max column value.
      * @return true if within bounds.
      */
-    public boolean withinBounds(int rowBounds, int colBounds){
+    public boolean withinBounds(int rowBounds, int colBounds) {
         if ((row <= rowBounds && col <= colBounds) && (row >= 0 && col >= 0)){
             return true;
         }
@@ -52,8 +50,7 @@ public class Location
      * Return a string of the form row,column
      * @return A string representation of the location.
      */
-    public String toString()
-    {
+    public String toString() {
         return row + "," + col;
     }
     
@@ -63,24 +60,21 @@ public class Location
      * unique hash code for each (row, col) pair.
      * @return A hashcode for the location.
      */
-    public int hashCode()
-    {
+    public int hashCode() {
         return (row << 16) + col;
     }
     
     /**
      * @return The row.
      */
-    public int getRow()
-    {
+    public int getRow() {
         return row;
     }
     
     /**
      * @return The column.
      */
-    public int getCol()
-    {
+    public int getCol() {
         return col;
     }
 }

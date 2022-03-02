@@ -8,6 +8,7 @@ import java.util.Random;
 
 /**
  * A class representing shared characteristics of animals.
+ *
  * @author Syraj Alkhalil and Cosmo Colman
  * @version 2022.02.27 (2)
  */
@@ -207,7 +208,7 @@ public abstract class Animal extends Organism{
      * set the food level of the animal
      */
     public void setFoodLevel(int foodLevel) {
-        this.foodLevel = foodLevel;
+        this.foodLevel = Math.min(this.foodLevel + foodLevel, 1000);
     }
 
     /**

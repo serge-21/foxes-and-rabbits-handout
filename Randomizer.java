@@ -1,70 +1,68 @@
 import java.util.Random;
 
 /**
- * Provide control over the randomization of the simulation. By using the shared, fixed-seed 
- * randomizer, repeated runs will perform exactly the same (which helps with testing). Set 
- * 'useShared' to false to get different random behaviour every time.
- * 
- * @author David J. Barnes and Michael Kölling
- * @version 2016.02.29
+ * Provide control over the randomization of the simulation. By using the fixed-seed
+ * randomizer, repeated runs will perform exactly the same (which helps with testing).
+ * Users are able to set the seed and therefore get different behaviour if they so wish
+ *
+ * @author Syraj Alkhalil and Cosmo Colman
+ * @version 2022.02.27 (2)
  */
-public class  Randomizer
-{
-    // The default seed for control of randomization.
-    private static final int DEFAULT_SEED = 1111;
-
-    private static int seed = DEFAULT_SEED;
-
-    // A shared Random object, if required.
-    private static Random rand = new Random(seed);
-//    // Determine whether a shared random generator is to be provided.
-//    private static final boolean useShared = true;
+public class  Randomizer {
+    private static final int DEFAULT_SEED = 1111;           // The default seed for control of randomization.
+    private static int seed = DEFAULT_SEED;                 // The variable seed that is altered by the user
+    private static Random rand = new Random(seed);          // A shared Random object, if required.
 
     /**
      * Constructor for objects of class Randomizer
      */
-    public Randomizer()
-    {
-    }
+    public Randomizer() {}
 
+    /**
+     * This method is used to reset the object's seed
+     */
     public static void resetRandom(){
         rand.setSeed(seed);
     }
 
+    /**
+     * A simple getter method to return the seed field
+     *
+     * @return an int value of the seed
+     */
     public static int getSeed(){
         return seed;
     }
 
+    /**
+     * A simple setter method to set the value of the field seed
+     *
+     * @param newSeed the new seed we wish to set as the seed
+     */
     public static void setSeed(int newSeed){
         seed = newSeed;
     }
 
+    /**
+     * This method is used to restore the default seed
+     */
     public static void restoreDefaultSeed(){
         seed = DEFAULT_SEED;
     }
 
     /**
-     * Rolls a random decimal number from 0 to 100 and if the number is lower than the parameter, it returns true.
-     * @param odds the percentage change of an event happening (from 0 to 100)
-     * @return True if the roll is successful.
+     * A simple method to generate a random number given a limit
+     *
+     * @param limit the limit we wish to stop at
+     * @return a random int given the limit
      */
-    public static boolean roll(double odds)
-    {
-        if (odds <= 100 && odds >= 0) {
-            return odds < rand.nextDouble() * 100;
-        }
-        else{
-            // out of range error
-            return false;
-        }
-    }
-
     public int nextInt(int limit){
         return rand.nextInt(limit);
     }
 
     /**
      * Provide a random generator.
+     *
      * @return A random object.
      */
     public static Random getRandom()
@@ -72,33 +70,10 @@ public class  Randomizer
         return rand;
     }
 
+    /**
+     * reset the entire object completely
+     */
     public void completeReset(){
         resetRandom();
     }
-
-//    /**
-//     * Provide a random generator.
-//     * @return A random object.
-//     */
-//    public static Random getRandom()
-//    {
-//        if(useShared) {
-//            return rand;
-//        }
-//        else {
-//            return new Random();
-//        }
-//    }
-    
-//    /**
-//     * Reset the randomization.
-//     * This will have no effect if randomization is not through
-//     * a shared Random generator.
-//     */
-//    public static void reset()
-//    {
-//        if(useShared) {
-//            rand.setSeed(seed);
-//        }
-//    }
 }
