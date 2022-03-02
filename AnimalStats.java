@@ -14,10 +14,10 @@ public class AnimalStats extends EntityStats {
     private int hungerValue;                 // The food value of a single prey1. In effect, this is the
     private boolean isNocturnal;
 
-    public static final int BREEDINGAGE_MAX = 100;
-    public static final int MAXAGE_MAX = 100;
-    public static final int MAXLITTERSIZE_MAX = 8;
-    public static final int HUNGERVALUE_MAX = 50;
+    public static final int BREEDINGAGE_MAX = 200;
+    public static final int MAXAGE_MAX = 200;
+    public static final int MAXLITTERSIZE_MAX = 200;
+    public static final int HUNGERVALUE_MAX = 200;
 
     private final AnimalStats DEFAULT_STATS; // The default stats of the animal
 

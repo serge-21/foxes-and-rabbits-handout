@@ -22,7 +22,6 @@ public class SimulatorView extends JFrame {
     private static final Color EMPTY_COLOR = Color.white;               // Colors used for empty locations.
     private static final Color UNKNOWN = Color.gray;               // Colors used for empty locations.
 
-
     private final Color SUCCESS_COLOR = new Color(27, 157, 21);
     private final Color FAIL_COLOR = new Color(207, 39, 39);
 
@@ -124,6 +123,45 @@ public class SimulatorView extends JFrame {
         fieldView = new FieldView(height, width);
         mainPanel = getContentPane();
 
+        setupInspector();
+
+        // this.getClass().getClassLoader().getResource() had to be used so that icons work in .jar files.
+        playIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/play.png"));
+        pauseIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/pause.png"));
+        stepIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/step.png"));
+        resetIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/reset.png"));
+        restoreIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/restore.png"));
+        deleteIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/delete.png"));
+
+        setupTab1();
+
+        mainPanel.add(fieldView, BorderLayout.CENTER);              // CENTRE Simulation Panel
+        initialiseSimStatsPanel(mainPanel, BorderLayout.NORTH);     // NORTH Simulation Stats Panel
+        initialisePopStatsPanel(mainPanel, BorderLayout.SOUTH);     // SOUTH Population Stats Panel
+        initialiseOptionsPanel(mainPanel, BorderLayout.EAST);       // EAST Options Stats Panel
+
+        // setting the title, packing and showing the simulation
+        setTitle("Predator vs Prey (and some plants) Simulation");
+        pack();
+        setSize(new Dimension(1681,948));
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setVisible(true);
+    }
+
+    /**
+     * This method will help in setting up tab1 so that not everything is
+     * initialised everytime the tab is being drawn
+     */
+    private void setupTab1() {
+        spawnrate_seedTextField = new JTextField(Randomizer.getSeed() + "");
+        spawnrate_seedResetButton = new JButton(restoreIcon);
+        spawnrate_seedResetButton.setPreferredSize(SMALL_BUTTON_SIZE);
+    }
+
+    /**
+     * Sets up the hover inspector frame when you hold your mouse over an entity pixel.
+     */
+    private void setupInspector(){
         JFrame inspectFrame = new JFrame();
         Container inspectContainer = inspectFrame.getContentPane();
         JPanel inspectPanel = new JPanel(new BorderLayout());
@@ -165,36 +203,6 @@ public class SimulatorView extends JFrame {
             }
         });
 
-        // this.getClass().getClassLoader().getResource() had to be used so that icons work in .jar files.
-        playIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/play.png"));
-        pauseIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/pause.png"));
-        stepIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/step.png"));
-        resetIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/reset.png"));
-        restoreIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/restore.png"));
-        deleteIcon = new ImageIcon(this.getClass().getClassLoader().getResource("resources/delete.png"));
-
-        setupTab1();
-
-        mainPanel.add(fieldView, BorderLayout.CENTER);              // CENTRE Simulation Panel
-        initialiseSimStatsPanel(mainPanel, BorderLayout.NORTH);     // NORTH Simulation Stats Panel
-        initialisePopStatsPanel(mainPanel, BorderLayout.SOUTH);     // SOUTH Population Stats Panel
-        initialiseOptionsPanel(mainPanel, BorderLayout.EAST);       // EAST Options Stats Panel
-
-        // setting the title, packing and showing the simulation
-        setTitle("Predator vs Prey (and some plants) Simulation");
-        pack();
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setVisible(true);
-    }
-
-    /**
-     * This method will help in setting up tab1 so that not everything is
-     * initialised everytime the tab is being drawn
-     */
-    private void setupTab1() {
-        spawnrate_seedTextField = new JTextField(Randomizer.getSeed() + "");
-        spawnrate_seedResetButton = new JButton(restoreIcon);
-        spawnrate_seedResetButton.setPreferredSize(SMALL_BUTTON_SIZE);
     }
 
     /**
@@ -614,13 +622,13 @@ public class SimulatorView extends JFrame {
                     setDetailText("Please don't remove while simulator is running", FAIL_COLOR);
                 }
                 else {
-                        simulator.removeEntity(entity);
                         setDetailText("Successfully removed the " + entity.getName() + " entity!", SUCCESS_COLOR);
 
                         simulator.removeFromOrganisms(entity);
                         field.removeAllObjectsOf(entity);
                         simulator.removeEntity(entity);
 
+                        initialisePopStatsPanel(mainPanel, BorderLayout.SOUTH);
                         simulator.showStatus();
                         refreshPanels();
                     }
@@ -928,6 +936,7 @@ public class SimulatorView extends JFrame {
                 } catch (CloneNotSupportedException ex) {
                     ex.printStackTrace();
                 }
+                initialisePopStatsPanel(mainPanel, BorderLayout.SOUTH);
                 setDetailText("Successfully added new " + newEntity.getName() + " " + newEntity.getEntityType().toString().toLowerCase() + "!", SUCCESS_COLOR);
                 newEntity.resetToDefault();
                 refreshPanels();
@@ -1044,16 +1053,16 @@ public class SimulatorView extends JFrame {
                 {0,0}};
 
         int[][] mediumTranslations = {
-                {-1, 0},
+                        {-1, 0},
                 {0, -1}, {0, 0}, {0, 1},
-                {1, 0}};
+                        {1, 0}};
 
         int[][] largeTranslations = {
-                {-2, -1}, {-2, 0}, {-2, 1},
+                        {-2, -1}, {-2, 0}, {-2, 1},
                 {-1, -2}, {-1, -1}, {-1, 0}, {-1, 1}, {-1, 2},
                 {0, -2}, {0, -1}, {0, 0}, {0, 1}, {0, 2},
                 {1, -2}, {1, -1}, {1, 0}, {1, 1}, {1, 2},
-                {2, -1}, {2, 0}, {2, 1}};
+                         {2, -1}, {2, 0}, {2, 1}};
 
         Consumer<MouseEvent> draw = (e) -> {
             int fieldX = e.getX()/(fieldView.getWidth()/width);
@@ -1087,6 +1096,16 @@ public class SimulatorView extends JFrame {
             simulator.showStatus();
         };
 
+        for (MouseListener listener : fieldView.getMouseListeners()){
+            fieldView.removeMouseListener(listener);
+        }
+
+        for (MouseMotionListener listener : fieldView.getMouseMotionListeners()){
+            fieldView.removeMouseMotionListener(listener);
+        }
+
+        setupInspector();
+
         MouseListener drawClickLocationAction = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -1110,7 +1129,7 @@ public class SimulatorView extends JFrame {
             drawmodeEnabled = false;
             drawent_EnableButton.setText("Enable Draw Mode");
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            for (Component component : drawent_OptionsPanel.getComponents()){
+            for (Component component : drawent_OptionsPanel.getComponents()) {
                 component.setEnabled(false);
             }
         };
@@ -1122,21 +1141,20 @@ public class SimulatorView extends JFrame {
                 fullResetButton.setEnabled(false);
                 drawent_EnableButton.setText("Disable Draw Mode");
                 setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-                for (Component component : drawent_OptionsPanel.getComponents()){
+                for (Component component : drawent_OptionsPanel.getComponents()) {
                     component.setEnabled(true);
                 }
-                for (Component component : playpause_Panel.getComponents()){
+                for (Component component : playpause_Panel.getComponents()) {
                     component.setEnabled(false);
                 }
                 tabmenu_TabbedPane.setEnabledAt(0, false);
                 tabmenu_TabbedPane.setEnabledAt(1, false);
                 tabmenu_TabbedPane.setEnabledAt(2, false);
 
-            }
-            else{
+            } else {
                 fullResetButton.setEnabled(true);
                 setDisabled.run();
-                for (Component component : playpause_Panel.getComponents()){
+                for (Component component : playpause_Panel.getComponents()) {
                     component.setEnabled(true);
                 }
                 tabmenu_TabbedPane.setEnabledAt(0, true);
@@ -1144,6 +1162,7 @@ public class SimulatorView extends JFrame {
                 tabmenu_TabbedPane.setEnabledAt(2, true);
             }
         });
+
         panel.updateUI();
     }
 
@@ -1185,6 +1204,8 @@ public class SimulatorView extends JFrame {
         //gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        //System.out.println("HELLo: " + (int)(max * multiplier) +  "   " + (int)(getMethod.getAsDouble() * multiplier));
 
         JSlider inputSlider = new JSlider(1, (int)(max * multiplier), (int)(getMethod.getAsDouble() * multiplier));
         inputSlider.setPaintTicks(true);
@@ -1361,6 +1382,8 @@ public class SimulatorView extends JFrame {
 
         // Constants for MAIN -> SOUTH Population Stats Panel (pop stats)
         String POPSTATS_TOTAL_PREFIX = "Total Population: ";
+
+
         popStats_TotalLabel.setText(POPSTATS_TOTAL_PREFIX + stats.getTotalCount(field));
         popStats_TypeLabel.setText(stats.getPopulationDetails(field));
         for (EntityStats entity : simulator.getPossibleEntities()){
