@@ -8,7 +8,7 @@ The Predator/Prey simulator is a full customisable simulation that gives the use
 
 The speicies:
 
-![image](https://github.com/serge-21/foxes-and-rabbits-handout/assets/26350015/aa211566-5a25-4875-a63e-810b3222caa5)
+![image](https://github.com/serge-21/foxes-and-rabbits-handout/assets/26350015/be26ad31-f5d9-4c0c-8c5e-fa9bfac98ad7)
 
 ---
 
